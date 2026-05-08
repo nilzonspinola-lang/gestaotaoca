@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taoca — Cadastros</title>
+  <link rel="stylesheet" href="css/taoca-design-system.css" />
+  <link rel="stylesheet" href="css/notifications.css" />
+  <link rel="icon" href="assets/taoca-logo.png" />
+  <style>
+    .tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border-soft);
+      margin-bottom: 22px;
+    }
+    .tab {
+      background: transparent;
+      border: 0;
+      padding: 12px 18px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color var(--t-fast), border-color var(--t-fast);
+    }
+    .tab:hover { color: var(--text-primary); }
+    .tab.active { color: var(--brand-strong); border-color: var(--brand); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .panel {
+      background: #FFF;
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      padding: 22px;
+    }
+
+    .row-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .row-toolbar h2 {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+    .row-toolbar .hint {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    table.tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    table.tbl th, table.tbl td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-soft);
+      vertical-align: middle;
+    }
+    table.tbl th {
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    table.tbl tbody tr:hover { background: var(--taoca-cream-50); }
+    table.tbl td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    table.tbl td.actions { text-align: right; white-space: nowrap; }
+    .pill {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: var(--taoca-green-50);
+      color: var(--brand-strong);
+      font-size: 0.74rem;
+      font-weight: 600;
+    }
+    .pill.var { background: var(--taoca-clay-100); color: #8a4a31; }
+    .pill.fix { background: var(--taoca-cream-200); color: #6b5a3a; }
+    .pill.seg-Hoteis        { background:#E8F0EE; color:#2F5D3A; }
+    .pill.seg-Supermercados { background:#FBE8DD; color:#8a4a31; }
+    .pill.seg-Restaurantes  { background:#F5EBD7; color:#7a5a2a; }
+    .pill.seg-Distribuidoras{ background:#E5EAF2; color:#3b4a6a; }
+
+    .icon-btn-mini {
+      background: transparent;
+      border: 1px solid var(--border-soft);
+      color: var(--text-secondary);
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-grid; place-items: center;
+      margin-left: 4px;
+      transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+    }
+    .icon-btn-mini:hover { background: var(--taoca-cream-100); color: var(--brand); }
+    .icon-btn-mini.danger:hover { background: #FEF2F2; color: var(--danger); border-color: #FCA5A5; }
+    .icon-btn-mini svg { width: 14px; height: 14px; }
+
+    /* Modal de formulário */
+    .modal {
+      position: fixed; inset: 0;
+      background: rgba(31,41,55,0.45);
+      display: none;
+      align-items: center; justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal.show { display: flex; }
+    .modal-card {
+      background: #FFF;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 540px;
+      max-height: 90vh;
+      overflow: auto;
+      box-shadow: var(--shadow-xl);
+    }
+    .modal-head {
+      padding: 20px 24px 14px;
+      border-bottom: 1px solid var(--border-soft);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-head h3 { font-family: var(--font-serif); font-size: 1.15rem; margin: 0; font-weight: 600; }
+    .modal-body { padding: 22px 24px; }
+    .modal-foot {
+      padding: 14px 24px 20px;
+      display: flex; justify-content: flex-end; gap: 8px;
+      border-top: 1px solid var(--border-soft);
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .form-grid .span-2 { grid-column: span 2; }
+    @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } .form-grid .span-2 { grid-column: span 1; } }
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      font: inherit;
+      background: #FFF;
+      color: var(--text-primary);
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: 2px solid rgba(74,120,86,0.25); border-color: var(--brand);
+    }
+    .close-x {
+      background: transparent; border: 0; cursor: pointer;
+      width: 30px; height: 30px;
+      color: var(--text-muted);
+      font-size: 1.4rem;
+    }
+    .close-x:hover { color: var(--text-primary); }
+
+    .empty-row td {
+      text-align: center;
+      padding: 28px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="produtos">Produtos / SKUs</button>
+    <button class="tab" data-tab="clientes">Clientes</button>
+    <button class="tab" data-tab="centros">Centros de custo</button>
+  </div>
+
+  <!-- ============= PRODUTOS ============= -->
+  <section class="tab-panel active" id="tab-produtos">
+    <div class="panel">
+      <div class="row-toolbar">
+        <div>
+          <h2>Produtos / SKUs</h2>
+          <div class="hint">Tudo que você vende. Os preços daqui são usados como sugestão no lançamento de venda.</div>
+        </div>
+        <button class="btn btn-primary" id="btn-new-product">+ Novo produto</button>
+      </div>
+      <table class="tbl" id="tbl-products">
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Produto</th>
+            <th>Categoria</th>
+            <th class="num">Peso</th>
+            <th class="num">Preço</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============= CLIENTES ============= -->
+  <section class="tab-panel" id="tab-clientes">
+    <div class="panel">
+      <div class="row-toolbar">
+        <div>
+          <h2>Clientes</h2>
+          <div class="hint">Cada cliente pertence a um segmento (Hotéis · Supermercados · Restaurantes · Distribuidoras).</div>
+        </div>
+        <button class="btn btn-primary" id="btn-new-customer">+ Novo cliente</button>
+      </div>
+      <table class="tbl" id="tbl-customers">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Segmento</th>
+            <th>Contato</th>
+            <th>Pagamento</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============= CENTROS DE CUSTO ============= -->
+  <section class="tab-panel" id="tab-centros">
+    <div class="panel">
+      <div class="row-toolbar">
+        <div>
+          <h2>Centros de custo</h2>
+          <div class="hint">Categorias onde você lança despesas. Fixos não variam com a produção; variáveis sim.</div>
+        </div>
+        <button class="btn btn-primary" id="btn-new-cc">+ Novo centro</button>
+      </div>
+      <table class="tbl" id="tbl-centers">
+        <thead>
+          <tr>
+            <th>Centro</th>
+            <th>Tipo</th>
+            <th>Descrição</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============= MODAL ============= -->
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <h3 id="modal-title">Novo</h3>
+        <button class="close-x" id="modal-close" aria-label="Fechar">×</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" id="modal-cancel">Cancelar</button>
+        <button class="btn btn-primary" id="modal-save">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/taoca-data.js"></script>
+  <script src="js/taoca-shell.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/taoca-ai.js"></script>
+  <script>
+  (function () {
+    TaocaShell.mount({
+      active: 'cadastros',
+      title: 'Cadastros',
+      subtitle: 'Produtos, clientes e centros de custo',
+    });
+
+    const $ = (s, ctx) => (ctx || document).querySelector(s);
+    const $$ = (s, ctx) => Array.from((ctx || document).querySelectorAll(s));
+    const D = window.TaocaData;
+    const escape = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    // ---------- TABS ----------
+    $$('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        $$('.tab').forEach(b => b.classList.remove('active'));
+        $$('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        $('#tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // ---------- ICON BUTTONS ----------
+    const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg>';
+    const ICON_DEL  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>';
+
+    // ============ RENDER PRODUTOS ============
+    function renderProducts() {
+      const arr = D.list('products').sort((a,b) => (a.sku || '').localeCompare(b.sku || ''));
+      const tbody = $('#tbl-products tbody');
+      if (!arr.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Nenhum produto cadastrado.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = arr.map(p => `
+        <tr data-id="${p.id}">
+          <td><strong>${escape(p.sku)}</strong></td>
+          <td>${escape(p.name)}</td>
+          <td>${escape(p.category || '')}</td>
+          <td class="num">${p.weight_g ? D.fmtNum(p.weight_g) + ' g' : '—'}</td>
+          <td class="num">${D.fmtBRL(p.price)}</td>
+          <td class="actions">
+            <button class="icon-btn-mini" data-act="edit-product" title="Editar">${ICON_EDIT}</button>
+            <button class="icon-btn-mini danger" data-act="del-product" title="Excluir">${ICON_DEL}</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // ============ RENDER CLIENTES ============
+    function renderCustomers() {
+      const arr = D.list('customers').sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+      const tbody = $('#tbl-customers tbody');
+      if (!arr.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Nenhum cliente cadastrado.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = arr.map(c => `
+        <tr data-id="${c.id}">
+          <td><strong>${escape(c.name)}</strong>${c.doc ? `<div class="text-xs text-muted">${escape(c.doc)}</div>` : ''}</td>
+          <td><span class="pill seg-${escape(c.segment)}">${escape(D.SEGMENT_LABEL[c.segment] || c.segment || '—')}</span></td>
+          <td>${escape(c.contact || '—')}</td>
+          <td>${escape(c.payment_terms || '—')}</td>
+          <td class="actions">
+            <button class="icon-btn-mini" data-act="edit-customer" title="Editar">${ICON_EDIT}</button>
+            <button class="icon-btn-mini danger" data-act="del-customer" title="Excluir">${ICON_DEL}</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // ============ RENDER CENTROS ============
+    function renderCenters() {
+      const arr = D.list('cost_centers');
+      const tbody = $('#tbl-centers tbody');
+      if (!arr.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Nenhum centro cadastrado.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = arr.map(c => `
+        <tr data-id="${c.id}">
+          <td><strong>${escape(c.name)}</strong></td>
+          <td><span class="pill ${c.type === 'fixo' ? 'fix' : 'var'}">${c.type === 'fixo' ? 'Fixo' : 'Variável'}</span></td>
+          <td>${escape(c.description || '—')}</td>
+          <td class="actions">
+            <button class="icon-btn-mini" data-act="edit-cc" title="Editar">${ICON_EDIT}</button>
+            <button class="icon-btn-mini danger" data-act="del-cc" title="Excluir">${ICON_DEL}</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // ============ MODAL helper ============
+    const modal = $('#modal');
+    let currentSave = null;
+    function openModal(title, html, onSave) {
+      $('#modal-title').textContent = title;
+      $('#modal-body').innerHTML = html;
+      currentSave = onSave;
+      modal.classList.add('show');
+      const first = $('#modal-body input, #modal-body select, #modal-body textarea');
+      if (first) setTimeout(() => first.focus(), 50);
+    }
+    function closeModal() { modal.classList.remove('show'); currentSave = null; }
+    $('#modal-close').addEventListener('click', closeModal);
+    $('#modal-cancel').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    $('#modal-save').addEventListener('click', () => { if (currentSave) currentSave(); });
+
+    // ============ FORMS ============
+    function formProduct(p) {
+      p = p || {};
+      return `
+        <div class="form-grid">
+          <div class="field"><label>SKU *</label><input id="f-sku" value="${escape(p.sku)}" placeholder="PAR-200" /></div>
+          <div class="field"><label>Categoria</label>
+            <select id="f-cat">
+              <option ${p.category==='Fresco'?'selected':''}>Fresco</option>
+              <option ${p.category==='Subproduto'?'selected':''}>Subproduto</option>
+              <option ${p.category==='Processado'?'selected':''}>Processado</option>
+              <option ${p.category==='Outro'?'selected':''}>Outro</option>
+            </select>
+          </div>
+          <div class="field span-2"><label>Nome *</label><input id="f-name" value="${escape(p.name)}" placeholder="Cogumelo Paris Fresco — Bandeja 200g" /></div>
+          <div class="field"><label>Unidade</label>
+            <select id="f-unit">
+              <option ${p.unit==='bandeja'?'selected':''}>bandeja</option>
+              <option ${p.unit==='saco'?'selected':''}>saco</option>
+              <option ${p.unit==='kg'?'selected':''}>kg</option>
+              <option ${p.unit==='un'?'selected':''}>un</option>
+            </select>
+          </div>
+          <div class="field"><label>Peso por unidade (g)</label><input id="f-w" type="number" step="1" value="${p.weight_g || ''}" /></div>
+          <div class="field"><label>Preço de venda (R$) *</label><input id="f-price" type="number" step="0.01" value="${p.price ?? ''}" /></div>
+          <div class="field"><label>Custo unitário (R$) <span class="text-muted text-xs">opcional</span></label><input id="f-cost" type="number" step="0.01" value="${p.unit_cost ?? ''}" /></div>
+        </div>
+      `;
+    }
+    function saveProduct(id) {
+      const obj = {
+        sku: $('#f-sku').value.trim(),
+        name: $('#f-name').value.trim(),
+        category: $('#f-cat').value,
+        unit: $('#f-unit').value,
+        weight_g: parseFloat($('#f-w').value) || null,
+        price: parseFloat($('#f-price').value) || 0,
+        unit_cost: parseFloat($('#f-cost').value) || null,
+        active: true,
+      };
+      if (!obj.sku || !obj.name) { alert('SKU e nome são obrigatórios.'); return; }
+      if (id) D.update('products', id, obj); else D.create('products', obj);
+      closeModal(); renderProducts();
+      if (window.TaocaNotify) TaocaNotify.success(id ? 'Produto atualizado' : 'Produto criado');
+    }
+
+    function formCustomer(c) {
+      c = c || {};
+      return `
+        <div class="form-grid">
+          <div class="field span-2"><label>Nome *</label><input id="f-name" value="${escape(c.name)}" placeholder="Hotel Fasano" /></div>
+          <div class="field"><label>Segmento *</label>
+            <select id="f-seg">
+              ${D.SEGMENTS.map(s => `<option value="${s}" ${c.segment===s?'selected':''}>${D.SEGMENT_LABEL[s]}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>CNPJ / CPF</label><input id="f-doc" value="${escape(c.doc)}" /></div>
+          <div class="field"><label>Contato</label><input id="f-contact" value="${escape(c.contact)}" placeholder="Nome / telefone / email" /></div>
+          <div class="field"><label>Pagamento</label>
+            <select id="f-pay">
+              ${['À vista','7 dias','14 dias','21 dias','30 dias','45 dias','60 dias'].map(o=>`<option ${c.payment_terms===o?'selected':''}>${o}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field span-2"><label>Observações</label><textarea id="f-notes" rows="2">${escape(c.notes)}</textarea></div>
+        </div>
+      `;
+    }
+    function saveCustomer(id) {
+      const obj = {
+        name: $('#f-name').value.trim(),
+        segment: $('#f-seg').value,
+        doc: $('#f-doc').value.trim(),
+        contact: $('#f-contact').value.trim(),
+        payment_terms: $('#f-pay').value,
+        notes: $('#f-notes').value.trim(),
+      };
+      if (!obj.name) { alert('Nome é obrigatório.'); return; }
+      if (id) D.update('customers', id, obj); else D.create('customers', obj);
+      closeModal(); renderCustomers();
+      if (window.TaocaNotify) TaocaNotify.success(id ? 'Cliente atualizado' : 'Cliente criado');
+    }
+
+    function formCC(c) {
+      c = c || {};
+      return `
+        <div class="form-grid">
+          <div class="field span-2"><label>Nome *</label><input id="f-name" value="${escape(c.name)}" /></div>
+          <div class="field"><label>Tipo</label>
+            <select id="f-type">
+              <option value="fixo" ${c.type==='fixo'?'selected':''}>Fixo</option>
+              <option value="variavel" ${c.type==='variavel'?'selected':''}>Variável</option>
+            </select>
+          </div>
+          <div class="field"><label>—</label><div class="text-xs text-muted">Fixos = não variam com produção (mão de obra, energia). Variáveis = embalagem, frete.</div></div>
+          <div class="field span-2"><label>Descrição</label><input id="f-desc" value="${escape(c.description)}" /></div>
+        </div>
+      `;
+    }
+    function saveCC(id) {
+      const obj = {
+        name: $('#f-name').value.trim(),
+        type: $('#f-type').value,
+        description: $('#f-desc').value.trim(),
+      };
+      if (!obj.name) { alert('Nome é obrigatório.'); return; }
+      if (id) D.update('cost_centers', id, obj); else D.create('cost_centers', obj);
+      closeModal(); renderCenters();
+      if (window.TaocaNotify) TaocaNotify.success(id ? 'Centro atualizado' : 'Centro criado');
+    }
+
+    // ============ Botões "Novo" ============
+    $('#btn-new-product').addEventListener('click', () => openModal('Novo produto', formProduct(), () => saveProduct()));
+    $('#btn-new-customer').addEventListener('click', () => openModal('Novo cliente', formCustomer(), () => saveCustomer()));
+    $('#btn-new-cc').addEventListener('click', () => openModal('Novo centro de custo', formCC(), () => saveCC()));
+
+    // ============ Delegação de eventos para Editar / Excluir ============
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-act]');
+      if (!btn) return;
+      const tr = btn.closest('tr');
+      const id = tr ? tr.dataset.id : null;
+      const act = btn.dataset.act;
+
+      if (act === 'edit-product') {
+        const p = D.get('products', id);
+        openModal('Editar produto', formProduct(p), () => saveProduct(id));
+      } else if (act === 'del-product') {
+        if (confirm('Excluir este produto?')) { D.remove('products', id); renderProducts(); }
+      } else if (act === 'edit-customer') {
+        const c = D.get('customers', id);
+        openModal('Editar cliente', formCustomer(c), () => saveCustomer(id));
+      } else if (act === 'del-customer') {
+        if (confirm('Excluir este cliente?')) { D.remove('customers', id); renderCustomers(); }
+      } else if (act === 'edit-cc') {
+        const c = D.get('cost_centers', id);
+        openModal('Editar centro de custo', formCC(c), () => saveCC(id));
+      } else if (act === 'del-cc') {
+        if (confirm('Excluir este centro de custo?')) { D.remove('cost_centers', id); renderCenters(); }
+      }
+    });
+
+    // ============ Init ============
+    renderProducts(); renderCustomers(); renderCenters();
+  })();
+  </script>
+</body>
+</html>

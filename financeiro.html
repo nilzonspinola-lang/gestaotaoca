@@ -3,269 +3,530 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Financeiro — Taoca OS</title>
+  <title>Taoca — Financeiro</title>
   <link rel="stylesheet" href="css/taoca-design-system.css" />
   <link rel="stylesheet" href="css/notifications.css" />
   <link rel="icon" href="assets/taoca-logo.png" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-      background: var(--bg-surface);
-      border-radius: var(--radius-xl);
-      overflow: hidden;
-      border: 1px solid var(--border-soft);
+    .kpi-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-bottom: 22px; }
+    @media (max-width: 980px) { .kpi-row { grid-template-columns: repeat(2,1fr); } }
+    .kpi { background: #FFF; border: 1px solid var(--border-soft); border-radius: 14px; padding: 18px 20px; }
+    .kpi-name { font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+    .kpi-num { font-family: var(--font-serif); font-size: 1.7rem; font-weight: 600; color: var(--text-primary); margin-top: 6px; line-height: 1.05; letter-spacing: -0.02em; }
+    .kpi-sub { font-size: 0.82rem; color: var(--text-secondary); margin-top: 6px; }
+    .kpi-num.pos { color: var(--success); }
+    .kpi-num.neg { color: var(--danger); }
+
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: #FFF; border: 1px solid var(--border-soft); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
+    .toolbar select, .toolbar input { padding: 7px 10px; border: 1px solid var(--border-default); border-radius: 8px; font: inherit; background: #FFF; color: var(--text-primary); font-size: 0.88rem; }
+    .toolbar label { font-size: 0.8rem; color: var(--text-muted); margin-right: 4px; font-weight: 600; }
+    .toolbar .spacer { flex: 1; }
+
+    .grid-2 { display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px; margin-bottom: 22px; }
+    @media (max-width: 980px) { .grid-2 { grid-template-columns: 1fr; } }
+    .panel { background: #FFF; border: 1px solid var(--border-soft); border-radius: 14px; padding: 22px; }
+    .panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+    .panel-title { font-family: var(--font-serif); font-size: 1.05rem; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+    .panel-sub { font-size: 0.82rem; color: var(--text-muted); }
+
+    /* DRE */
+    .dre { font-variant-numeric: tabular-nums; font-size: 0.95rem; }
+    .dre-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px dashed var(--border-soft); }
+    .dre-row.total { font-weight: 700; border-bottom: 2px solid var(--text-primary); padding: 11px 0; margin-top: 4px; font-size: 1.02rem; }
+    .dre-row.sub { padding-left: 18px; color: var(--text-secondary); font-size: 0.9rem; }
+    .dre-row .v.pos { color: var(--success); }
+    .dre-row .v.neg { color: var(--danger); }
+    .dre-row .v { font-weight: 600; }
+    .dre-section-title {
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin: 14px 0 6px;
     }
-    .table th, .table td { padding: 11px 14px; text-align: left; font-size: 0.9rem; border-bottom: 1px solid var(--border-soft); }
-    .table th { background: var(--bg-surface-2); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 700; }
-    .table tr:last-child td { border-bottom: 0; }
-    .amount-in { color: var(--success); font-weight: 700; }
-    .amount-out { color: var(--danger); font-weight: 700; }
-    .chart-wrap { height: 260px; position: relative; }
+    .dre-section-title:first-child { margin-top: 0; }
+
+    /* Composição (barras horizontais) */
+    .comp-row { padding: 10px 0; border-bottom: 1px solid var(--border-soft); }
+    .comp-row:last-child { border-bottom: 0; }
+    .comp-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.9rem; margin-bottom: 6px; }
+    .comp-name { color: var(--text-primary); font-weight: 600; }
+    .comp-val { color: var(--text-secondary); font-variant-numeric: tabular-nums; font-size: 0.85rem; }
+    .comp-bar { height: 8px; border-radius: 999px; background: var(--taoca-coal-100); overflow: hidden; }
+    .comp-bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--taoca-green-700), var(--taoca-green-500)); }
+    .comp-bar.var > span { background: linear-gradient(90deg, var(--taoca-clay-500), var(--taoca-clay-400)); }
+
+    table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    table.tbl th, table.tbl td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+    table.tbl th { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+    table.tbl tbody tr:hover { background: var(--taoca-cream-50); }
+    table.tbl td.num, table.tbl th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    table.tbl td.actions { text-align: right; white-space: nowrap; }
+
+    .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
+    .pill.fix { background: var(--taoca-cream-200); color: #6b5a3a; }
+    .pill.var { background: var(--taoca-clay-100); color: #8a4a31; }
+
+    .icon-btn-mini { background: transparent; border: 1px solid var(--border-soft); color: var(--text-secondary); width: 30px; height: 30px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; margin-left: 4px; }
+    .icon-btn-mini:hover { background: var(--taoca-cream-100); color: var(--brand); }
+    .icon-btn-mini.danger:hover { background: #FEF2F2; color: var(--danger); border-color: #FCA5A5; }
+    .icon-btn-mini svg { width: 14px; height: 14px; }
+
+    .modal { position: fixed; inset: 0; background: rgba(31,41,55,.45); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+    .modal.show { display: flex; }
+    .modal-card { background: #FFF; border-radius: 16px; width: 100%; max-width: 540px; max-height: 92vh; overflow: auto; box-shadow: var(--shadow-xl); }
+    .modal-head { padding: 20px 24px 14px; border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center; }
+    .modal-head h3 { font-family: var(--font-serif); font-size: 1.1rem; margin: 0; font-weight: 600; }
+    .modal-body { padding: 22px 24px; }
+    .modal-foot { padding: 14px 24px 20px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border-soft); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-grid .span-2 { grid-column: span 2; }
+    @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } .form-grid .span-2 { grid-column: span 1; } }
+    .field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+    .field input, .field select, .field textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border-default); border-radius: 8px; font: inherit; background: #FFF; color: var(--text-primary); }
+    .field input:focus, .field select:focus { outline: 2px solid rgba(74,120,86,.25); border-color: var(--brand); }
+    .close-x { background: transparent; border: 0; cursor: pointer; width: 30px; height: 30px; color: var(--text-muted); font-size: 1.4rem; }
+
+    .empty-row td { text-align: center; padding: 28px; color: var(--text-muted); font-size: .9rem; }
+
+    /* Margem por SKU */
+    .seg-pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
+    .seg-pill.Hoteis        { background:#E8F0EE; color:#2F5D3A; }
+    .seg-pill.Supermercados { background:#FBE8DD; color:#8a4a31; }
+    .seg-pill.Restaurantes  { background:#F5EBD7; color:#7a5a2a; }
+    .seg-pill.Distribuidoras{ background:#E5EAF2; color:#3b4a6a; }
   </style>
 </head>
 <body>
 
-  <div class="card card-pad mb-6" style="background: linear-gradient(135deg, var(--taoca-gold-500) 0%, var(--taoca-clay-500) 100%); color: #FFF; border:0; position:relative; overflow:hidden;">
-    <div style="position:absolute; right:-20px; top:-20px; font-size:8rem; opacity:0.1; line-height:1;">💰</div>
-    <div class="text-xs uppercase font-bold" style="letter-spacing:0.18em; color:rgba(255,255,255,0.85);">Negócio · Financeiro</div>
-    <h2 style="font-family:var(--font-serif); font-size:1.7rem; color:#FFF; margin-top:4px;">Saúde financeira</h2>
-    <p style="color:rgba(255,255,255,0.92); margin-top:6px; max-width:700px;">
-      Fluxo de caixa, contas a pagar/receber e visão de margem. Decisões claras para um cultivo sustentável.
-    </p>
+  <!-- Toolbar de mês -->
+  <div class="toolbar">
+    <label>Mês de referência</label>
+    <input type="month" id="f-month" />
+    <span class="spacer"></span>
+    <button class="btn btn-ghost btn-sm" id="btn-replicar">Replicar fixos do mês anterior</button>
+    <button class="btn btn-primary" id="btn-new-exp">+ Nova despesa</button>
   </div>
 
   <!-- KPIs -->
-  <div class="grid grid-4 mb-6">
-    <div class="kpi-card kpi-emerald"><span class="kpi-label">📈 Receita mês</span><span class="kpi-value" id="kpi-revenue">R$ 0</span><span class="text-sm text-secondary" id="kpi-revenue-sub">—</span></div>
-    <div class="kpi-card"><span class="kpi-label">📉 Despesa mês</span><span class="kpi-value" id="kpi-expense">R$ 0</span><span class="text-sm text-secondary">total de saídas</span></div>
-    <div class="kpi-card kpi-gold"><span class="kpi-label">💎 Saldo mês</span><span class="kpi-value" id="kpi-balance">R$ 0</span><span class="text-sm text-secondary" id="kpi-balance-sub">—</span></div>
-    <div class="kpi-card kpi-clay"><span class="kpi-label">⏰ A receber</span><span class="kpi-value" id="kpi-receivable">R$ 0</span><span class="text-sm text-secondary">vencendo em 30 dias</span></div>
-  </div>
-
-  <!-- Gráfico -->
-  <div class="grid grid-2 mb-6">
-    <div class="card card-pad">
-      <div class="section-head" style="margin-bottom:6px"><div class="title-block"><div class="eyebrow">Tendência</div><h3 class="h-title" style="font-size:1.15rem;">Fluxo dos últimos 30 dias</h3></div></div>
-      <div class="chart-wrap"><canvas id="cash-chart"></canvas></div>
+  <section class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-name">Receita</div>
+      <div class="kpi-num pos" id="k-rev">—</div>
+      <div class="kpi-sub" id="k-rev-sub">vendas do mês</div>
     </div>
-    <div class="card card-pad">
-      <div class="section-head" style="margin-bottom:10px"><div class="title-block"><div class="eyebrow">Insight</div><h3 class="h-title" style="font-size:1.15rem;">Visão da Taoca IA</h3></div></div>
-      <p id="ai-insight" class="text-secondary" style="font-family:var(--font-serif); font-size:1.05rem; line-height:1.6; font-style:italic;">
-        Cadastre seus primeiros lançamentos para começar a receber análises automáticas.
-      </p>
-      <div class="mt-4">
-        <button class="btn btn-primary" id="open-ia-btn" type="button">🤖 Pedir análise à IA</button>
+    <div class="kpi">
+      <div class="kpi-name">Custos + Despesas</div>
+      <div class="kpi-num neg" id="k-cost">—</div>
+      <div class="kpi-sub" id="k-cost-sub">fixos + variáveis</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-name">Resultado</div>
+      <div class="kpi-num" id="k-res">—</div>
+      <div class="kpi-sub" id="k-res-sub">receita − despesas</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-name">Margem</div>
+      <div class="kpi-num" id="k-mg">—</div>
+      <div class="kpi-sub" id="k-mg-sub">% de margem líquida</div>
+    </div>
+  </section>
+
+  <!-- DRE + Composição lado a lado -->
+  <div class="grid-2">
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">DRE — Demonstração de resultado</h2>
+        <span class="panel-sub" id="dre-month-label"></span>
       </div>
-    </div>
+      <div class="dre" id="dre"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Composição de custos</h2>
+        <span class="panel-sub">por centro de custo</span>
+      </div>
+      <div id="comp"></div>
+    </section>
   </div>
 
-  <!-- Lançamentos -->
-  <div class="section-head">
-    <div class="title-block">
-      <div class="eyebrow">Movimentações</div>
-      <h2 class="h-title">Lançamentos do mês</h2>
-      <p class="h-sub">Receitas e despesas da operação.</p>
-    </div>
-    <div class="flex gap-2">
-      <span class="sync-pill"><span class="sync-dot" id="sync-dot"></span><span id="sync-text">Sincronizado</span></span>
-      <button class="btn btn-primary" id="new-tx-btn" type="button">➕ Novo lançamento</button>
-    </div>
+  <!-- Custo por kg + Margem por SKU -->
+  <div class="grid-2">
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Custo de produção</h2>
+        <span class="panel-sub">por kg produzido</span>
+      </div>
+      <div class="dre" id="cost-prod"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Margem por SKU</h2>
+        <span class="panel-sub">preço médio − custo unitário</span>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr><th>SKU</th><th>Produto</th><th class="num">Preço</th><th class="num">Custo</th><th class="num">Margem</th></tr>
+        </thead>
+        <tbody id="margin-body"></tbody>
+      </table>
+    </section>
   </div>
 
-  <div id="tx-wrap"></div>
+  <!-- Lista de despesas -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">Despesas do mês</h2>
+      <span class="panel-sub" id="exp-count"></span>
+    </div>
+    <table class="tbl" id="tbl-exp">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Centro de custo</th>
+          <th>Tipo</th>
+          <th>Descrição</th>
+          <th>Fornecedor</th>
+          <th class="num">Valor</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
 
   <!-- Modal -->
-  <div class="tc-modal-backdrop" id="tx-modal" role="dialog" aria-modal="true">
-    <div class="tc-modal-card lg">
-      <h3 class="tc-modal-title">➕ Novo lançamento</h3>
-      <p class="tc-modal-subtitle">Registre uma entrada ou saída financeira.</p>
-      <div class="grid grid-2">
-        <div class="field"><label>Tipo *</label>
-          <select id="tx-type" class="select">
-            <option value="receita">📈 Receita (entrada)</option>
-            <option value="despesa">📉 Despesa (saída)</option>
-          </select>
-        </div>
-        <div class="field"><label>Data *</label><input type="date" id="tx-date" class="input" /></div>
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="modal-title">Nova despesa</h3>
+        <button class="close-x" id="modal-close">×</button>
       </div>
-      <div class="field">
-        <label>Descrição *</label>
-        <input type="text" id="tx-desc" class="input" placeholder="Ex.: Venda de Shimeji para Mercado Verde" />
-      </div>
-      <div class="grid grid-2">
-        <div class="field"><label>Valor (R$) *</label><input type="number" id="tx-amount" class="input" min="0" step="0.01" placeholder="0.00" /></div>
-        <div class="field"><label>Categoria</label>
-          <select id="tx-category" class="select">
-            <option value="vendas">Vendas</option>
-            <option value="insumos">Insumos / Substrato</option>
-            <option value="folha">Folha / Pessoal</option>
-            <option value="estrutura">Estrutura / Aluguel</option>
-            <option value="energia">Energia / Água</option>
-            <option value="marketing">Marketing</option>
-            <option value="impostos">Impostos</option>
-            <option value="outras">Outras</option>
-          </select>
-        </div>
-      </div>
-      <div class="field"><label>Cliente / Fornecedor</label><input type="text" id="tx-counterpart" class="input" placeholder="Nome (opcional)" /></div>
-      <div class="field"><label>Observações</label><textarea id="tx-notes" class="textarea"></textarea></div>
-      <div class="tc-modal-actions">
-        <button class="btn btn-ghost" type="button" id="tx-cancel">Cancelar</button>
-        <button class="btn btn-primary" type="button" id="tx-save">Registrar</button>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" id="modal-cancel">Cancelar</button>
+        <button class="btn btn-primary" id="modal-save">Salvar</button>
       </div>
     </div>
   </div>
 
+  <script src="js/taoca-data.js"></script>
   <script src="js/taoca-shell.js"></script>
-  <script>TaocaShell.mount({ active: 'financeiro', breadcrumb: 'Negócio · Financeiro', title: 'Financeiro' });</script>
-
-  <script>
-    (function () {
-      const TABLE='finance', POLL_MS=15000;
-      let chart = null;
-
-      const syncDot=document.getElementById('sync-dot'), syncText=document.getElementById('sync-text');
-      function setSync(s,m){ syncDot.classList.remove('syncing','error'); if(s==='syncing') syncDot.classList.add('syncing'); if(s==='error') syncDot.classList.add('error'); syncText.textContent = m || (s==='syncing'?'Sincronizando…':s==='error'?'Falha':'Sincronizado'); }
-      function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-      function brl(n){ return (Number(n)||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' }); }
-      function startOfMonth(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(1); return x; }
-      function startOfDay(d){ const x=new Date(d); x.setHours(0,0,0,0); return x; }
-
-      async function fetchTxs(){
-        try { const r = await fetch(`tables/${TABLE}?limit=500`); if(!r.ok) return []; const j = await r.json(); return (j.data||[]).filter(x=>!x.deleted); }
-        catch(e){ return []; }
-      }
-      async function createTx(p){
-        const r = await fetch(`tables/${TABLE}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p) });
-        if(!r.ok) throw new Error('Falha'); return await r.json();
-      }
-
-      function renderKpis(list){
-        const monthStart = startOfMonth(new Date());
-        const inMonth = list.filter(t => t.date && new Date(t.date) >= monthStart);
-        const rev = inMonth.filter(t => t.type==='receita').reduce((s,t) => s+(Number(t.amount)||0), 0);
-        const exp = inMonth.filter(t => t.type==='despesa').reduce((s,t) => s+(Number(t.amount)||0), 0);
-        const bal = rev - exp;
-        const today = startOfDay(new Date());
-        const future = list.filter(t => t.type==='receita' && t.date && new Date(t.date) >= today && new Date(t.date) <= new Date(today.getTime()+30*86400000));
-        const recv = future.reduce((s,t) => s+(Number(t.amount)||0), 0);
-
-        document.getElementById('kpi-revenue').textContent = brl(rev);
-        document.getElementById('kpi-revenue-sub').textContent = `${inMonth.filter(t=>t.type==='receita').length} entrada(s)`;
-        document.getElementById('kpi-expense').textContent = brl(exp);
-        document.getElementById('kpi-balance').textContent = brl(bal);
-        document.getElementById('kpi-balance-sub').textContent = bal >= 0 ? '✓ positivo' : '⚠ déficit';
-        document.getElementById('kpi-receivable').textContent = brl(recv);
-
-        // Insight da IA
-        const insight = document.getElementById('ai-insight');
-        if(!list.length){
-          insight.textContent = 'Cadastre seus primeiros lançamentos para começar a receber análises automáticas.';
-        } else if(bal >= 0 && rev > 0){
-          insight.innerHTML = `Seu saldo do mês está <strong style="color:var(--success)">positivo em ${brl(bal)}</strong>. Considere reservar parte para investimento em novos lotes ou capital de giro. 🌱`;
-        } else if(bal < 0){
-          insight.innerHTML = `Atenção: o mês está com saldo <strong style="color:var(--danger)">negativo em ${brl(Math.abs(bal))}</strong>. Recomendo revisar despesas variáveis e priorizar a entrada de receitas. 📌`;
-        } else {
-          insight.textContent = 'Operação equilibrada. Continue acompanhando o ritmo de entradas e saídas.';
-        }
-      }
-
-      function renderChart(list){
-        const days = 30, labels = [], dataIn = [], dataOut = [];
-        const now = new Date();
-        const buckets = {};
-        for(let i=days-1;i>=0;i--){ const d=startOfDay(new Date(now)); d.setDate(d.getDate()-i); const k=d.toISOString().slice(0,10); buckets[k]={in:0,out:0}; labels.push(d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})); }
-        list.forEach(t => { if(!t.date) return; const k = String(t.date).slice(0,10); if(!(k in buckets)) return; if(t.type==='receita') buckets[k].in += Number(t.amount)||0; else if(t.type==='despesa') buckets[k].out += Number(t.amount)||0; });
-        Object.keys(buckets).forEach(k => { dataIn.push(buckets[k].in); dataOut.push(buckets[k].out); });
-
-        const ctx = document.getElementById('cash-chart').getContext('2d');
-        if(chart){ chart.data.labels = labels; chart.data.datasets[0].data = dataIn; chart.data.datasets[1].data = dataOut; chart.update(); return; }
-        chart = new Chart(ctx, {
-          type: 'line',
-          data: { labels, datasets: [
-            { label:'Receitas', data: dataIn, borderColor:'#4A7856', backgroundColor:'rgba(74,120,86,0.15)', fill:true, tension:0.3 },
-            { label:'Despesas', data: dataOut, borderColor:'#C77B5C', backgroundColor:'rgba(199,123,92,0.10)', fill:true, tension:0.3 },
-          ]},
-          options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:true} }, scales:{ y:{beginAtZero:true, ticks:{callback:(v)=>'R$ '+v}}, x:{grid:{display:false}} } }
-        });
-      }
-
-      function renderTable(list){
-        const wrap = document.getElementById('tx-wrap');
-        if(!list.length){
-          wrap.innerHTML = `<div class="empty-state"><div class="em-icon">💰</div><div class="em-title">Sem lançamentos ainda</div><div>Registre a primeira entrada ou saída.</div></div>`;
-          return;
-        }
-        const sorted = list.slice().sort((a,b) => String(b.date||'').localeCompare(String(a.date||'')));
-        wrap.innerHTML = `<div style="overflow-x:auto"><table class="table">
-          <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Cliente/Fornecedor</th><th style="text-align:right">Valor</th></tr></thead>
-          <tbody>
-            ${sorted.slice(0,30).map(t => `
-              <tr>
-                <td class="text-secondary">${escapeHtml(t.date ? t.date.split('-').reverse().join('/') : '—')}</td>
-                <td><strong>${escapeHtml(t.description||'—')}</strong></td>
-                <td><span class="tag tag-coal">${escapeHtml(t.category||'—')}</span></td>
-                <td class="text-secondary">${escapeHtml(t.counterpart||'—')}</td>
-                <td style="text-align:right"><span class="${t.type==='receita'?'amount-in':'amount-out'}">${t.type==='receita'?'+':'-'} ${brl(t.amount)}</span></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table></div>`;
-      }
-
-      async function refresh(){
-        setSync('syncing','Sincronizando…');
-        const list = await fetchTxs();
-        renderKpis(list);
-        renderChart(list);
-        renderTable(list);
-        setSync('ok','Sincronizado');
-      }
-      refresh();
-      setInterval(refresh, POLL_MS);
-
-      // Modal
-      const modal = document.getElementById('tx-modal');
-      document.getElementById('new-tx-btn').addEventListener('click', () => {
-        ['tx-desc','tx-amount','tx-counterpart','tx-notes'].forEach(id => document.getElementById(id).value='');
-        document.getElementById('tx-date').value = new Date().toISOString().slice(0,10);
-        document.getElementById('tx-type').value = 'receita';
-        document.getElementById('tx-category').value = 'vendas';
-        modal.classList.add('open');
-      });
-      document.getElementById('tx-cancel').addEventListener('click', () => modal.classList.remove('open'));
-      modal.addEventListener('click', (e) => { if(e.target===modal) modal.classList.remove('open'); });
-
-      document.getElementById('tx-save').addEventListener('click', async () => {
-        const desc = document.getElementById('tx-desc').value.trim();
-        const amount = Number(document.getElementById('tx-amount').value);
-        if(!desc) return alert('Descrição obrigatória.');
-        if(!amount || amount<=0) return alert('Valor inválido.');
-        const payload = {
-          type: document.getElementById('tx-type').value,
-          date: document.getElementById('tx-date').value,
-          description: desc,
-          amount,
-          category: document.getElementById('tx-category').value,
-          counterpart: document.getElementById('tx-counterpart').value.trim(),
-          notes: document.getElementById('tx-notes').value.trim(),
-          created_by: (window.TaocaShell && TaocaShell.getCurrentUser&&TaocaShell.getCurrentUser()) || 'Equipe',
-        };
-        try {
-          await createTx(payload);
-          modal.classList.remove('open');
-          if(window.TaocaNotif) window.TaocaNotif.log({ event_type:'finance_created', icon:'💰', actor: payload.created_by, title:`${payload.type==='receita'?'Receita':'Despesa'}: ${desc}`, details: brl(amount), task_id:'', task_number:0 });
-          refresh();
-        } catch(err){ console.error(err); alert('Falha ao salvar.'); }
-      });
-
-      document.getElementById('open-ia-btn').addEventListener('click', () => { if(window.TaocaAI) { window.TaocaAI.open(); setTimeout(() => window.TaocaAI.sendUser('Como está minha saúde financeira?'), 250); } });
-    })();
-  </script>
-
   <script src="js/notifications.js"></script>
   <script src="js/taoca-ai.js"></script>
+  <script>
+  (function () {
+    TaocaShell.mount({ active: 'financeiro', title: 'Financeiro', subtitle: 'DRE, custos e margem' });
+
+    const D = window.TaocaData;
+    const $ = (s, c) => (c || document).querySelector(s);
+    const escape = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg>';
+    const ICON_DEL  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>';
+
+    // mês corrente
+    function currentMonth() { return new Date().toISOString().slice(0,7); }
+    function prevMonth(m) {
+      const [y, mm] = m.split('-').map(Number);
+      const d = new Date(y, mm - 2, 1);
+      return d.toISOString().slice(0,7);
+    }
+    $('#f-month').value = currentMonth();
+
+    // ---------- enriquecimento ----------
+    function enrichedExpenses(month) {
+      const cc = D.list('cost_centers');
+      const ccmap = Object.fromEntries(cc.map(c => [c.id, c]));
+      return D.list('expenses')
+        .filter(e => (e.date || '').startsWith(month))
+        .map(e => {
+          const c = ccmap[e.cost_center_id] || {};
+          return Object.assign({}, e, {
+            cc_name: c.name || '—',
+            cc_type: c.type || 'variavel',
+          });
+        })
+        .sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+    }
+
+    function salesOfMonth(month) {
+      const customers = D.list('customers');
+      const products = D.list('products');
+      const cmap = Object.fromEntries(customers.map(c => [c.id, c]));
+      const pmap = Object.fromEntries(products.map(p => [p.id, p]));
+      return D.list('sales')
+        .filter(s => (s.date || '').startsWith(month))
+        .map(s => {
+          const c = cmap[s.customer_id] || {};
+          const p = pmap[s.product_id] || {};
+          const total = (+s.qty || 0) * (+s.unit_price || 0) - (+s.discount || 0);
+          const weight = ((p.weight_g || 0) * (+s.qty || 0)) / 1000;
+          return { ...s, total, weight_kg: weight, segment: c.segment, product_sku: p.sku, product_name: p.name };
+        });
+    }
+
+    function productionOfMonth(month) {
+      const arr = D.list('production').filter(p => p.month === month);
+      if (arr.length) return arr[0];
+      return { kg_cogumelo: 0, kg_cbs: 0 };
+    }
+
+    // ---------- render ----------
+    function render() {
+      const month = $('#f-month').value || currentMonth();
+      $('#dre-month-label').textContent = formatMonth(month);
+
+      const exp = enrichedExpenses(month);
+      const sales = salesOfMonth(month);
+      const totalRev = sales.reduce((a,s) => a + s.total, 0);
+
+      const fixos    = exp.filter(e => e.cc_type === 'fixo').reduce((a,e) => a + (+e.value || 0), 0);
+      const variaveis= exp.filter(e => e.cc_type !== 'fixo').reduce((a,e) => a + (+e.value || 0), 0);
+      const totalCost = fixos + variaveis;
+      const result = totalRev - totalCost;
+      const margem = totalRev > 0 ? result / totalRev : 0;
+
+      // KPIs
+      $('#k-rev').textContent = D.fmtBRL(totalRev);
+      $('#k-rev-sub').textContent = `${sales.length} ${sales.length === 1 ? 'venda registrada' : 'vendas registradas'}`;
+      $('#k-cost').textContent = D.fmtBRL(totalCost);
+      $('#k-cost-sub').textContent = `${exp.length} lançamento${exp.length === 1 ? '' : 's'} · fixos ${D.fmtBRL(fixos)}`;
+      const kRes = $('#k-res');
+      kRes.textContent = D.fmtBRL(result);
+      kRes.className = 'kpi-num ' + (result >= 0 ? 'pos' : 'neg');
+      $('#k-res-sub').textContent = totalRev > 0 ? 'no mês selecionado' : 'sem receita registrada';
+      const kMg = $('#k-mg');
+      if (totalRev > 0) { kMg.textContent = D.fmtPct(margem); kMg.className = 'kpi-num ' + (margem >= 0 ? 'pos' : 'neg'); }
+      else { kMg.textContent = '—'; kMg.className = 'kpi-num'; }
+      $('#k-mg-sub').textContent = totalRev > 0 ? `${D.fmtBRL(result)} / ${D.fmtBRL(totalRev)}` : 'aguardando vendas';
+
+      // DRE
+      const compFixosMap = {}, compVariaveisMap = {};
+      exp.forEach(e => {
+        const tgt = e.cc_type === 'fixo' ? compFixosMap : compVariaveisMap;
+        tgt[e.cc_name] = (tgt[e.cc_name] || 0) + (+e.value || 0);
+      });
+      const dreLines = [];
+      dreLines.push(`<div class="dre-section-title">Receita</div>`);
+      dreLines.push(`<div class="dre-row"><span>Vendas do mês</span><span class="v pos">${D.fmtBRL(totalRev)}</span></div>`);
+      dreLines.push(`<div class="dre-section-title">Custos variáveis</div>`);
+      if (Object.keys(compVariaveisMap).length === 0) {
+        dreLines.push(`<div class="dre-row sub"><span>nenhum lançamento</span><span>—</span></div>`);
+      } else {
+        Object.entries(compVariaveisMap).forEach(([n,v]) => {
+          dreLines.push(`<div class="dre-row sub"><span>${escape(n)}</span><span class="v neg">− ${D.fmtBRL(v)}</span></div>`);
+        });
+      }
+      const margemContrib = totalRev - variaveis;
+      dreLines.push(`<div class="dre-row total"><span>Margem de contribuição</span><span class="v ${margemContrib>=0?'pos':'neg'}">${D.fmtBRL(margemContrib)}</span></div>`);
+      dreLines.push(`<div class="dre-section-title">Custos fixos</div>`);
+      if (Object.keys(compFixosMap).length === 0) {
+        dreLines.push(`<div class="dre-row sub"><span>nenhum lançamento</span><span>—</span></div>`);
+      } else {
+        Object.entries(compFixosMap).forEach(([n,v]) => {
+          dreLines.push(`<div class="dre-row sub"><span>${escape(n)}</span><span class="v neg">− ${D.fmtBRL(v)}</span></div>`);
+        });
+      }
+      dreLines.push(`<div class="dre-row total"><span>Resultado do mês</span><span class="v ${result>=0?'pos':'neg'}">${D.fmtBRL(result)}</span></div>`);
+      $('#dre').innerHTML = dreLines.join('');
+
+      // Composição (barras horizontais)
+      const compMap = {};
+      exp.forEach(e => {
+        if (!compMap[e.cc_name]) compMap[e.cc_name] = { total: 0, type: e.cc_type };
+        compMap[e.cc_name].total += (+e.value || 0);
+      });
+      const compArr = Object.entries(compMap).map(([n,v]) => ({ name: n, total: v.total, type: v.type }))
+        .sort((a,b) => b.total - a.total);
+      const compEl = $('#comp');
+      if (!compArr.length || totalCost === 0) {
+        compEl.innerHTML = '<div class="text-muted text-sm" style="padding:18px 0;text-align:center;">Sem despesas no mês.</div>';
+      } else {
+        compEl.innerHTML = compArr.map(r => {
+          const pct = (r.total / totalCost) * 100;
+          return `
+            <div class="comp-row">
+              <div class="comp-head">
+                <span class="comp-name">${escape(r.name)}</span>
+                <span class="comp-val">${D.fmtBRL(r.total)} · ${pct.toFixed(1)}%</span>
+              </div>
+              <div class="comp-bar ${r.type === 'fixo' ? 'fix' : 'var'}"><span style="width:${pct}%"></span></div>
+            </div>`;
+        }).join('');
+      }
+
+      // Custo por kg produzido
+      const prod = productionOfMonth(month);
+      const kgProd = +prod.kg_cogumelo || 0;
+      const costEl = $('#cost-prod');
+      const costPerKg = kgProd > 0 ? totalCost / kgProd : 0;
+      costEl.innerHTML = `
+        <div class="dre-row"><span>Total de custos do mês</span><span class="v">${D.fmtBRL(totalCost)}</span></div>
+        <div class="dre-row"><span>Produção (kg cogumelo)</span><span class="v">${kgProd ? D.fmtKg(kgProd) : '—'}</span></div>
+        <div class="dre-row total"><span>Custo médio por kg</span><span class="v">${kgProd ? D.fmtBRL(costPerKg) + '/kg' : '—'}</span></div>
+        <div class="dre-row sub"><span style="font-size:.84rem;line-height:1.4;">Capacidade de referência da planta: <strong>2.250 kg/mês</strong>. Lance a produção real em <a href="producao.html" style="color:var(--brand)">Produção</a> para refinar este número.</span><span></span></div>
+      `;
+
+      // Margem por SKU
+      const products = D.list('products').filter(p => p.active !== false);
+      const salesBySku = {};
+      sales.forEach(s => {
+        const k = s.product_id;
+        if (!salesBySku[k]) salesBySku[k] = { qty:0, rev:0 };
+        salesBySku[k].qty += +s.qty || 0;
+        salesBySku[k].rev += s.total;
+      });
+      const marginRows = products.map(p => {
+        const r = salesBySku[p.id] || { qty:0, rev:0 };
+        const avgPrice = r.qty > 0 ? r.rev / r.qty : (+p.price || 0);
+        const cost = +p.unit_cost;
+        const hasCost = !isNaN(cost) && cost > 0;
+        const mg = hasCost ? (avgPrice - cost) / avgPrice : null;
+        return { p, avgPrice, cost, hasCost, mg };
+      }).sort((a,b) => (b.mg ?? -1) - (a.mg ?? -1));
+
+      $('#margin-body').innerHTML = marginRows.length === 0
+        ? '<tr class="empty-row"><td colspan="5">Cadastre produtos para ver a margem.</td></tr>'
+        : marginRows.map(r => `
+            <tr>
+              <td><strong>${escape(r.p.sku)}</strong></td>
+              <td>${escape(r.p.name)}</td>
+              <td class="num">${D.fmtBRL(r.avgPrice)}</td>
+              <td class="num">${r.hasCost ? D.fmtBRL(r.cost) : '<span class="text-muted">—</span>'}</td>
+              <td class="num">${r.hasCost ? `<strong style="color:${r.mg>=0?'var(--success)':'var(--danger)'}">${D.fmtPct(r.mg)}</strong>` : '<span class="text-muted text-xs">defina custo</span>'}</td>
+            </tr>
+          `).join('');
+
+      // Lista despesas
+      $('#exp-count').textContent = `${exp.length} ${exp.length === 1 ? 'lançamento' : 'lançamentos'}`;
+      const tbody = $('#tbl-exp tbody');
+      if (!exp.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Nenhuma despesa neste mês. Use <strong>+ Nova despesa</strong> ou <strong>Replicar fixos</strong>.</td></tr>';
+      } else {
+        tbody.innerHTML = exp.map(e => `
+          <tr data-id="${e.id}">
+            <td>${(e.date || '').split('-').reverse().join('/')}</td>
+            <td><strong>${escape(e.cc_name)}</strong></td>
+            <td><span class="pill ${e.cc_type === 'fixo' ? 'fix' : 'var'}">${e.cc_type === 'fixo' ? 'Fixo' : 'Variável'}</span></td>
+            <td>${escape(e.description || '—')}</td>
+            <td>${escape(e.supplier || '—')}</td>
+            <td class="num"><strong>${D.fmtBRL(e.value)}</strong></td>
+            <td class="actions">
+              <button class="icon-btn-mini" data-act="edit" title="Editar">${ICON_EDIT}</button>
+              <button class="icon-btn-mini danger" data-act="del" title="Excluir">${ICON_DEL}</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function formatMonth(m) {
+      if (!m) return '';
+      const [y, mm] = m.split('-').map(Number);
+      const d = new Date(y, mm - 1, 1);
+      return d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    }
+
+    // ---------- modal ----------
+    const modal = $('#modal');
+    let editingId = null;
+    function openModal(rec) {
+      editingId = rec ? rec.id : null;
+      $('#modal-title').textContent = rec ? 'Editar despesa' : 'Nova despesa';
+      const ccs = D.list('cost_centers');
+      const month = $('#f-month').value || currentMonth();
+      const todayInMonth = (rec && rec.date) ? rec.date : (month + '-15');
+      const e = rec || {};
+      $('#modal-body').innerHTML = `
+        <div class="form-grid">
+          <div class="field"><label>Data *</label><input id="e-date" type="date" value="${todayInMonth}"/></div>
+          <div class="field"><label>Centro de custo *</label>
+            <select id="e-cc">
+              <option value="">— escolha —</option>
+              ${ccs.map(c => `<option value="${c.id}" ${e.cost_center_id===c.id?'selected':''}>${escape(c.name)} · ${c.type==='fixo'?'Fixo':'Variável'}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field span-2"><label>Descrição *</label><input id="e-desc" value="${escape(e.description)}" placeholder="Ex.: Compra de bandejas, frete entrega Hotel X" /></div>
+          <div class="field"><label>Fornecedor</label><input id="e-sup" value="${escape(e.supplier)}" /></div>
+          <div class="field"><label>Valor (R$) *</label><input id="e-val" type="number" step="0.01" min="0" value="${e.value ?? ''}" /></div>
+          <div class="field span-2">
+            <label><input id="e-rec" type="checkbox" ${e.recurrent ? 'checked' : ''} style="width:auto;margin-right:6px;vertical-align:middle"/> Despesa recorrente (replicada nos próximos meses)</label>
+          </div>
+        </div>`;
+      modal.classList.add('show');
+      setTimeout(() => $('#e-cc').focus(), 50);
+    }
+    function closeModal() { modal.classList.remove('show'); editingId = null; }
+    $('#modal-close').addEventListener('click', closeModal);
+    $('#modal-cancel').addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+    $('#modal-save').addEventListener('click', () => {
+      const obj = {
+        date: $('#e-date').value,
+        cost_center_id: $('#e-cc').value,
+        description: $('#e-desc').value.trim(),
+        supplier: $('#e-sup').value.trim(),
+        value: parseFloat($('#e-val').value) || 0,
+        recurrent: $('#e-rec').checked,
+      };
+      if (!obj.date || !obj.cost_center_id || !obj.description || obj.value <= 0) {
+        alert('Preencha data, centro, descrição e valor.');
+        return;
+      }
+      if (editingId) D.update('expenses', editingId, obj);
+      else D.create('expenses', obj);
+      closeModal(); render();
+      if (window.TaocaNotify) TaocaNotify.success(editingId ? 'Despesa atualizada' : 'Despesa lançada');
+    });
+
+    // ---------- replicar fixos ----------
+    $('#btn-replicar').addEventListener('click', () => {
+      const month = $('#f-month').value || currentMonth();
+      const prev = prevMonth(month);
+      const ccs = D.list('cost_centers');
+      const ccmap = Object.fromEntries(ccs.map(c => [c.id, c]));
+      const fixosPrev = D.list('expenses').filter(e => (e.date || '').startsWith(prev) && (ccmap[e.cost_center_id] || {}).type === 'fixo');
+      if (!fixosPrev.length) { alert('Nenhum custo fixo no mês anterior para replicar.'); return; }
+      const ja = D.list('expenses').filter(e => (e.date || '').startsWith(month) && (ccmap[e.cost_center_id] || {}).type === 'fixo');
+      if (ja.length && !confirm(`Já existem ${ja.length} despesa(s) fixa(s) neste mês. Replicar mesmo assim?`)) return;
+      let n = 0;
+      fixosPrev.forEach(e => {
+        D.create('expenses', {
+          date: month + '-' + (e.date.split('-')[2] || '15'),
+          cost_center_id: e.cost_center_id,
+          description: e.description,
+          supplier: e.supplier,
+          value: e.value,
+          recurrent: e.recurrent,
+        });
+        n++;
+      });
+      render();
+      if (window.TaocaNotify) TaocaNotify.success(`${n} despesa(s) fixa(s) replicada(s) de ${formatMonth(prev)}.`);
+    });
+
+    // ---------- ações ----------
+    $('#btn-new-exp').addEventListener('click', () => openModal(null));
+    $('#f-month').addEventListener('change', render);
+
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-act]');
+      if (!btn) return;
+      const tr = btn.closest('tr');
+      const id = tr ? tr.dataset.id : null;
+      if (!id) return;
+      if (btn.dataset.act === 'edit') openModal(D.get('expenses', id));
+      else if (btn.dataset.act === 'del') {
+        if (confirm('Excluir esta despesa?')) { D.remove('expenses', id); render(); }
+      }
+    });
+
+    render();
+  })();
+  </script>
 </body>
 </html>
