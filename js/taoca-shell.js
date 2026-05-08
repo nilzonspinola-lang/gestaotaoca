@@ -54,14 +54,11 @@
     const sidebar = document.createElement('aside');
     sidebar.className = 'taoca-sidebar';
 
-    // Logo
+    // Logo (a imagem já contém o nome "TAOCA" e o slogan — não duplicar texto)
     sidebar.innerHTML = `
       <div class="logo-block">
-        <img src="assets/taoca-logo.png" alt="Taoca" />
-        <div>
-          <div class="brand-name">TAOCA</div>
-          <div class="brand-tag">Natureza · Qualidade · Afeto</div>
-        </div>
+        <img src="assets/taoca-logo.png" alt="Taoca — Natureza, qualidade e afeto" class="brand-logo" />
+        <div class="brand-os">Taoca OS</div>
       </div>
     `;
 
