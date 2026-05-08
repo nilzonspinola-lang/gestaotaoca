@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clientes — Taoca OS</title>
+  <link rel="stylesheet" href="css/taoca-design-system.css" />
+  <link rel="stylesheet" href="css/notifications.css" />
+  <link rel="icon" href="assets/taoca-logo.png" />
+  <style>
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    @media (max-width: 1024px) { .pipeline { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 600px)  { .pipeline { grid-template-columns: 1fr; } }
+    .pipe-col {
+      background: var(--bg-surface-2);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      padding: 14px;
+      min-height: 200px;
+    }
+    .pipe-col h4 {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text-primary);
+      display: flex;
+      justify-content: space-between;
+    }
+    .pipe-col .count {
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .pipe-col p { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px; }
+    .client-mini {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: transform var(--t-fast), box-shadow var(--t-fast);
+    }
+    .client-mini:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+    .client-mini .cn { font-weight: 600; font-size: 0.92rem; color: var(--text-primary); }
+    .client-mini .cm { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      border: 1px solid var(--border-soft);
+    }
+    .table th, .table td {
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .table th { background: var(--bg-surface-2); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 700; }
+    .table tr:last-child td { border-bottom: 0; }
+    .table tr:hover td { background: var(--taoca-cream-50); }
+  </style>
+</head>
+<body>
+
+  <div class="card card-pad mb-6" style="background: linear-gradient(135deg, var(--taoca-clay-500) 0%, var(--taoca-clay-400) 100%); color: #FFF; border:0; position:relative; overflow:hidden;">
+    <div style="position:absolute; right:-20px; top:-20px; font-size:8rem; opacity:0.1; line-height:1;">👥</div>
+    <div class="text-xs uppercase font-bold" style="letter-spacing:0.18em; color:rgba(255,255,255,0.8);">Negócio · Clientes &amp; CRM</div>
+    <h2 style="font-family:var(--font-serif); font-size:1.7rem; color:#FFF; margin-top:4px;">Relacionamento que cultiva</h2>
+    <p style="color:rgba(255,255,255,0.85); margin-top:6px; max-width:700px;">
+      Pipeline visual, histórico, segmentação e oportunidades. Cada cliente é uma planta para regar com afeto. 🌱
+    </p>
+  </div>
+
+  <div class="grid grid-4 mb-6">
+    <div class="kpi-card"><span class="kpi-label">👥 Total</span><span class="kpi-value" id="kpi-total">0</span><span class="text-sm text-secondary">cadastrados</span></div>
+    <div class="kpi-card kpi-emerald"><span class="kpi-label">🌟 Ativos</span><span class="kpi-value" id="kpi-active">0</span><span class="text-sm text-secondary">comprando regularmente</span></div>
+    <div class="kpi-card kpi-clay"><span class="kpi-label">🌱 Prospects</span><span class="kpi-value" id="kpi-prospect">0</span><span class="text-sm text-secondary">em qualificação</span></div>
+    <div class="kpi-card kpi-gold"><span class="kpi-label">💎 VIPs</span><span class="kpi-value" id="kpi-vip">0</span><span class="text-sm text-secondary">parceiros estratégicos</span></div>
+  </div>
+
+  <div class="section-head">
+    <div class="title-block">
+      <div class="eyebrow">Pipeline de relacionamento</div>
+      <h2 class="h-title">Etapas do funil</h2>
+      <p class="h-sub">Arraste a leitura: do prospect ao cliente VIP.</p>
+    </div>
+    <button class="btn btn-primary" id="new-client-btn" type="button">➕ Novo cliente</button>
+  </div>
+
+  <section class="pipeline">
+    <div class="pipe-col">
+      <h4>🌱 Prospect <span class="count" id="c-prospect">0</span></h4>
+      <p>Possíveis clientes em qualificação.</p>
+      <div id="col-prospect"></div>
+    </div>
+    <div class="pipe-col">
+      <h4>🤝 Negociação <span class="count" id="c-negociacao">0</span></h4>
+      <p>Em conversa, cotação ou amostra.</p>
+      <div id="col-negociacao"></div>
+    </div>
+    <div class="pipe-col">
+      <h4>🌟 Ativo <span class="count" id="c-ativo">0</span></h4>
+      <p>Compra regular, relacionamento estável.</p>
+      <div id="col-ativo"></div>
+    </div>
+    <div class="pipe-col">
+      <h4>💎 VIP <span class="count" id="c-vip">0</span></h4>
+      <p>Estratégicos, alto LTV, embaixadores.</p>
+      <div id="col-vip"></div>
+    </div>
+  </section>
+
+  <div class="card card-pad">
+    <div class="section-head" style="margin-bottom:10px">
+      <div class="title-block">
+        <h3 class="h-title" style="font-size:1.15rem;">Lista completa</h3>
+        <p class="h-sub">Visão tabular de todos os contatos.</p>
+      </div>
+      <span class="sync-pill"><span class="sync-dot" id="sync-dot"></span><span id="sync-text">Sincronizado</span></span>
+    </div>
+    <div id="table-wrap"></div>
+  </div>
+
+  <!-- Modal -->
+  <div class="tc-modal-backdrop" id="cli-modal" role="dialog" aria-modal="true">
+    <div class="tc-modal-card lg">
+      <h3 class="tc-modal-title">➕ Novo cliente</h3>
+      <p class="tc-modal-subtitle">Cadastre um contato no CRM da Taoca.</p>
+      <div class="grid grid-2">
+        <div class="field"><label>Nome / Empresa *</label><input type="text" id="cli-name" class="input" placeholder="Ex.: Mercearia Verde" /></div>
+        <div class="field"><label>Categoria</label>
+          <select id="cli-segment" class="select">
+            <option value="restaurante">Restaurante</option>
+            <option value="mercado">Mercado / Varejo</option>
+            <option value="distribuidor">Distribuidor</option>
+            <option value="ecommerce">E-commerce</option>
+            <option value="final">Consumidor final</option>
+            <option value="outras">Outras</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Telefone / WhatsApp</label><input type="text" id="cli-phone" class="input" placeholder="(11) 9..." /></div>
+        <div class="field"><label>E-mail</label><input type="email" id="cli-email" class="input" placeholder="contato@..." /></div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Cidade</label><input type="text" id="cli-city" class="input" /></div>
+        <div class="field"><label>Status</label>
+          <select id="cli-status" class="select">
+            <option value="prospect">🌱 Prospect</option>
+            <option value="negociacao">🤝 Negociação</option>
+            <option value="ativo">🌟 Ativo</option>
+            <option value="vip">💎 VIP</option>
+            <option value="inativo">😴 Inativo</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Observações</label>
+        <textarea id="cli-notes" class="textarea" placeholder="Preferências, histórico, particularidades…"></textarea>
+      </div>
+      <div class="tc-modal-actions">
+        <button class="btn btn-ghost" type="button" id="cli-cancel">Cancelar</button>
+        <button class="btn btn-primary" type="button" id="cli-save">Cadastrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/taoca-shell.js"></script>
+  <script>TaocaShell.mount({ active: 'clientes', breadcrumb: 'Negócio · Clientes', title: 'Clientes & CRM' });</script>
+
+  <script>
+    (function () {
+      const TABLE='customers', POLL_MS=15000;
+      const SEG_LABEL = { restaurante:'Restaurante', mercado:'Mercado', distribuidor:'Distribuidor', ecommerce:'E-commerce', final:'Final', outras:'Outras' };
+      const STATUS_LABEL = { prospect:'Prospect', negociacao:'Negociação', ativo:'Ativo', vip:'VIP', inativo:'Inativo' };
+
+      const syncDot = document.getElementById('sync-dot'), syncText = document.getElementById('sync-text');
+      function setSync(state, msg){
+        syncDot.classList.remove('syncing','error');
+        if(state==='syncing') syncDot.classList.add('syncing');
+        if(state==='error') syncDot.classList.add('error');
+        syncText.textContent = msg || (state==='syncing'?'Sincronizando…':state==='error'?'Falha':'Sincronizado');
+      }
+      function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+      async function fetchClients(){
+        try { const r = await fetch(`tables/${TABLE}?limit=500`); if(!r.ok) return []; const j = await r.json(); return (j.data||[]).filter(x=>!x.deleted); }
+        catch(e){ return []; }
+      }
+      async function createClient(p){
+        const r = await fetch(`tables/${TABLE}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p) });
+        if(!r.ok) throw new Error('Falha'); return await r.json();
+      }
+
+      function renderKpis(list){
+        document.getElementById('kpi-total').textContent = list.length;
+        document.getElementById('kpi-active').textContent = list.filter(c => c.status === 'ativo').length;
+        document.getElementById('kpi-prospect').textContent = list.filter(c => c.status === 'prospect').length;
+        document.getElementById('kpi-vip').textContent = list.filter(c => c.status === 'vip').length;
+      }
+
+      function renderPipeline(list){
+        const groups = { prospect:[], negociacao:[], ativo:[], vip:[] };
+        list.forEach(c => { if(groups[c.status]) groups[c.status].push(c); });
+        Object.keys(groups).forEach(k => {
+          const wrap = document.getElementById(`col-${k}`);
+          const counter = document.getElementById(`c-${k}`);
+          counter.textContent = groups[k].length;
+          if(!groups[k].length){ wrap.innerHTML = `<div style="color:var(--text-muted); font-size:0.8rem; padding:8px 0;">— vazio —</div>`; return; }
+          wrap.innerHTML = groups[k].map(c => `
+            <div class="client-mini">
+              <div class="cn">${escapeHtml(c.name||'—')}</div>
+              <div class="cm">${escapeHtml(SEG_LABEL[c.segment]||c.segment||'')} ${c.city?'· '+escapeHtml(c.city):''}</div>
+            </div>
+          `).join('');
+        });
+      }
+
+      function renderTable(list){
+        const wrap = document.getElementById('table-wrap');
+        if(!list.length){
+          wrap.innerHTML = `<div class="empty-state"><div class="em-icon">👥</div><div class="em-title">Nenhum cliente cadastrado</div><div>Comece adicionando seu primeiro contato.</div></div>`;
+          return;
+        }
+        wrap.innerHTML = `
+          <div style="overflow-x:auto"><table class="table">
+            <thead><tr><th>Nome</th><th>Categoria</th><th>Status</th><th>Cidade</th><th>Contato</th></tr></thead>
+            <tbody>
+              ${list.map(c => `
+                <tr>
+                  <td><strong>${escapeHtml(c.name||'—')}</strong></td>
+                  <td>${escapeHtml(SEG_LABEL[c.segment]||c.segment||'—')}</td>
+                  <td><span class="tag ${c.status==='vip'?'tag-gold':c.status==='ativo'?'':c.status==='prospect'?'tag-clay':'tag-coal'}">${escapeHtml(STATUS_LABEL[c.status]||c.status||'—')}</span></td>
+                  <td>${escapeHtml(c.city||'—')}</td>
+                  <td class="text-secondary text-sm">${escapeHtml(c.phone||c.email||'—')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table></div>`;
+      }
+
+      async function refresh(){
+        setSync('syncing','Sincronizando…');
+        const list = await fetchClients();
+        renderKpis(list);
+        renderPipeline(list);
+        renderTable(list);
+        setSync('ok','Sincronizado');
+      }
+      refresh();
+      setInterval(refresh, POLL_MS);
+
+      // Modal
+      const modal = document.getElementById('cli-modal');
+      document.getElementById('new-client-btn').addEventListener('click', () => {
+        ['cli-name','cli-phone','cli-email','cli-city','cli-notes'].forEach(id => document.getElementById(id).value='');
+        document.getElementById('cli-segment').value = 'restaurante';
+        document.getElementById('cli-status').value = 'prospect';
+        modal.classList.add('open');
+      });
+      document.getElementById('cli-cancel').addEventListener('click', () => modal.classList.remove('open'));
+      modal.addEventListener('click', (e) => { if(e.target===modal) modal.classList.remove('open'); });
+
+      document.getElementById('cli-save').addEventListener('click', async () => {
+        const name = document.getElementById('cli-name').value.trim();
+        if(!name) return alert('Nome obrigatório.');
+        const payload = {
+          name,
+          segment: document.getElementById('cli-segment').value,
+          phone: document.getElementById('cli-phone').value.trim(),
+          email: document.getElementById('cli-email').value.trim(),
+          city: document.getElementById('cli-city').value.trim(),
+          status: document.getElementById('cli-status').value,
+          notes: document.getElementById('cli-notes').value.trim(),
+          created_by: (window.TaocaShell && TaocaShell.getCurrentUser&&TaocaShell.getCurrentUser()) || 'Equipe',
+        };
+        try {
+          await createClient(payload);
+          modal.classList.remove('open');
+          if(window.TaocaNotif) window.TaocaNotif.log({ event_type:'client_created', icon:'👥', actor: payload.created_by, title:`Novo cliente: ${name}`, details: SEG_LABEL[payload.segment]||'', task_id:'', task_number:0 });
+          refresh();
+        } catch(err){ console.error(err); alert('Falha ao salvar.'); }
+      });
+    })();
+  </script>
+
+  <script src="js/notifications.js"></script>
+  <script src="js/taoca-ai.js"></script>
+</body>
+</html>

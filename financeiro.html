@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Financeiro — Taoca OS</title>
+  <link rel="stylesheet" href="css/taoca-design-system.css" />
+  <link rel="stylesheet" href="css/notifications.css" />
+  <link rel="icon" href="assets/taoca-logo.png" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      border: 1px solid var(--border-soft);
+    }
+    .table th, .table td { padding: 11px 14px; text-align: left; font-size: 0.9rem; border-bottom: 1px solid var(--border-soft); }
+    .table th { background: var(--bg-surface-2); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 700; }
+    .table tr:last-child td { border-bottom: 0; }
+    .amount-in { color: var(--success); font-weight: 700; }
+    .amount-out { color: var(--danger); font-weight: 700; }
+    .chart-wrap { height: 260px; position: relative; }
+  </style>
+</head>
+<body>
+
+  <div class="card card-pad mb-6" style="background: linear-gradient(135deg, var(--taoca-gold-500) 0%, var(--taoca-clay-500) 100%); color: #FFF; border:0; position:relative; overflow:hidden;">
+    <div style="position:absolute; right:-20px; top:-20px; font-size:8rem; opacity:0.1; line-height:1;">💰</div>
+    <div class="text-xs uppercase font-bold" style="letter-spacing:0.18em; color:rgba(255,255,255,0.85);">Negócio · Financeiro</div>
+    <h2 style="font-family:var(--font-serif); font-size:1.7rem; color:#FFF; margin-top:4px;">Saúde financeira</h2>
+    <p style="color:rgba(255,255,255,0.92); margin-top:6px; max-width:700px;">
+      Fluxo de caixa, contas a pagar/receber e visão de margem. Decisões claras para um cultivo sustentável.
+    </p>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-4 mb-6">
+    <div class="kpi-card kpi-emerald"><span class="kpi-label">📈 Receita mês</span><span class="kpi-value" id="kpi-revenue">R$ 0</span><span class="text-sm text-secondary" id="kpi-revenue-sub">—</span></div>
+    <div class="kpi-card"><span class="kpi-label">📉 Despesa mês</span><span class="kpi-value" id="kpi-expense">R$ 0</span><span class="text-sm text-secondary">total de saídas</span></div>
+    <div class="kpi-card kpi-gold"><span class="kpi-label">💎 Saldo mês</span><span class="kpi-value" id="kpi-balance">R$ 0</span><span class="text-sm text-secondary" id="kpi-balance-sub">—</span></div>
+    <div class="kpi-card kpi-clay"><span class="kpi-label">⏰ A receber</span><span class="kpi-value" id="kpi-receivable">R$ 0</span><span class="text-sm text-secondary">vencendo em 30 dias</span></div>
+  </div>
+
+  <!-- Gráfico -->
+  <div class="grid grid-2 mb-6">
+    <div class="card card-pad">
+      <div class="section-head" style="margin-bottom:6px"><div class="title-block"><div class="eyebrow">Tendência</div><h3 class="h-title" style="font-size:1.15rem;">Fluxo dos últimos 30 dias</h3></div></div>
+      <div class="chart-wrap"><canvas id="cash-chart"></canvas></div>
+    </div>
+    <div class="card card-pad">
+      <div class="section-head" style="margin-bottom:10px"><div class="title-block"><div class="eyebrow">Insight</div><h3 class="h-title" style="font-size:1.15rem;">Visão da Taoca IA</h3></div></div>
+      <p id="ai-insight" class="text-secondary" style="font-family:var(--font-serif); font-size:1.05rem; line-height:1.6; font-style:italic;">
+        Cadastre seus primeiros lançamentos para começar a receber análises automáticas.
+      </p>
+      <div class="mt-4">
+        <button class="btn btn-primary" id="open-ia-btn" type="button">🤖 Pedir análise à IA</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lançamentos -->
+  <div class="section-head">
+    <div class="title-block">
+      <div class="eyebrow">Movimentações</div>
+      <h2 class="h-title">Lançamentos do mês</h2>
+      <p class="h-sub">Receitas e despesas da operação.</p>
+    </div>
+    <div class="flex gap-2">
+      <span class="sync-pill"><span class="sync-dot" id="sync-dot"></span><span id="sync-text">Sincronizado</span></span>
+      <button class="btn btn-primary" id="new-tx-btn" type="button">➕ Novo lançamento</button>
+    </div>
+  </div>
+
+  <div id="tx-wrap"></div>
+
+  <!-- Modal -->
+  <div class="tc-modal-backdrop" id="tx-modal" role="dialog" aria-modal="true">
+    <div class="tc-modal-card lg">
+      <h3 class="tc-modal-title">➕ Novo lançamento</h3>
+      <p class="tc-modal-subtitle">Registre uma entrada ou saída financeira.</p>
+      <div class="grid grid-2">
+        <div class="field"><label>Tipo *</label>
+          <select id="tx-type" class="select">
+            <option value="receita">📈 Receita (entrada)</option>
+            <option value="despesa">📉 Despesa (saída)</option>
+          </select>
+        </div>
+        <div class="field"><label>Data *</label><input type="date" id="tx-date" class="input" /></div>
+      </div>
+      <div class="field">
+        <label>Descrição *</label>
+        <input type="text" id="tx-desc" class="input" placeholder="Ex.: Venda de Shimeji para Mercado Verde" />
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Valor (R$) *</label><input type="number" id="tx-amount" class="input" min="0" step="0.01" placeholder="0.00" /></div>
+        <div class="field"><label>Categoria</label>
+          <select id="tx-category" class="select">
+            <option value="vendas">Vendas</option>
+            <option value="insumos">Insumos / Substrato</option>
+            <option value="folha">Folha / Pessoal</option>
+            <option value="estrutura">Estrutura / Aluguel</option>
+            <option value="energia">Energia / Água</option>
+            <option value="marketing">Marketing</option>
+            <option value="impostos">Impostos</option>
+            <option value="outras">Outras</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Cliente / Fornecedor</label><input type="text" id="tx-counterpart" class="input" placeholder="Nome (opcional)" /></div>
+      <div class="field"><label>Observações</label><textarea id="tx-notes" class="textarea"></textarea></div>
+      <div class="tc-modal-actions">
+        <button class="btn btn-ghost" type="button" id="tx-cancel">Cancelar</button>
+        <button class="btn btn-primary" type="button" id="tx-save">Registrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/taoca-shell.js"></script>
+  <script>TaocaShell.mount({ active: 'financeiro', breadcrumb: 'Negócio · Financeiro', title: 'Financeiro' });</script>
+
+  <script>
+    (function () {
+      const TABLE='finance', POLL_MS=15000;
+      let chart = null;
+
+      const syncDot=document.getElementById('sync-dot'), syncText=document.getElementById('sync-text');
+      function setSync(s,m){ syncDot.classList.remove('syncing','error'); if(s==='syncing') syncDot.classList.add('syncing'); if(s==='error') syncDot.classList.add('error'); syncText.textContent = m || (s==='syncing'?'Sincronizando…':s==='error'?'Falha':'Sincronizado'); }
+      function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+      function brl(n){ return (Number(n)||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' }); }
+      function startOfMonth(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(1); return x; }
+      function startOfDay(d){ const x=new Date(d); x.setHours(0,0,0,0); return x; }
+
+      async function fetchTxs(){
+        try { const r = await fetch(`tables/${TABLE}?limit=500`); if(!r.ok) return []; const j = await r.json(); return (j.data||[]).filter(x=>!x.deleted); }
+        catch(e){ return []; }
+      }
+      async function createTx(p){
+        const r = await fetch(`tables/${TABLE}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p) });
+        if(!r.ok) throw new Error('Falha'); return await r.json();
+      }
+
+      function renderKpis(list){
+        const monthStart = startOfMonth(new Date());
+        const inMonth = list.filter(t => t.date && new Date(t.date) >= monthStart);
+        const rev = inMonth.filter(t => t.type==='receita').reduce((s,t) => s+(Number(t.amount)||0), 0);
+        const exp = inMonth.filter(t => t.type==='despesa').reduce((s,t) => s+(Number(t.amount)||0), 0);
+        const bal = rev - exp;
+        const today = startOfDay(new Date());
+        const future = list.filter(t => t.type==='receita' && t.date && new Date(t.date) >= today && new Date(t.date) <= new Date(today.getTime()+30*86400000));
+        const recv = future.reduce((s,t) => s+(Number(t.amount)||0), 0);
+
+        document.getElementById('kpi-revenue').textContent = brl(rev);
+        document.getElementById('kpi-revenue-sub').textContent = `${inMonth.filter(t=>t.type==='receita').length} entrada(s)`;
+        document.getElementById('kpi-expense').textContent = brl(exp);
+        document.getElementById('kpi-balance').textContent = brl(bal);
+        document.getElementById('kpi-balance-sub').textContent = bal >= 0 ? '✓ positivo' : '⚠ déficit';
+        document.getElementById('kpi-receivable').textContent = brl(recv);
+
+        // Insight da IA
+        const insight = document.getElementById('ai-insight');
+        if(!list.length){
+          insight.textContent = 'Cadastre seus primeiros lançamentos para começar a receber análises automáticas.';
+        } else if(bal >= 0 && rev > 0){
+          insight.innerHTML = `Seu saldo do mês está <strong style="color:var(--success)">positivo em ${brl(bal)}</strong>. Considere reservar parte para investimento em novos lotes ou capital de giro. 🌱`;
+        } else if(bal < 0){
+          insight.innerHTML = `Atenção: o mês está com saldo <strong style="color:var(--danger)">negativo em ${brl(Math.abs(bal))}</strong>. Recomendo revisar despesas variáveis e priorizar a entrada de receitas. 📌`;
+        } else {
+          insight.textContent = 'Operação equilibrada. Continue acompanhando o ritmo de entradas e saídas.';
+        }
+      }
+
+      function renderChart(list){
+        const days = 30, labels = [], dataIn = [], dataOut = [];
+        const now = new Date();
+        const buckets = {};
+        for(let i=days-1;i>=0;i--){ const d=startOfDay(new Date(now)); d.setDate(d.getDate()-i); const k=d.toISOString().slice(0,10); buckets[k]={in:0,out:0}; labels.push(d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})); }
+        list.forEach(t => { if(!t.date) return; const k = String(t.date).slice(0,10); if(!(k in buckets)) return; if(t.type==='receita') buckets[k].in += Number(t.amount)||0; else if(t.type==='despesa') buckets[k].out += Number(t.amount)||0; });
+        Object.keys(buckets).forEach(k => { dataIn.push(buckets[k].in); dataOut.push(buckets[k].out); });
+
+        const ctx = document.getElementById('cash-chart').getContext('2d');
+        if(chart){ chart.data.labels = labels; chart.data.datasets[0].data = dataIn; chart.data.datasets[1].data = dataOut; chart.update(); return; }
+        chart = new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets: [
+            { label:'Receitas', data: dataIn, borderColor:'#4A7856', backgroundColor:'rgba(74,120,86,0.15)', fill:true, tension:0.3 },
+            { label:'Despesas', data: dataOut, borderColor:'#C77B5C', backgroundColor:'rgba(199,123,92,0.10)', fill:true, tension:0.3 },
+          ]},
+          options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:true} }, scales:{ y:{beginAtZero:true, ticks:{callback:(v)=>'R$ '+v}}, x:{grid:{display:false}} } }
+        });
+      }
+
+      function renderTable(list){
+        const wrap = document.getElementById('tx-wrap');
+        if(!list.length){
+          wrap.innerHTML = `<div class="empty-state"><div class="em-icon">💰</div><div class="em-title">Sem lançamentos ainda</div><div>Registre a primeira entrada ou saída.</div></div>`;
+          return;
+        }
+        const sorted = list.slice().sort((a,b) => String(b.date||'').localeCompare(String(a.date||'')));
+        wrap.innerHTML = `<div style="overflow-x:auto"><table class="table">
+          <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Cliente/Fornecedor</th><th style="text-align:right">Valor</th></tr></thead>
+          <tbody>
+            ${sorted.slice(0,30).map(t => `
+              <tr>
+                <td class="text-secondary">${escapeHtml(t.date ? t.date.split('-').reverse().join('/') : '—')}</td>
+                <td><strong>${escapeHtml(t.description||'—')}</strong></td>
+                <td><span class="tag tag-coal">${escapeHtml(t.category||'—')}</span></td>
+                <td class="text-secondary">${escapeHtml(t.counterpart||'—')}</td>
+                <td style="text-align:right"><span class="${t.type==='receita'?'amount-in':'amount-out'}">${t.type==='receita'?'+':'-'} ${brl(t.amount)}</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table></div>`;
+      }
+
+      async function refresh(){
+        setSync('syncing','Sincronizando…');
+        const list = await fetchTxs();
+        renderKpis(list);
+        renderChart(list);
+        renderTable(list);
+        setSync('ok','Sincronizado');
+      }
+      refresh();
+      setInterval(refresh, POLL_MS);
+
+      // Modal
+      const modal = document.getElementById('tx-modal');
+      document.getElementById('new-tx-btn').addEventListener('click', () => {
+        ['tx-desc','tx-amount','tx-counterpart','tx-notes'].forEach(id => document.getElementById(id).value='');
+        document.getElementById('tx-date').value = new Date().toISOString().slice(0,10);
+        document.getElementById('tx-type').value = 'receita';
+        document.getElementById('tx-category').value = 'vendas';
+        modal.classList.add('open');
+      });
+      document.getElementById('tx-cancel').addEventListener('click', () => modal.classList.remove('open'));
+      modal.addEventListener('click', (e) => { if(e.target===modal) modal.classList.remove('open'); });
+
+      document.getElementById('tx-save').addEventListener('click', async () => {
+        const desc = document.getElementById('tx-desc').value.trim();
+        const amount = Number(document.getElementById('tx-amount').value);
+        if(!desc) return alert('Descrição obrigatória.');
+        if(!amount || amount<=0) return alert('Valor inválido.');
+        const payload = {
+          type: document.getElementById('tx-type').value,
+          date: document.getElementById('tx-date').value,
+          description: desc,
+          amount,
+          category: document.getElementById('tx-category').value,
+          counterpart: document.getElementById('tx-counterpart').value.trim(),
+          notes: document.getElementById('tx-notes').value.trim(),
+          created_by: (window.TaocaShell && TaocaShell.getCurrentUser&&TaocaShell.getCurrentUser()) || 'Equipe',
+        };
+        try {
+          await createTx(payload);
+          modal.classList.remove('open');
+          if(window.TaocaNotif) window.TaocaNotif.log({ event_type:'finance_created', icon:'💰', actor: payload.created_by, title:`${payload.type==='receita'?'Receita':'Despesa'}: ${desc}`, details: brl(amount), task_id:'', task_number:0 });
+          refresh();
+        } catch(err){ console.error(err); alert('Falha ao salvar.'); }
+      });
+
+      document.getElementById('open-ia-btn').addEventListener('click', () => { if(window.TaocaAI) { window.TaocaAI.open(); setTimeout(() => window.TaocaAI.sendUser('Como está minha saúde financeira?'), 250); } });
+    })();
+  </script>
+
+  <script src="js/notifications.js"></script>
+  <script src="js/taoca-ai.js"></script>
+</body>
+</html>

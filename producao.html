@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Produção — Taoca OS</title>
+  <link rel="stylesheet" href="css/taoca-design-system.css" />
+  <link rel="stylesheet" href="css/notifications.css" />
+  <link rel="icon" href="assets/taoca-logo.png" />
+  <style>
+    .lot-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 18px; }
+    @media (max-width: 1100px) { .lot-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 720px)  { .lot-grid { grid-template-columns: 1fr; } }
+
+    .lot-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      padding: 18px;
+      box-shadow: var(--shadow-xs);
+      transition: transform var(--t-base), box-shadow var(--t-base);
+    }
+    .lot-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .lot-card .lot-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .lot-card .lot-id { font-family: var(--font-serif); font-weight: 700; font-size: 1.1rem; color: var(--brand-strong); }
+    .lot-card .specie {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.85rem; font-weight: 600;
+      padding: 4px 10px; border-radius: 999px;
+      background: var(--taoca-green-50); color: var(--brand);
+    }
+
+    /* Stages timeline */
+    .stages {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin: 14px 0 10px;
+    }
+    .stage {
+      text-align: center;
+      padding: 8px 4px;
+      border-radius: 8px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: var(--taoca-cream-50);
+      border: 1px solid var(--border-soft);
+      position: relative;
+    }
+    .stage .ic { display: block; font-size: 1.1rem; margin-bottom: 2px; }
+    .stage.active { background: var(--taoca-green-100); color: var(--taoca-green-900); border-color: var(--taoca-green-300); }
+    .stage.done { background: var(--taoca-green-50); color: var(--brand); }
+
+    .lot-row {
+      display: flex; justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--border-soft);
+    }
+    .lot-row:last-of-type { border-bottom: 0; }
+    .lot-row strong { color: var(--text-primary); }
+  </style>
+</head>
+<body>
+
+  <!-- Cabeçalho do módulo -->
+  <div class="card card-pad mb-6" style="background: linear-gradient(135deg, var(--taoca-green-800) 0%, var(--taoca-green-600) 100%); color: #FFF; border:0; position:relative; overflow:hidden;">
+    <div style="position:absolute; right:-30px; bottom:-30px; font-size:10rem; opacity:0.08; line-height:1;">🍄</div>
+    <div class="text-xs uppercase font-bold" style="letter-spacing:0.18em; color:rgba(255,255,255,0.7);">🍄 Operação · Produção</div>
+    <h2 style="font-family:var(--font-serif); font-size:1.7rem; color:#FFF; margin-top:4px;">Cultivo de cogumelos</h2>
+    <p style="color:rgba(255,255,255,0.78); margin-top:6px; max-width:700px;">
+      Acompanhe lotes em cultivo, fases (inoculação → frutificação → colheita), rendimento e a saúde da operação.
+    </p>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-4 mb-6">
+    <div class="kpi-card kpi-emerald">
+      <span class="kpi-label">🍄 Lotes ativos</span>
+      <span class="kpi-value" id="kpi-active">0</span>
+      <span class="text-sm text-secondary">em cultivo agora</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">🌱 Inoculados</span>
+      <span class="kpi-value" id="kpi-inoc">0</span>
+      <span class="text-sm text-secondary">aguardando colonização</span>
+    </div>
+    <div class="kpi-card kpi-clay">
+      <span class="kpi-label">🌾 Em frutificação</span>
+      <span class="kpi-value" id="kpi-fruit">0</span>
+      <span class="text-sm text-secondary">próximos da colheita</span>
+    </div>
+    <div class="kpi-card kpi-gold">
+      <span class="kpi-label">🏆 Total colhido (kg)</span>
+      <span class="kpi-value" id="kpi-yield">0</span>
+      <span class="text-sm text-secondary">acumulado histórico</span>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <div class="title-block">
+      <div class="eyebrow">Lotes</div>
+      <h2 class="h-title">Quadro de produção</h2>
+      <p class="h-sub">Cada card é um lote em ciclo de cultivo.</p>
+    </div>
+    <div class="flex gap-2">
+      <span class="sync-pill"><span class="sync-dot" id="sync-dot"></span><span id="sync-text">Sincronizado</span></span>
+      <button class="btn btn-primary" id="new-lot-btn" type="button">➕ Novo lote</button>
+    </div>
+  </div>
+
+  <div id="lot-grid-wrap"></div>
+
+  <!-- Modal Novo Lote -->
+  <div class="tc-modal-backdrop" id="lot-modal" role="dialog" aria-modal="true">
+    <div class="tc-modal-card lg">
+      <h3 class="tc-modal-title">🍄 Novo lote</h3>
+      <p class="tc-modal-subtitle">Cadastre um novo ciclo de cultivo.</p>
+      <div class="grid grid-2">
+        <div class="field">
+          <label>Código do lote *</label>
+          <input type="text" id="lot-code" class="input" placeholder="Ex.: L-2026-001" />
+        </div>
+        <div class="field">
+          <label>Espécie *</label>
+          <select id="lot-specie" class="select">
+            <option value="shimeji">Shimeji (Pleurotus ostreatus)</option>
+            <option value="shiitake">Shiitake (Lentinula edodes)</option>
+            <option value="pleurotus">Pleurotus eryngii</option>
+            <option value="hericium">Hericium erinaceus (Juba de leão)</option>
+            <option value="reishi">Reishi (Ganoderma lucidum)</option>
+            <option value="outras">Outras</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label>Substrato</label>
+          <input type="text" id="lot-substrate" class="input" placeholder="Ex.: Palha de trigo + farelo" />
+        </div>
+        <div class="field">
+          <label>Quantidade de blocos</label>
+          <input type="number" id="lot-units" class="input" min="0" step="1" placeholder="0" />
+        </div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label>Data de inoculação</label>
+          <input type="date" id="lot-date" class="input" />
+        </div>
+        <div class="field">
+          <label>Status atual</label>
+          <select id="lot-status" class="select">
+            <option value="inoculacao">🌱 Inoculação</option>
+            <option value="colonizacao">🌿 Colonização</option>
+            <option value="frutificacao">🍄 Frutificação</option>
+            <option value="colhido">✅ Colhido</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Observações</label>
+        <textarea id="lot-notes" class="textarea" placeholder="Condições, particularidades…"></textarea>
+      </div>
+      <div class="tc-modal-actions">
+        <button class="btn btn-ghost" type="button" id="lot-cancel">Cancelar</button>
+        <button class="btn btn-primary" type="button" id="lot-save">Cadastrar lote</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/taoca-shell.js"></script>
+  <script>TaocaShell.mount({ active: 'producao', breadcrumb: 'Operação · Produção', title: 'Cultivo de Cogumelos' });</script>
+
+  <script>
+    (function () {
+      const TABLE='lots', POLL_MS=12000;
+      const SPECIE_LABEL = {
+        shimeji:'Shimeji', shiitake:'Shiitake', pleurotus:'Pleurotus eryngii',
+        hericium:'Juba de leão', reishi:'Reishi', outras:'Outras',
+      };
+      const STAGES = [
+        { key:'inoculacao',   label:'Inoculação',   ic:'🌱' },
+        { key:'colonizacao',  label:'Colonização',  ic:'🌿' },
+        { key:'frutificacao', label:'Frutificação', ic:'🍄' },
+        { key:'colhido',      label:'Colheita',     ic:'✅' },
+      ];
+
+      const wrap = document.getElementById('lot-grid-wrap');
+      const syncDot=document.getElementById('sync-dot'), syncText=document.getElementById('sync-text');
+      function setSync(state, msg){
+        syncDot.classList.remove('syncing','error');
+        if(state==='syncing') syncDot.classList.add('syncing');
+        if(state==='error') syncDot.classList.add('error');
+        syncText.textContent = msg || (state==='syncing'?'Sincronizando…':state==='error'?'Falha':'Sincronizado');
+      }
+      function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+      async function fetchLots(){
+        try { const r = await fetch(`tables/${TABLE}?limit=500`); if(!r.ok) return []; const j = await r.json(); return (j.data||[]).filter(x=>!x.deleted); }
+        catch(e){ return []; }
+      }
+      async function createLot(payload){
+        const r = await fetch(`tables/${TABLE}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+        if(!r.ok) throw new Error('Falha'); return await r.json();
+      }
+
+      function renderEmpty() {
+        wrap.innerHTML = `
+          <div class="empty-state">
+            <div class="em-icon">🍄</div>
+            <div class="em-title">Ainda não há lotes</div>
+            <div>Cadastre o primeiro ciclo de cultivo no botão acima.</div>
+          </div>`;
+      }
+
+      function renderKpis(lots){
+        const ativos = lots.filter(l => l.status !== 'colhido' && l.status !== 'descartado').length;
+        const inoc = lots.filter(l => l.status === 'inoculacao' || l.status === 'colonizacao').length;
+        const fruit = lots.filter(l => l.status === 'frutificacao').length;
+        const yieldTotal = lots.reduce((s,l) => s + (Number(l.yield_kg)||0), 0);
+        document.getElementById('kpi-active').textContent = ativos;
+        document.getElementById('kpi-inoc').textContent = inoc;
+        document.getElementById('kpi-fruit').textContent = fruit;
+        document.getElementById('kpi-yield').textContent = yieldTotal.toFixed(1).replace('.', ',');
+      }
+
+      function buildStages(currentKey){
+        const idx = STAGES.findIndex(s => s.key === currentKey);
+        return `<div class="stages">${STAGES.map((s,i) => {
+          const cls = i < idx ? 'done' : (i === idx ? 'active' : '');
+          return `<div class="stage ${cls}"><span class="ic">${s.ic}</span>${s.label}</div>`;
+        }).join('')}</div>`;
+      }
+
+      function renderLots(lots){
+        if(!lots.length){ renderEmpty(); return; }
+        const sorted = lots.slice().sort((a,b) => String(b.start_date||'').localeCompare(String(a.start_date||'')));
+        const html = sorted.map(l => {
+          const start = l.start_date ? l.start_date.split('-').reverse().join('/') : '—';
+          const days = l.start_date ? Math.max(0, Math.round((Date.now() - new Date(l.start_date).getTime())/86400000)) : 0;
+          return `
+            <div class="lot-card">
+              <div class="lot-head">
+                <span class="lot-id">${escapeHtml(l.code || '—')}</span>
+                <span class="specie">🍄 ${escapeHtml(SPECIE_LABEL[l.specie] || l.specie || '—')}</span>
+              </div>
+              ${buildStages(l.status || 'inoculacao')}
+              <div class="lot-row"><span>Início</span><strong>${escapeHtml(start)}</strong></div>
+              <div class="lot-row"><span>Dias em ciclo</span><strong>${days}d</strong></div>
+              <div class="lot-row"><span>Substrato</span><strong>${escapeHtml(l.substrate || '—')}</strong></div>
+              <div class="lot-row"><span>Blocos</span><strong>${escapeHtml(l.units || '0')}</strong></div>
+              <div class="lot-row"><span>Rendimento</span><strong>${(Number(l.yield_kg)||0).toFixed(1).replace('.', ',')} kg</strong></div>
+              ${l.notes?`<div class="text-sm text-secondary mt-2">${escapeHtml(l.notes)}</div>`:''}
+            </div>
+          `;
+        }).join('');
+        wrap.innerHTML = `<div class="lot-grid">${html}</div>`;
+      }
+
+      async function refresh(){
+        setSync('syncing','Sincronizando…');
+        const lots = await fetchLots();
+        renderKpis(lots);
+        renderLots(lots);
+        setSync('ok','Sincronizado');
+      }
+      refresh();
+      setInterval(refresh, POLL_MS);
+
+      // Modal
+      const modal = document.getElementById('lot-modal');
+      const newBtn = document.getElementById('new-lot-btn');
+      newBtn.addEventListener('click', () => {
+        document.getElementById('lot-code').value = `L-${new Date().getFullYear()}-${String(Math.floor(Math.random()*999)).padStart(3,'0')}`;
+        document.getElementById('lot-date').value = new Date().toISOString().slice(0,10);
+        document.getElementById('lot-substrate').value = '';
+        document.getElementById('lot-units').value = '';
+        document.getElementById('lot-notes').value = '';
+        document.getElementById('lot-status').value = 'inoculacao';
+        modal.classList.add('open');
+      });
+      document.getElementById('lot-cancel').addEventListener('click', () => modal.classList.remove('open'));
+      modal.addEventListener('click', (e) => { if(e.target===modal) modal.classList.remove('open'); });
+
+      document.getElementById('lot-save').addEventListener('click', async () => {
+        const code = document.getElementById('lot-code').value.trim();
+        const specie = document.getElementById('lot-specie').value;
+        if(!code) return alert('Código obrigatório.');
+        const payload = {
+          code, specie,
+          substrate: document.getElementById('lot-substrate').value.trim(),
+          units: Number(document.getElementById('lot-units').value)||0,
+          start_date: document.getElementById('lot-date').value,
+          status: document.getElementById('lot-status').value,
+          notes: document.getElementById('lot-notes').value.trim(),
+          yield_kg: 0,
+          created_by: (window.TaocaShell && TaocaShell.getCurrentUser&&TaocaShell.getCurrentUser()) || 'Equipe',
+        };
+        try {
+          await createLot(payload);
+          modal.classList.remove('open');
+          if(window.TaocaNotif) window.TaocaNotif.log({ event_type:'lot_created', icon:'🍄', actor: payload.created_by, title: `Novo lote ${code} (${SPECIE_LABEL[specie]||specie})`, details: '', task_id:'', task_number:0 });
+          refresh();
+        } catch(err){ console.error(err); alert('Falha ao criar lote.'); }
+      });
+    })();
+  </script>
+
+  <script src="js/notifications.js"></script>
+  <script src="js/taoca-ai.js"></script>
+</body>
+</html>

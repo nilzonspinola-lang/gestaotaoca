@@ -1,0 +1,897 @@
+/* ============================================================
+   TAOCA DESIGN SYSTEM v1.0
+   "Natureza, qualidade e afeto" — sistema visual executivo
+   ============================================================ */
+
+/* ----- Tipografia (Google Fonts) ----- */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ============================================================
+   1. TOKENS — variáveis CSS
+   ============================================================ */
+:root {
+  /* === Paleta Taoca === */
+  --taoca-green-900: #1F3A28;       /* verde escuro intenso (logo) */
+  --taoca-green-800: #2F5D3A;       /* verde principal */
+  --taoca-green-700: #3D7048;
+  --taoca-green-600: #4A7856;       /* verde musgo */
+  --taoca-green-500: #6B9B6F;
+  --taoca-green-300: #B4D1B8;
+  --taoca-green-100: #E5F0E7;
+  --taoca-green-50:  #F1F7F2;
+
+  --taoca-cream-50:  #FAF7F2;       /* off-white orgânico (fundo principal) */
+  --taoca-cream-100: #F4EFE6;
+  --taoca-cream-200: #EAE3D5;
+
+  --taoca-clay-500:  #C77B5C;       /* terracota suave (CTA / destaque) */
+  --taoca-clay-400:  #D89478;
+  --taoca-clay-100:  #FBE8DD;
+
+  --taoca-gold-500:  #B8935A;       /* dourado discreto (premium) */
+  --taoca-gold-300:  #D4B989;
+  --taoca-gold-100:  #F5EBD7;
+
+  --taoca-coal-900:  #1F2937;       /* texto principal */
+  --taoca-coal-700:  #374151;
+  --taoca-coal-500:  #6B7280;
+  --taoca-coal-400:  #9CA3AF;
+  --taoca-coal-200:  #E5E7EB;
+  --taoca-coal-100:  #F3F4F6;
+
+  /* === Semânticas === */
+  --bg-app:          var(--taoca-cream-50);
+  --bg-surface:      #FFFFFF;
+  --bg-surface-2:    var(--taoca-cream-100);
+  --bg-elevated:     #FFFFFF;
+  --text-primary:    var(--taoca-coal-900);
+  --text-secondary:  var(--taoca-coal-500);
+  --text-muted:      var(--taoca-coal-400);
+  --text-on-dark:    #FFFFFF;
+  --border-soft:     #ECE6D9;
+  --border-default:  #DDD4C2;
+  --brand:           var(--taoca-green-800);
+  --brand-strong:    var(--taoca-green-900);
+  --accent:          var(--taoca-clay-500);
+  --premium:         var(--taoca-gold-500);
+
+  /* === Status === */
+  --success:         #4A7856;
+  --success-bg:      #E5F0E7;
+  --warning:         #C77B5C;
+  --warning-bg:      #FBE8DD;
+  --danger:          #B91C1C;
+  --danger-bg:       #FEE2E2;
+  --info:            #1F5E7A;
+  --info-bg:         #DCEBF1;
+
+  /* === Sombras orgânicas === */
+  --shadow-xs:  0 1px 2px rgba(31, 58, 40, 0.04);
+  --shadow-sm:  0 2px 6px rgba(31, 58, 40, 0.06);
+  --shadow-md:  0 8px 20px rgba(31, 58, 40, 0.08);
+  --shadow-lg:  0 18px 38px rgba(31, 58, 40, 0.12);
+  --shadow-xl:  0 28px 60px rgba(31, 58, 40, 0.18);
+  --shadow-brand: 0 10px 24px rgba(47, 93, 58, 0.22);
+
+  /* === Tipografia === */
+  --font-serif:  'Fraunces', 'Cormorant Garamond', Georgia, serif;
+  --font-sans:   'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* === Raio === */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-pill: 999px;
+
+  /* === Transição === */
+  --t-fast: 0.15s ease;
+  --t-base: 0.22s ease;
+  --t-slow: 0.4s ease;
+
+  /* === Layout === */
+  --sidebar-w: 250px;
+  --sidebar-collapsed-w: 72px;
+  --topbar-h: 68px;
+  --maxw: 1400px;
+}
+
+/* ============================================================
+   2. RESET / BASE
+   ============================================================ */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; letter-spacing: -0.01em; color: var(--text-primary); margin: 0; }
+h1 { font-size: 2rem; line-height: 1.15; }
+h2 { font-size: 1.4rem; line-height: 1.2; }
+h3 { font-size: 1.1rem; line-height: 1.3; }
+p  { margin: 0; }
+a  { color: var(--brand); text-decoration: none; transition: color var(--t-fast); }
+a:hover { color: var(--brand-strong); }
+
+/* Scrollbar suave */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--taoca-coal-200); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--taoca-coal-400); }
+
+/* ============================================================
+   3. LAYOUT — App shell (sidebar + main)
+   ============================================================ */
+.taoca-app {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  min-height: 100vh;
+}
+.taoca-app.no-sidebar { grid-template-columns: 1fr; }
+
+/* ----- Sidebar ----- */
+.taoca-sidebar {
+  background: linear-gradient(180deg, var(--taoca-green-900) 0%, var(--taoca-green-800) 100%);
+  color: rgba(255,255,255,0.92);
+  padding: 22px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 50;
+}
+.taoca-sidebar .logo-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  margin-bottom: 14px;
+}
+.taoca-sidebar .logo-block img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  background: rgba(255,255,255,0.95);
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: var(--shadow-sm);
+}
+.taoca-sidebar .logo-block .brand-name {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: 0.06em;
+  color: #FFF;
+}
+.taoca-sidebar .logo-block .brand-tag {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.62);
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  margin-top: 1px;
+}
+.taoca-sidebar .nav-group {
+  margin-top: 10px;
+}
+.taoca-sidebar .nav-group-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.45);
+  padding: 8px 12px 6px;
+}
+.taoca-sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  color: rgba(255,255,255,0.82);
+  font-weight: 500;
+  font-size: 0.92rem;
+  transition: background var(--t-fast), color var(--t-fast);
+  cursor: pointer;
+  text-decoration: none;
+}
+.taoca-sidebar .nav-link:hover {
+  background: rgba(255,255,255,0.08);
+  color: #FFF;
+}
+.taoca-sidebar .nav-link.active {
+  background: rgba(255,255,255,0.16);
+  color: #FFF;
+  box-shadow: inset 3px 0 0 var(--taoca-clay-400);
+}
+.taoca-sidebar .nav-link .icon {
+  font-size: 1.1rem;
+  width: 22px;
+  text-align: center;
+}
+.taoca-sidebar .nav-link .label { flex: 1; }
+.taoca-sidebar .nav-link .badge {
+  background: var(--taoca-clay-500);
+  color: #FFF;
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.taoca-sidebar .sidebar-footer {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.taoca-sidebar .logout-link {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.75);
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  transition: background var(--t-fast);
+}
+.taoca-sidebar .logout-link:hover { background: rgba(255,255,255,0.1); color: #FFF; }
+
+/* ----- Main ----- */
+.taoca-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.taoca-topbar {
+  height: var(--topbar-h);
+  background: rgba(250, 247, 242, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  gap: 18px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+.taoca-topbar .page-title-block { min-width: 0; }
+.taoca-topbar .breadcrumb {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.taoca-topbar .page-title {
+  font-family: var(--font-serif);
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 2px;
+  letter-spacing: -0.01em;
+}
+.taoca-topbar .topbar-actions { display: flex; align-items: center; gap: 12px; }
+.taoca-topbar .icon-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.taoca-topbar .icon-btn:hover { background: var(--taoca-cream-100); color: var(--brand); }
+
+.taoca-content { padding: 28px; max-width: var(--maxw); width: 100%; margin: 0 auto; }
+
+/* ============================================================
+   4. COMPONENTES — Botões
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--t-fast), border-color var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast), color var(--t-fast);
+  white-space: nowrap;
+}
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--brand);
+  color: #FFF;
+  box-shadow: var(--shadow-brand);
+}
+.btn-primary:hover:not(:disabled) { background: var(--brand-strong); transform: translateY(-1px); color: #FFF; }
+
+.btn-accent {
+  background: var(--taoca-clay-500);
+  color: #FFF;
+  box-shadow: 0 8px 18px rgba(199, 123, 92, 0.28);
+}
+.btn-accent:hover:not(:disabled) { background: #B36649; transform: translateY(-1px); color: #FFF; }
+
+.btn-secondary {
+  background: var(--bg-surface);
+  color: var(--brand);
+  border-color: var(--taoca-green-300);
+}
+.btn-secondary:hover:not(:disabled) { background: var(--taoca-green-50); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-soft);
+}
+.btn-ghost:hover:not(:disabled) { background: var(--taoca-cream-100); color: var(--text-primary); }
+
+.btn-danger {
+  background: #FFF;
+  color: var(--danger);
+  border-color: #FCA5A5;
+}
+.btn-danger:hover:not(:disabled) { background: var(--danger-bg); }
+
+.btn-sm { padding: 6px 12px; font-size: 0.82rem; }
+.btn-lg { padding: 14px 26px; font-size: 1rem; }
+
+/* ============================================================
+   5. CARDS
+   ============================================================ */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--t-base), transform var(--t-base), border-color var(--t-base);
+}
+.card-pad { padding: 22px; }
+.card-pad-sm { padding: 16px; }
+.card-pad-lg { padding: 28px; }
+
+.card.hoverable { cursor: pointer; }
+.card.hoverable:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--taoca-green-300);
+}
+
+.card-title {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+}
+.card-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+/* KPI card */
+.kpi-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card .kpi-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.kpi-card .kpi-value {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+.kpi-card .kpi-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--success-bg);
+  color: var(--success);
+  width: fit-content;
+}
+.kpi-card .kpi-trend.down { background: var(--danger-bg); color: var(--danger); }
+.kpi-card .kpi-trend.flat { background: var(--taoca-coal-100); color: var(--text-secondary); }
+.kpi-card.kpi-emerald::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(74,120,86,0.05) 0%, transparent 60%);
+  pointer-events: none;
+}
+.kpi-card.kpi-clay::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(199,123,92,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+.kpi-card.kpi-gold::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(184,147,90,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* ============================================================
+   6. TAGS / BADGES
+   ============================================================ */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--taoca-green-50);
+  color: var(--brand);
+}
+.tag.tag-clay   { background: var(--taoca-clay-100); color: #8B4A30; }
+.tag.tag-gold   { background: var(--taoca-gold-100); color: #7A5A2A; }
+.tag.tag-coal   { background: var(--taoca-coal-100); color: var(--text-secondary); }
+.tag.tag-success{ background: var(--success-bg); color: var(--success); }
+.tag.tag-warning{ background: var(--warning-bg); color: #8B4A30; }
+.tag.tag-danger { background: var(--danger-bg); color: var(--danger); }
+.tag.tag-info   { background: var(--info-bg); color: var(--info); }
+
+/* ============================================================
+   7. INPUTS
+   ============================================================ */
+.input, .textarea, .select {
+  width: 100%;
+  padding: 11px 14px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: #FFF;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.input::placeholder, .textarea::placeholder { color: var(--text-muted); }
+.input:focus, .textarea:focus, .select:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(47, 93, 58, 0.12);
+}
+.textarea { min-height: 90px; resize: vertical; }
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+/* ============================================================
+   8. PROGRESS / BARRAS
+   ============================================================ */
+.progress-track {
+  height: 8px;
+  background: var(--taoca-coal-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--taoca-green-700), var(--taoca-green-500));
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+.progress-fill.clay { background: linear-gradient(90deg, var(--taoca-clay-500), var(--taoca-clay-400)); }
+.progress-fill.gold { background: linear-gradient(90deg, var(--taoca-gold-500), var(--taoca-gold-300)); }
+
+/* ============================================================
+   9. SECTION HEADERS
+   ============================================================ */
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.section-head .title-block .eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.section-head .title-block .h-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+.section-head .title-block .h-sub {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ============================================================
+   10. TAOCA AI — chat flutuante
+   ============================================================ */
+.tai-fab {
+  position: fixed;
+  bottom: 26px;
+  right: 26px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--taoca-green-800), var(--taoca-green-700));
+  color: #FFF;
+  border: 0;
+  box-shadow: 0 14px 30px rgba(31,58,40,0.32), inset 0 0 0 2px rgba(255,255,255,0.08);
+  cursor: pointer;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  font-size: 1.6rem;
+  transition: transform var(--t-base);
+}
+.tai-fab:hover { transform: translateY(-3px) scale(1.05); }
+.tai-fab .pulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--taoca-green-500);
+  opacity: 0;
+  animation: tai-pulse 2.4s infinite;
+  pointer-events: none;
+}
+@keyframes tai-pulse {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.tai-panel {
+  position: fixed;
+  bottom: 100px;
+  right: 26px;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  height: 540px;
+  max-height: calc(100vh - 130px);
+  background: var(--bg-surface);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-soft);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 79;
+  transform: translateY(8px);
+  opacity: 0;
+  transition: opacity var(--t-base), transform var(--t-base);
+}
+.tai-panel.open { display: flex; opacity: 1; transform: translateY(0); }
+
+.tai-header {
+  background: linear-gradient(135deg, var(--taoca-green-900), var(--taoca-green-700));
+  color: #FFF;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tai-header .avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.16);
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+}
+.tai-header .info { flex: 1; }
+.tai-header .name { font-family: var(--font-serif); font-weight: 600; font-size: 1.05rem; }
+.tai-header .status { font-size: 0.75rem; color: rgba(255,255,255,0.7); }
+.tai-header .status::before {
+  content: '●';
+  color: #6BD08F;
+  margin-right: 4px;
+  font-size: 0.65rem;
+}
+.tai-header .close-btn {
+  background: rgba(255,255,255,0.12);
+  border: 0;
+  color: #FFF;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.tai-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  background: var(--taoca-cream-50);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tai-msg {
+  max-width: 84%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.tai-msg.bot {
+  background: #FFF;
+  border: 1px solid var(--border-soft);
+  border-bottom-left-radius: 4px;
+  align-self: flex-start;
+}
+.tai-msg.user {
+  background: var(--taoca-green-800);
+  color: #FFF;
+  border-bottom-right-radius: 4px;
+  align-self: flex-end;
+}
+.tai-msg.bot strong { color: var(--brand-strong); }
+.tai-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.tai-chip {
+  background: #FFF;
+  border: 1px solid var(--taoca-green-300);
+  color: var(--brand);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--t-fast);
+}
+.tai-chip:hover { background: var(--taoca-green-50); }
+
+.tai-footer {
+  padding: 12px;
+  border-top: 1px solid var(--border-soft);
+  background: #FFF;
+  display: flex;
+  gap: 8px;
+}
+.tai-footer .input {
+  border-radius: 999px;
+  padding: 9px 14px;
+}
+.tai-footer .send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #FFF;
+  border: 0;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.tai-footer .send-btn:hover { background: var(--brand-strong); }
+
+/* ============================================================
+   11. MODAL
+   ============================================================ */
+.tc-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(31,58,40,0.5);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+}
+.tc-modal-backdrop.open { display: flex; }
+.tc-modal-card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-2xl);
+  padding: 26px;
+  box-shadow: var(--shadow-xl);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.tc-modal-card.lg { max-width: 580px; }
+.tc-modal-title {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.tc-modal-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 18px;
+}
+.tc-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   12. EMPTY / LOADING
+   ============================================================ */
+.empty-state, .loading-state {
+  text-align: center;
+  padding: 36px 22px;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-xl);
+  color: var(--text-secondary);
+}
+.empty-state .em-icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.6; }
+.empty-state .em-title { font-family: var(--font-serif); font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+
+.spinner-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand);
+  animation: dot 1.2s infinite ease-in-out;
+}
+@keyframes dot {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* ============================================================
+   13. UTILITIES
+   ============================================================ */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-1 { gap: 4px; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.gap-6 { gap: 24px; }
+.grid { display: grid; }
+.grid-2 { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; }
+.grid-3 { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 18px; }
+.grid-4 { grid-template-columns: repeat(4, minmax(0,1fr)); gap: 18px; }
+.grid-5 { grid-template-columns: repeat(5, minmax(0,1fr)); gap: 18px; }
+.mb-2 { margin-bottom: 8px; } .mb-3 { margin-bottom: 12px; } .mb-4 { margin-bottom: 16px; } .mb-6 { margin-bottom: 24px; } .mb-8 { margin-bottom: 32px; }
+.mt-2 { margin-top: 8px; } .mt-3 { margin-top: 12px; } .mt-4 { margin-top: 16px; } .mt-6 { margin-top: 24px; }
+.text-muted { color: var(--text-muted); }
+.text-secondary { color: var(--text-secondary); }
+.text-brand { color: var(--brand); }
+.text-accent { color: var(--accent); }
+.text-success { color: var(--success); }
+.text-danger { color: var(--danger); }
+.font-serif { font-family: var(--font-serif); }
+.text-sm { font-size: 0.85rem; }
+.text-xs { font-size: 0.75rem; }
+.text-lg { font-size: 1.1rem; }
+.text-xl { font-size: 1.3rem; }
+.font-bold { font-weight: 700; }
+.font-semibold { font-weight: 600; }
+.uppercase { text-transform: uppercase; letter-spacing: 0.06em; }
+.hidden { display: none !important; }
+
+/* Sync indicator */
+.sync-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+.sync-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 4px rgba(74,120,86,0.18);
+}
+.sync-dot.syncing { background: var(--warning); box-shadow: 0 0 0 4px rgba(199,123,92,0.2); }
+.sync-dot.error   { background: var(--danger); box-shadow: 0 0 0 4px rgba(185,28,28,0.2); }
+
+/* ============================================================
+   14. RESPONSIVE
+   ============================================================ */
+@media (max-width: 1100px) {
+  .grid-4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .grid-5 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+@media (max-width: 900px) {
+  :root { --sidebar-w: 72px; }
+  .taoca-sidebar { padding: 18px 8px; }
+  .taoca-sidebar .nav-link .label,
+  .taoca-sidebar .nav-group-title,
+  .taoca-sidebar .logo-block .brand-name,
+  .taoca-sidebar .logo-block .brand-tag,
+  .taoca-sidebar .sidebar-footer .footer-text,
+  .taoca-sidebar .nav-link .badge { display: none; }
+  .taoca-sidebar .nav-link { justify-content: center; padding: 12px; }
+  .taoca-sidebar .logo-block { justify-content: center; padding-bottom: 12px; }
+  .taoca-sidebar .logout-link { padding: 6px; }
+  .taoca-content { padding: 20px 16px; }
+  .taoca-topbar { padding: 0 16px; }
+}
+@media (max-width: 720px) {
+  .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; }
+  .taoca-topbar .page-title { font-size: 1.15rem; }
+  .tai-panel { right: 12px; left: 12px; width: auto; }
+}

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estratégia — Taoca OS</title>
+  <link rel="stylesheet" href="css/taoca-design-system.css" />
+  <link rel="stylesheet" href="css/notifications.css" />
+  <link rel="icon" href="assets/taoca-logo.png" />
+  <style>
+    .okr-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+    .okr-card .obj {
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--brand-strong);
+      margin-bottom: 12px;
+    }
+    .kr-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 0;
+      border-top: 1px dashed var(--border-soft);
+    }
+    .kr-row:first-of-type { border-top: 0; }
+    .kr-text { font-size: 0.92rem; }
+    .kr-progress { display: flex; align-items: center; gap: 10px; min-width: 200px; }
+    .kr-progress .progress-track { flex: 1; }
+    .kr-pct { min-width: 44px; text-align: right; font-weight: 700; font-size: 0.85rem; color: var(--brand); }
+
+    .pillar {
+      background: var(--bg-surface);
+      border-left: 4px solid var(--brand);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .pillar.clay { border-left-color: var(--accent); }
+    .pillar.gold { border-left-color: var(--premium); }
+    .pillar h4 { font-family: var(--font-serif); font-size: 1rem; margin: 0 0 4px; }
+    .pillar p  { font-size: 0.88rem; color: var(--text-secondary); margin: 0; line-height: 1.55; }
+
+    .swot-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (max-width: 720px) { .swot-grid { grid-template-columns: 1fr; } }
+    .swot-cell {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      padding: 14px;
+    }
+    .swot-cell h5 {
+      font-family: var(--font-serif);
+      font-size: 0.95rem;
+      margin: 0 0 6px;
+    }
+    .swot-cell.s { border-top: 4px solid var(--success); }
+    .swot-cell.w { border-top: 4px solid var(--danger); }
+    .swot-cell.o { border-top: 4px solid var(--info); }
+    .swot-cell.t { border-top: 4px solid var(--warning); }
+    .swot-cell ul { margin: 0; padding-left: 18px; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+  <div class="card card-pad mb-6" style="background: linear-gradient(135deg, var(--taoca-green-900) 0%, var(--info) 100%); color: #FFF; border:0; position:relative; overflow:hidden;">
+    <div style="position:absolute; right:-20px; top:-20px; font-size:8rem; opacity:0.1; line-height:1;">🎯</div>
+    <div class="text-xs uppercase font-bold" style="letter-spacing:0.18em; color:rgba(255,255,255,0.78);">Visão Executiva · Estratégia</div>
+    <h2 style="font-family:var(--font-serif); font-size:1.7rem; color:#FFF; margin-top:4px;">Plano de negócios vivo</h2>
+    <p style="color:rgba(255,255,255,0.82); margin-top:6px; max-width:700px;">
+      Visão, missão, OKRs trimestrais e SWOT — todos conectados aos dados reais da operação. Estratégia que respira.
+    </p>
+  </div>
+
+  <!-- Pilares -->
+  <div class="grid grid-3 mb-6">
+    <div class="pillar">
+      <h4>🌱 Visão</h4>
+      <p>Ser referência nacional em cogumelos cultivados com natureza, qualidade e afeto — levando bem-estar à mesa de cada cliente.</p>
+    </div>
+    <div class="pillar clay">
+      <h4>🍄 Missão</h4>
+      <p>Cultivar cogumelos frescos e saudáveis com técnicas sustentáveis, fortalecendo relações de confiança com clientes, parceiros e a terra.</p>
+    </div>
+    <div class="pillar gold">
+      <h4>💎 Valores</h4>
+      <p>Cuidado · Transparência · Sustentabilidade · Excelência · Comunidade · Inovação serena.</p>
+    </div>
+  </div>
+
+  <!-- OKRs -->
+  <div class="section-head">
+    <div class="title-block">
+      <div class="eyebrow">OKRs · Trimestre atual</div>
+      <h2 class="h-title">Objetivos &amp; Resultados-chave</h2>
+      <p class="h-sub">Foco trimestral mensurável, ligado à operação real.</p>
+    </div>
+    <button class="btn btn-primary" id="new-okr-btn" type="button">➕ Novo OKR</button>
+  </div>
+
+  <div id="okr-wrap">
+    <!-- Exemplo padrão (renderiza se não houver dados) -->
+  </div>
+
+  <!-- SWOT -->
+  <div class="section-head mt-6">
+    <div class="title-block">
+      <div class="eyebrow">Análise estratégica</div>
+      <h2 class="h-title">SWOT da Taoca</h2>
+      <p class="h-sub">Forças, fraquezas, oportunidades e ameaças.</p>
+    </div>
+  </div>
+
+  <section class="swot-grid mb-6">
+    <div class="swot-cell s">
+      <h5>💪 Forças (Strengths)</h5>
+      <ul>
+        <li>Identidade de marca acolhedora (natureza, qualidade, afeto)</li>
+        <li>Conhecimento técnico de cultivo</li>
+        <li>Cogumelos cada vez mais valorizados na gastronomia</li>
+        <li>Operação enxuta e ágil para decisões rápidas</li>
+      </ul>
+    </div>
+    <div class="swot-cell w">
+      <h5>🌧️ Fraquezas (Weaknesses)</h5>
+      <ul>
+        <li>Capacidade limitada de produção em escala</li>
+        <li>Dependência de poucos pontos de venda</li>
+        <li>Marca ainda em construção de visibilidade</li>
+        <li>Logística de produto perecível</li>
+      </ul>
+    </div>
+    <div class="swot-cell o">
+      <h5>🌟 Oportunidades (Opportunities)</h5>
+      <ul>
+        <li>Expansão para mercados premium e gourmet</li>
+        <li>E-commerce e venda direta ao consumidor</li>
+        <li>Cogumelos funcionais (Reishi, Hericium) em alta</li>
+        <li>Conteúdo educativo + redes sociais</li>
+      </ul>
+    </div>
+    <div class="swot-cell t">
+      <h5>⚠️ Ameaças (Threats)</h5>
+      <ul>
+        <li>Concorrência industrial com preços agressivos</li>
+        <li>Sazonalidade da demanda</li>
+        <li>Variações no custo do substrato</li>
+        <li>Riscos sanitários (contaminação de lotes)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Modal Novo OKR -->
+  <div class="tc-modal-backdrop" id="okr-modal" role="dialog" aria-modal="true">
+    <div class="tc-modal-card lg">
+      <h3 class="tc-modal-title">🎯 Novo OKR</h3>
+      <p class="tc-modal-subtitle">Defina um objetivo e até 4 resultados-chave mensuráveis.</p>
+      <div class="field"><label>Objetivo *</label><input type="text" id="okr-obj" class="input" placeholder="Ex.: Triplicar a receita do trimestre" /></div>
+      <div class="field"><label>Trimestre</label>
+        <select id="okr-quarter" class="select">
+          <option value="Q1">Q1 — Jan/Fev/Mar</option>
+          <option value="Q2">Q2 — Abr/Mai/Jun</option>
+          <option value="Q3">Q3 — Jul/Ago/Set</option>
+          <option value="Q4">Q4 — Out/Nov/Dez</option>
+        </select>
+      </div>
+      <div class="field"><label>KR 1</label><input type="text" id="okr-kr1" class="input" placeholder="Ex.: Atingir R$ 30.000 em vendas" /></div>
+      <div class="field"><label>KR 2</label><input type="text" id="okr-kr2" class="input" placeholder="Ex.: Conquistar 10 novos clientes" /></div>
+      <div class="field"><label>KR 3</label><input type="text" id="okr-kr3" class="input" /></div>
+      <div class="field"><label>KR 4</label><input type="text" id="okr-kr4" class="input" /></div>
+      <div class="tc-modal-actions">
+        <button class="btn btn-ghost" type="button" id="okr-cancel">Cancelar</button>
+        <button class="btn btn-primary" type="button" id="okr-save">Criar OKR</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/taoca-shell.js"></script>
+  <script>TaocaShell.mount({ active: 'estrategia', breadcrumb: 'Visão Executiva · Estratégia', title: 'Estratégia & OKRs' });</script>
+
+  <script>
+    (function () {
+      const TABLE='okrs', POLL_MS=15000;
+      const wrap = document.getElementById('okr-wrap');
+
+      function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+      async function fetchOkrs(){
+        try { const r = await fetch(`tables/${TABLE}?limit=200`); if(!r.ok) return []; const j = await r.json(); return (j.data||[]).filter(x=>!x.deleted); }
+        catch(e){ return []; }
+      }
+      async function createOkr(p){
+        const r = await fetch(`tables/${TABLE}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p) });
+        if(!r.ok) throw new Error('Falha'); return await r.json();
+      }
+      async function patchOkr(id,p){
+        const r = await fetch(`tables/${TABLE}/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p) });
+        if(!r.ok) throw new Error('Falha'); return await r.json();
+      }
+
+      function getDefaultExample(){
+        return [{
+          id: 'demo',
+          objective: '🎯 Triplicar a presença da Taoca no varejo regional',
+          quarter: 'Q' + Math.ceil((new Date().getMonth()+1)/3),
+          krs: [
+            { text: 'Conquistar 10 novos pontos de venda', pct: 30 },
+            { text: 'Atingir R$ 30.000/mês em receita recorrente', pct: 20 },
+            { text: 'Lançar 2 novas variedades (Hericium e Reishi)', pct: 50 },
+            { text: 'Alcançar 1.000 seguidores no Instagram', pct: 40 },
+          ],
+          demo: true,
+        }];
+      }
+
+      function renderKrs(okr) {
+        const krs = Array.isArray(okr.krs) ? okr.krs : [];
+        if(!krs.length) return '<p class="text-muted text-sm">Sem KRs cadastrados</p>';
+        return krs.map((k, i) => `
+          <div class="kr-row">
+            <div class="kr-text"><strong>KR${i+1}.</strong> ${escapeHtml(k.text||'')}</div>
+            <div class="kr-progress">
+              <div class="progress-track"><div class="progress-fill" style="width:${k.pct||0}%"></div></div>
+              <span class="kr-pct">${k.pct||0}%</span>
+              ${!okr.demo?`<button class="btn btn-ghost btn-sm" data-okr-id="${okr.id}" data-kr-idx="${i}" data-action="kr-update">Atualizar</button>`:''}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function calcOkrPct(okr){
+        const krs = Array.isArray(okr.krs) ? okr.krs : [];
+        if(!krs.length) return 0;
+        return Math.round(krs.reduce((s,k) => s + (Number(k.pct)||0), 0) / krs.length);
+      }
+
+      function render(list){
+        const items = list.length ? list : getDefaultExample();
+        wrap.innerHTML = items.map(o => {
+          const overall = calcOkrPct(o);
+          return `
+            <div class="okr-card">
+              <div class="flex justify-between items-center mb-3" style="flex-wrap:wrap; gap:8px;">
+                <div class="obj">${escapeHtml(o.objective || '—')}</div>
+                <span class="tag ${overall>=70?'tag-success':overall>=30?'tag-info':'tag-clay'}">${overall}% · ${escapeHtml(o.quarter||'')}</span>
+              </div>
+              ${renderKrs(o)}
+              ${o.demo?'<p class="text-muted text-xs mt-2"><em>Exemplo demonstrativo — crie o seu OKR pelo botão acima.</em></p>':''}
+            </div>
+          `;
+        }).join('');
+
+        // Bind update buttons
+        wrap.querySelectorAll('[data-action="kr-update"]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.okrId;
+            const idx = Number(btn.dataset.krIdx);
+            const okr = list.find(o => o.id === id);
+            if(!okr) return;
+            const krs = okr.krs || [];
+            const kr = krs[idx] || { text:'', pct:0 };
+            const v = prompt(`Progresso (%) para "${kr.text}"`, kr.pct||0);
+            if(v===null) return;
+            const newPct = Math.max(0, Math.min(100, Number(v)||0));
+            krs[idx] = { ...kr, pct: newPct };
+            try { await patchOkr(id, { krs }); refresh(); }
+            catch(e){ alert('Falha ao salvar.'); }
+          });
+        });
+      }
+
+      async function refresh(){ const list = await fetchOkrs(); render(list); }
+      refresh();
+      setInterval(refresh, POLL_MS);
+
+      // Modal
+      const modal = document.getElementById('okr-modal');
+      document.getElementById('new-okr-btn').addEventListener('click', () => {
+        ['okr-obj','okr-kr1','okr-kr2','okr-kr3','okr-kr4'].forEach(id => document.getElementById(id).value='');
+        const m = new Date().getMonth()+1;
+        document.getElementById('okr-quarter').value = 'Q' + Math.ceil(m/3);
+        modal.classList.add('open');
+      });
+      document.getElementById('okr-cancel').addEventListener('click', () => modal.classList.remove('open'));
+      modal.addEventListener('click', (e) => { if(e.target===modal) modal.classList.remove('open'); });
+
+      document.getElementById('okr-save').addEventListener('click', async () => {
+        const obj = document.getElementById('okr-obj').value.trim();
+        if(!obj) return alert('Objetivo obrigatório.');
+        const krs = ['okr-kr1','okr-kr2','okr-kr3','okr-kr4']
+          .map(id => document.getElementById(id).value.trim())
+          .filter(Boolean)
+          .map(text => ({ text, pct: 0 }));
+        const payload = {
+          objective: obj,
+          quarter: document.getElementById('okr-quarter').value,
+          krs,
+          year: new Date().getFullYear(),
+          created_by: (window.TaocaShell && TaocaShell.getCurrentUser&&TaocaShell.getCurrentUser()) || 'Equipe',
+        };
+        try { await createOkr(payload); modal.classList.remove('open'); refresh(); }
+        catch(e){ alert('Falha ao salvar.'); }
+      });
+    })();
+  </script>
+
+  <script src="js/notifications.js"></script>
+  <script src="js/taoca-ai.js"></script>
+</body>
+</html>

@@ -1,1797 +1,673 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quadro de Tarefas - Nílzon e Marco</title>
-    <link rel="stylesheet" href="css/notifications.css" />
-    <style>
-      * { box-sizing: border-box; }
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taoca OS — Home Executiva</title>
+  <link rel="stylesheet" href="css/taoca-design-system.css" />
+  <link rel="stylesheet" href="css/notifications.css" />
+  <link rel="icon" href="assets/taoca-logo.png" />
+  <style>
+    /* ----- Hero da Home ----- */
+    .home-hero {
+      background:
+        radial-gradient(circle at 20% 0%, rgba(74,120,86,0.15) 0%, transparent 55%),
+        radial-gradient(circle at 90% 100%, rgba(199,123,92,0.10) 0%, transparent 55%),
+        linear-gradient(135deg, #FFFFFF 0%, var(--taoca-cream-100) 100%);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-2xl);
+      padding: 32px 36px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .home-hero::after {
+      content: '';
+      position: absolute;
+      right: -40px;
+      bottom: -40px;
+      width: 220px;
+      height: 220px;
+      background: url('assets/taoca-logo.png') no-repeat center/contain;
+      opacity: 0.06;
+      pointer-events: none;
+    }
+    .home-hero .eyebrow {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .home-hero h1 {
+      font-family: var(--font-serif);
+      font-size: 2.2rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--brand-strong);
+      margin-bottom: 10px;
+      line-height: 1.15;
+    }
+    .home-hero .lead {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      max-width: 720px;
+      line-height: 1.6;
+    }
+    .home-hero .hero-actions {
+      margin-top: 22px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
-      body {
-        margin: 0;
-        background: #f3f6fb;
-        color: #1f2a44;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      }
+    /* ----- IA Briefing ----- */
+    .ia-briefing {
+      background: linear-gradient(135deg, var(--taoca-green-900), var(--taoca-green-700));
+      color: #FFF;
+      border-radius: var(--radius-2xl);
+      padding: 26px 28px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+    .ia-briefing::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 240px; height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(199,123,92,0.4), transparent 70%);
+      pointer-events: none;
+    }
+    .ia-briefing .ia-avatar {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.16);
+      display: grid; place-items: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,0.25);
+    }
+    .ia-briefing .ia-content { flex: 1; min-width: 0; position: relative; }
+    .ia-briefing .ia-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 6px;
+    }
+    .ia-briefing .ia-text {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+    .ia-briefing .ia-actions {
+      margin-top: 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .ia-briefing .ia-chip {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.22);
+      color: #FFF;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background var(--t-fast);
+    }
+    .ia-briefing .ia-chip:hover { background: rgba(255,255,255,0.28); }
 
-      .page { min-height: 100vh; }
+    /* ----- Module Cards (atalhos) ----- */
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+    @media (max-width: 1100px) { .module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 600px)  { .module-grid { grid-template-columns: 1fr; } }
 
-      .hero {
-        background: linear-gradient(135deg, #204ccf 0%, #3b82f6 100%);
-        color: #ffffff;
-        padding: 18px 24px;
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
-      }
+    .module-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      transition: transform var(--t-base), box-shadow var(--t-base), border-color var(--t-base);
+      position: relative;
+      overflow: hidden;
+    }
+    .module-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--taoca-green-300);
+    }
+    .module-card .m-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: var(--taoca-green-50);
+      color: var(--brand);
+      display: grid; place-items: center;
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+    }
+    .module-card.m-clay .m-icon { background: var(--taoca-clay-100); color: #8B4A30; }
+    .module-card.m-gold .m-icon { background: var(--taoca-gold-100); color: #7A5A2A; }
+    .module-card.m-info .m-icon { background: var(--info-bg); color: var(--info); }
+    .module-card .m-title {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .module-card .m-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .module-card .m-stat {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .module-card .m-stat strong { color: var(--text-primary); font-size: 1rem; }
 
-      .hero-inner,
-      .content-inner,
-      .action-bar-inner {
-        max-width: 1200px;
-        margin: 0 auto;
-      }
+    /* ----- Activity feed ----- */
+    .activity-feed {
+      list-style: none;
+      margin: 0; padding: 0;
+    }
+    .activity-feed li {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .activity-feed li:last-child { border-bottom: 0; }
+    .activity-feed .a-icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--taoca-green-50);
+      display: grid; place-items: center;
+      flex-shrink: 0;
+      font-size: 1rem;
+    }
+    .activity-feed .a-text { flex: 1; min-width: 0; }
+    .activity-feed .a-title { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .activity-feed .a-meta { font-size: 0.78rem; color: var(--text-muted); }
 
-      .hero-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-        flex-wrap: wrap;
-      }
+    /* ----- Mini chart ----- */
+    .mini-spark {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 50px;
+      margin-top: 8px;
+    }
+    .mini-spark .bar {
+      flex: 1;
+      background: linear-gradient(180deg, var(--taoca-green-500), var(--taoca-green-700));
+      border-radius: 3px 3px 0 0;
+      min-height: 3px;
+      transition: height 0.4s ease;
+    }
 
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-      }
+    /* Quick links row */
+    .quick-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    @media (max-width: 720px) { .quick-row { grid-template-columns: 1fr; } }
+    .quick-row .q-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .quick-row .q-icon {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      display: grid; place-items: center;
+      font-size: 1.1rem;
+    }
+    .quick-row .q-text { flex: 1; }
+    .quick-row .q-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 700; }
+    .quick-row .q-value { font-family: var(--font-serif); font-size: 1.3rem; font-weight: 600; color: var(--text-primary); }
+  </style>
+</head>
+<body>
+  <!-- O conteúdo abaixo é o "main" — o shell envolve com sidebar+topbar -->
 
-      .brand-icon {
-        display: grid;
-        place-items: center;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.22);
-      }
-
-      h1 {
-        margin: 0 0 2px;
-        font-size: 1.55rem;
-        line-height: 1.15;
-        font-weight: 700;
-      }
-
-      h2 {
-        margin: 0;
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: rgba(255, 255, 255, 0.82);
-      }
-
-      .brand-icon {
-        width: 44px;
-        height: 44px;
-        font-size: 20px;
-      }
-
-      .hero-actions-top {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      .nav-btn,
-      .logout-btn {
-        padding: 9px 16px;
-        font-size: 0.9rem;
-        border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.32);
-        background: rgba(255, 255, 255, 0.14);
-        color: #ffffff;
-        cursor: pointer;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .nav-btn:hover,
-      .logout-btn:hover { background: rgba(255, 255, 255, 0.24); }
-
-      .logout-btn {
-        background: rgba(255, 255, 255, 0.06);
-      }
-
-      /* ----- Action Bar (sticky, sob o cabeçalho) ----- */
-      .action-bar {
-        position: sticky;
-        top: 0;
-        z-index: 30;
-        background: #ffffff;
-        border-bottom: 1px solid #e2e8f0;
-        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
-      }
-      .action-bar-inner {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        padding: 12px 24px;
-        flex-wrap: wrap;
-      }
-
-      .stats-mini {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        flex-shrink: 0;
-      }
-      .stat-mini {
-        display: flex;
-        align-items: baseline;
-        gap: 6px;
-      }
-      .stat-mini .stat-number {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1e293b;
-        line-height: 1;
-      }
-      .stat-mini .stat-label {
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: #64748b;
-        font-weight: 600;
-      }
-      .stat-divider {
-        width: 1px;
-        height: 22px;
-        background: #e2e8f0;
-      }
-
-      .progress-block {
-        flex: 1;
-        min-width: 220px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .progress-block-label {
-        font-size: 0.78rem;
-        font-weight: 600;
-        color: #64748b;
-        white-space: nowrap;
-      }
-      .progress-track {
-        flex: 1;
-        height: 8px;
-        background: #e2e8f0;
-        border-radius: 999px;
-        overflow: hidden;
-      }
-      .progress-fill {
-        width: 0%;
-        height: 100%;
-        background: linear-gradient(90deg, #22c55e, #34d399);
-        border-radius: 999px;
-        transition: width 0.25s ease;
-      }
-      .progress-percent {
-        font-size: 0.82rem;
-        font-weight: 700;
-        color: #1e293b;
-        white-space: nowrap;
-        min-width: 78px;
-        text-align: right;
-      }
-
-      .action-buttons {
-        display: flex;
-        gap: 8px;
-        flex-shrink: 0;
-      }
-      .action-btn-primary,
-      .action-btn-ghost {
-        padding: 9px 14px;
-        font-size: 0.85rem;
-        border-radius: 999px;
-        font-weight: 600;
-        cursor: pointer;
-        font-family: inherit;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .action-btn-primary {
-        background: linear-gradient(135deg, #2563eb, #3b82f6);
-        color: #ffffff;
-        border: 0;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22);
-      }
-      .action-btn-primary:hover { filter: brightness(0.96); }
-      .action-btn-ghost {
-        background: #ffffff;
-        color: #2563eb;
-        border: 1px solid #cfddf6;
-      }
-      .action-btn-ghost:hover { background: #f1f5f9; }
-
-      .content-inner { padding: 20px 24px 36px; }
-
-      .filter-bar {
-        margin-bottom: 18px;
-        display: flex;
-        gap: 14px;
-        align-items: center;
-        flex-wrap: wrap;
-        padding: 12px 14px;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
-      }
-      .filter-group {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-      .filter-group-label {
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: #94a3b8;
-        margin-right: 4px;
-      }
-      .filter-divider {
-        width: 1px;
-        height: 24px;
-        background: #e2e8f0;
-      }
-
-      /* Dropdown de categoria nos filtros */
-      .cat-filter-wrap {
-        position: relative;
-      }
-      .cat-filter-trigger {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 9px 14px;
-        font-size: 0.88rem;
-        font-weight: 600;
-        font-family: inherit;
-        cursor: pointer;
-        border-radius: 999px;
-        border: 1px solid #dbe4f0;
-        background: #ffffff;
-        color: #64748b;
-      }
-      .cat-filter-trigger:hover { background: #f8fafc; }
-      .cat-filter-trigger.active {
-        background: #2563eb;
-        color: #ffffff;
-        border-color: #2563eb;
-      }
-      .cat-filter-trigger::after {
-        content: '▾';
-        font-size: 0.7rem;
-        opacity: 0.8;
-      }
-      .cat-filter-menu {
-        position: absolute;
-        top: calc(100% + 6px);
-        left: 0;
-        z-index: 40;
-        min-width: 220px;
-        max-height: 360px;
-        overflow-y: auto;
-        overscroll-behavior: contain;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        box-shadow: 0 18px 38px rgba(15, 23, 42, 0.18);
-        padding: 6px;
-        display: none;
-      }
-      .cat-filter-menu.open { display: block; }
-      .cat-filter-menu::-webkit-scrollbar { width: 8px; }
-      .cat-filter-menu::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
-      .cat-filter-option {
-        width: 100%;
-        text-align: left;
-        padding: 8px 10px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        border: 0;
-        background: transparent;
-        border-radius: 8px;
-        cursor: pointer;
-        color: #1e293b;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-family: inherit;
-      }
-      .cat-filter-option:hover { background: #f1f5f9; }
-      .cat-filter-option.selected { background: #eff6ff; color: #2563eb; }
-      .cat-filter-option .swatch {
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        flex: 0 0 10px;
-      }
-      .swatch.todas { background: #94a3b8; }
-
-      .filter-btn {
-        border: 1px solid #dbe4f0;
-        background: #ffffff;
-        color: #64748b;
-        border-radius: 999px;
-        padding: 9px 14px;
-        font-size: 0.88rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s;
-        appearance: none;
-        -webkit-appearance: none;
-        text-decoration: none;
-        font-family: inherit;
-      }
-      .filter-btn:hover { background: #f8fafc; }
-      .filter-btn.active {
-        background: #2563eb;
-        color: #ffffff;
-        border-color: #2563eb;
-      }
-
-      .board-toolbar {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 14px;
-        flex-wrap: wrap;
-      }
-      .sync-indicator {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.82rem;
-        color: #64748b;
-      }
-      .sync-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.18);
-      }
-      .sync-dot.syncing { background: #f59e0b; box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2); }
-      .sync-dot.error   { background: #ef4444; box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2); }
-
-      .task-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 20px;
-      }
-
-      .task-card {
-        display: flex;
-        flex-direction: column;
-        min-height: 280px;
-        background: #ffffff;
-        border: 1px solid #dce5f1;
-        border-radius: 20px;
-        padding: 18px;
-        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
-        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-      }
-      .task-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
-      }
-      .task-card.realizado {
-        background: #f0fdf4;
-        border-color: #86efac;
-      }
-      .task-card.atrasada {
-        border-color: #fca5a5;
-        box-shadow: 0 10px 24px rgba(239, 68, 68, 0.12);
-      }
-
-      .card-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 14px;
-      }
-
-      .card-meta {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-
-      .tag {
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        padding: 5px 9px;
-        border-radius: 999px;
-        background: #eff6ff;
-        color: #2563eb;
-      }
-      .tag.empresarial { background: #eef2ff; color: #4f46e5; }
-      .tag.fiscal      { background: #ecfeff; color: #0f766e; }
-      .tag.juridico    { background: #f5f3ff; color: #7c3aed; }
-      .tag.consultoria { background: #fff7ed; color: #c2410c; }
-      .tag.fazenda     { background: #f0fdf4; color: #15803d; }
-
-      /* Categoria editável */
-      .category-wrap {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-      }
-      .tag.tag-editable {
-        cursor: pointer;
-        border: 1px solid transparent;
-        transition: filter 0.15s ease, border-color 0.15s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-      }
-      .tag.tag-editable::after {
-        content: '▾';
-        font-size: 0.65rem;
-        opacity: 0.7;
-      }
-      .tag.tag-editable:hover {
-        filter: brightness(0.95);
-        border-color: rgba(15, 23, 42, 0.12);
-      }
-      .category-menu {
-        position: absolute;
-        top: calc(100% + 6px);
-        left: 0;
-        z-index: 50;
-        min-width: 190px;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        box-shadow: 0 18px 38px rgba(15, 23, 42, 0.18);
-        padding: 6px;
-        display: none;
-        max-height: 320px;
-        overflow-y: auto;
-        overscroll-behavior: contain;
-      }
-      .category-menu.open { display: block; }
-      .category-menu::-webkit-scrollbar { width: 8px; }
-      .category-menu::-webkit-scrollbar-track { background: transparent; }
-      .category-menu::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 999px;
-      }
-      .category-menu::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-      .category-menu-title {
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: #94a3b8;
-        padding: 6px 10px 4px;
-        position: sticky;
-        top: 0;
-        background: #ffffff;
-        z-index: 1;
-      }
-      .category-option {
-        width: 100%;
-        text-align: left;
-        padding: 8px 10px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        border: 0;
-        background: transparent;
-        border-radius: 8px;
-        cursor: pointer;
-        color: #1e293b;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-family: inherit;
-      }
-      .category-option:hover { background: #f1f5f9; }
-      .category-option.selected { background: #eff6ff; color: #2563eb; }
-      .category-option .swatch {
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        flex: 0 0 10px;
-      }
-      .swatch.institucional { background: #4338ca; }
-      .swatch.financeiro    { background: #047857; }
-      .swatch.fiscal        { background: #0f766e; }
-      .swatch.juridico      { background: #7c3aed; }
-      .swatch.comercial     { background: #be123c; }
-      .swatch.operacional   { background: #334155; }
-      .swatch.estrategico   { background: #b45309; }
-      .swatch.marketing     { background: #c026d3; }
-      .swatch.ti            { background: #0369a1; }
-      .swatch.consultoria   { background: #c2410c; }
-      .swatch.outras        { background: #64748b; }
-
-      /* Modal de prazo / calendário */
-      .modal-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.55);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        z-index: 100;
-      }
-      .modal-backdrop.open { display: flex; }
-      .modal-card {
-        width: 100%;
-        max-width: 380px;
-        background: #ffffff;
-        border-radius: 18px;
-        padding: 22px 22px 18px;
-        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.32);
-      }
-      .modal-title {
-        margin: 0 0 4px;
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: #1e293b;
-      }
-      .modal-subtitle {
-        margin: 0 0 16px;
-        font-size: 0.88rem;
-        color: #64748b;
-      }
-      .modal-task-name {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #2563eb;
-        background: #eff6ff;
-        padding: 8px 10px;
-        border-radius: 10px;
-        margin-bottom: 14px;
-        line-height: 1.35;
-      }
-      .modal-label {
-        display: block;
-        font-size: 0.78rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: #475569;
-        margin-bottom: 6px;
-      }
-      .modal-date-input {
-        width: 100%;
-        padding: 12px 14px;
-        font-size: 1rem;
-        border-radius: 12px;
-        border: 1px solid #cbd5e1;
-        background: #f8fafc;
-        color: #1e293b;
-        font-family: inherit;
-        outline: none;
-        cursor: pointer;
-      }
-      .modal-date-input:focus {
-        border-color: #2563eb;
-        background: #ffffff;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-      }
-      .modal-quick-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 10px;
-      }
-      .modal-quick-btn {
-        padding: 6px 10px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        border-radius: 999px;
-        border: 1px solid #dbe4f0;
-        background: #ffffff;
-        color: #475569;
-        cursor: pointer;
-        font-family: inherit;
-      }
-      .modal-quick-btn:hover { background: #f1f5f9; }
-      .modal-actions {
-        margin-top: 18px;
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-      .modal-btn {
-        flex: 1;
-        min-width: 100px;
-        padding: 11px 14px;
-        border-radius: 12px;
-        border: 0;
-        font-size: 0.92rem;
-        font-weight: 700;
-        cursor: pointer;
-        font-family: inherit;
-      }
-      .modal-btn.primary {
-        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-        color: #ffffff;
-        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
-      }
-      .modal-btn.primary:hover { filter: brightness(0.97); }
-      .modal-btn.secondary {
-        background: #f1f5f9;
-        color: #334155;
-      }
-      .modal-btn.secondary:hover { background: #e2e8f0; }
-      .modal-btn.danger {
-        background: #ffffff;
-        color: #b91c1c;
-        border: 1px solid #fecaca;
-      }
-      .modal-btn.danger:hover { background: #fef2f2; }
-
-      /* Form fields no modal */
-      .modal-field { margin-bottom: 12px; }
-      .modal-field label {
-        display: block;
-        font-size: 0.78rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: #475569;
-        margin-bottom: 6px;
-      }
-      .modal-input,
-      .modal-textarea,
-      .modal-select {
-        width: 100%;
-        padding: 10px 12px;
-        font-size: 0.95rem;
-        border-radius: 10px;
-        border: 1px solid #cbd5e1;
-        background: #f8fafc;
-        color: #1e293b;
-        font-family: inherit;
-        outline: none;
-      }
-      .modal-textarea { min-height: 80px; resize: vertical; }
-      .modal-input:focus,
-      .modal-textarea:focus,
-      .modal-select:focus {
-        border-color: #2563eb;
-        background: #ffffff;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-      }
-      .modal-card.large { max-width: 480px; }
-
-      .task-number,
-      .task-state {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 30px;
-        height: 30px;
-        padding: 0 10px;
-        border-radius: 999px;
-        background: #f8fafc;
-        color: #94a3b8;
-        font-size: 0.78rem;
-        font-weight: 700;
-      }
-      .task-state { min-width: auto; color: #64748b; }
-      .task-card.realizado .task-state {
-        background: #dcfce7;
-        color: #15803d;
-      }
-      .task-card.atrasada .task-state {
-        background: #fee2e2;
-        color: #b91c1c;
-      }
-
-      .task-content {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .task-title {
-        margin: 0 0 10px;
-        font-size: 1.08rem;
-        line-height: 1.35;
-        color: #1e293b;
-      }
-
-      .task-desc {
-        margin: 0 0 12px;
-        color: #64748b;
-        font-size: 0.95rem;
-        line-height: 1.55;
-      }
-
-      .due-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        margin-bottom: 10px;
-        padding: 8px 10px;
-        border-radius: 10px;
-        background: #f8fafc;
-        font-size: 0.82rem;
-        color: #475569;
-        flex-wrap: wrap;
-      }
-      .due-row .due-label { font-weight: 600; }
-      .due-row .due-value { color: #1e293b; font-weight: 700; }
-      .due-row.late .due-value { color: #b91c1c; }
-      .due-row.soon .due-value { color: #c2410c; }
-      .due-edit-btn {
-        background: transparent;
-        border: 1px solid #cbd5e1;
-        color: #475569;
-        padding: 4px 8px;
-        border-radius: 8px;
-        font-size: 0.75rem;
-        cursor: pointer;
-        font-weight: 600;
-      }
-      .due-edit-btn:hover { background: #ffffff; }
-
-      .completion-info {
-        display: none;
-        margin-top: 4px;
-        padding: 10px 12px;
-        border-radius: 12px;
-        background: #dcfce7;
-        color: #166534;
-        font-size: 0.85rem;
-        line-height: 1.4;
-      }
-      .task-card.realizado .completion-info { display: block; }
-      .task-card.realizado .task-title {
-        text-decoration: line-through;
-        color: #64748b;
-      }
-
-      .task-actions {
-        margin-top: auto;
-        padding-top: 16px;
-      }
-
-      .action-btn {
-        width: 100%;
-        border: none;
-        border-radius: 12px;
-        padding: 12px 16px;
-        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-        color: #ffffff;
-        font-size: 0.95rem;
-        font-weight: 700;
-        cursor: pointer;
-        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
-      }
-      .action-btn:hover { filter: brightness(0.98); }
-      .action-btn:disabled { opacity: 0.6; cursor: progress; }
-      .task-card.realizado .action-btn {
-        background: #ffffff;
-        color: #15803d;
-        border: 1px solid #86efac;
-        box-shadow: none;
-      }
-
-      .empty-state {
-        grid-column: 1 / -1;
-        padding: 32px 20px;
-        text-align: center;
-        background: #ffffff;
-        border: 1px dashed #cbd5e1;
-        border-radius: 18px;
-        color: #64748b;
-        display: none;
-      }
-
-      .loading-state {
-        grid-column: 1 / -1;
-        padding: 40px 20px;
-        text-align: center;
-        color: #64748b;
-        font-size: 0.95rem;
-      }
-
-      @media (max-width: 980px) {
-        .task-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      }
-
-      @media (max-width: 860px) {
-        .action-bar-inner {
-          padding: 10px 16px;
-          gap: 12px;
-        }
-        .progress-block { order: 3; flex-basis: 100%; }
-      }
-
-      @media (max-width: 720px) {
-        .hero, .content-inner, .action-bar-inner {
-          padding-left: 16px;
-          padding-right: 16px;
-        }
-        .hero-top {
-          flex-direction: column;
-          align-items: stretch;
-          gap: 12px;
-        }
-        .hero-actions-top { justify-content: flex-end; }
-        .stats-mini { gap: 10px; }
-        .stat-mini .stat-number { font-size: 1.1rem; }
-        .filter-bar { gap: 10px; }
-        .filter-divider { display: none; }
-      }
-
-      @media (max-width: 640px) {
-        .task-grid { grid-template-columns: 1fr; }
-        h1 { font-size: 1.4rem; }
-        .action-buttons { width: 100%; }
-        .action-btn-primary, .action-btn-ghost { flex: 1; justify-content: center; }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="page">
-      <header class="hero">
-        <div class="hero-inner">
-          <div class="hero-top">
-            <div class="brand">
-              <div class="brand-icon">☑</div>
-              <div>
-                <h1>Quadro de Tarefas</h1>
-                <h2>Versão 1.0</h2>
-              </div>
-            </div>
-
-            <div class="hero-actions-top" id="hero-actions-top">
-              <a class="nav-btn" href="atas.html" title="ATAs e criação em série">📑 ATA's</a>
-              <a class="nav-btn" href="dashboard.html" title="Painel gerencial">📊 Painel gerencial</a>
-              <button class="logout-btn" id="logout-btn" type="button">Sair</button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div class="action-bar">
-        <div class="action-bar-inner">
-          <div class="stats-mini">
-            <div class="stat-mini">
-              <span class="stat-number" id="stat-total">0</span>
-              <span class="stat-label">Total</span>
-            </div>
-            <div class="stat-divider"></div>
-            <div class="stat-mini">
-              <span class="stat-number" id="stat-completed">0</span>
-              <span class="stat-label">Concluídas</span>
-            </div>
-            <div class="stat-divider"></div>
-            <div class="stat-mini">
-              <span class="stat-number" id="stat-pending">0</span>
-              <span class="stat-label">Pendentes</span>
-            </div>
-          </div>
-
-          <div class="progress-block">
-            <span class="progress-block-label">Progresso</span>
-            <div class="progress-track">
-              <div class="progress-fill" id="progress-bar"></div>
-            </div>
-            <span class="progress-percent" id="progress-text">0%</span>
-          </div>
-
-          <div class="action-buttons">
-            <button class="action-btn-primary" id="new-task-btn" type="button">➕ Nova tarefa</button>
-            <button class="action-btn-ghost" id="invite-btn" type="button">📩 Convidar</button>
-          </div>
-        </div>
-      </div>
-
-      <main class="content-inner">
-        <section class="filter-bar" id="filter-bar">
-          <div class="filter-group">
-            <span class="filter-group-label">Status</span>
-            <button class="filter-btn active" type="button" data-filter-type="status" data-value="todas">Todas</button>
-            <button class="filter-btn" type="button" data-filter-type="status" data-value="pendentes">Pendentes</button>
-            <button class="filter-btn" type="button" data-filter-type="status" data-value="concluida">Concluídas</button>
-            <button class="filter-btn" type="button" data-filter-type="status" data-value="atrasadas">Atrasadas</button>
-            <button class="filter-btn" type="button" data-filter-type="status" data-value="proximas">Próximos 7 dias</button>
-          </div>
-
-          <div class="filter-divider"></div>
-
-          <div class="filter-group">
-            <span class="filter-group-label">Categoria</span>
-            <div class="cat-filter-wrap" id="cat-filter-wrap">
-              <button type="button" class="cat-filter-trigger" id="cat-filter-trigger" aria-haspopup="true" aria-expanded="false">
-                <span class="swatch todas" id="cat-filter-swatch"></span>
-                <span id="cat-filter-label">Todas</span>
-              </button>
-              <div class="cat-filter-menu" id="cat-filter-menu" role="menu"></div>
-            </div>
-          </div>
-        </section>
-
-        <div class="board-toolbar">
-          <div class="sync-indicator" id="sync-indicator">
-            <span class="sync-dot" id="sync-dot"></span>
-            <span id="sync-text">Sincronizado</span>
-          </div>
-        </div>
-
-        <section class="task-grid" id="task-grid">
-          <div class="loading-state" id="loading-state">Carregando tarefas da equipe…</div>
-          <div id="empty-state" class="empty-state">Nenhuma tarefa encontrada para este filtro.</div>
-        </section>
-      </main>
+  <!-- Hero da Home -->
+  <section class="home-hero">
+    <div class="eyebrow">🍄 Taoca OS · Home Executiva</div>
+    <h1 id="greeting">Bem-vindo de volta</h1>
+    <p class="lead">
+      Seu centro de comando para cultivar com clareza. Aqui você acompanha tarefas, produção, clientes,
+      finanças e estratégia — tudo orientado por dados e pela <strong>Taoca IA</strong>.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="tarefas.html">📋 Quadro de tarefas</a>
+      <a class="btn btn-secondary" href="dashboard.html">📊 Painel gerencial</a>
+      <button class="btn btn-ghost" id="open-ia-btn" type="button">🤖 Falar com a Taoca IA</button>
     </div>
+  </section>
 
-    <!-- Modal de prazo (calendário) -->
-    <div class="modal-backdrop" id="due-modal" role="dialog" aria-modal="true" aria-labelledby="due-modal-title">
-      <div class="modal-card">
-        <h3 class="modal-title" id="due-modal-title">Definir prazo</h3>
-        <p class="modal-subtitle">Escolha a data limite para esta tarefa.</p>
-        <div class="modal-task-name" id="due-modal-task">—</div>
-
-        <label class="modal-label" for="due-modal-date">Data do prazo</label>
-        <input type="date" id="due-modal-date" class="modal-date-input" />
-
-        <div class="modal-quick-row" id="due-modal-quick">
-          <button type="button" class="modal-quick-btn" data-quick="today">Hoje</button>
-          <button type="button" class="modal-quick-btn" data-quick="tomorrow">Amanhã</button>
-          <button type="button" class="modal-quick-btn" data-quick="3d">Em 3 dias</button>
-          <button type="button" class="modal-quick-btn" data-quick="7d">Em 7 dias</button>
-          <button type="button" class="modal-quick-btn" data-quick="15d">Em 15 dias</button>
-          <button type="button" class="modal-quick-btn" data-quick="30d">Em 30 dias</button>
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="modal-btn danger" id="due-modal-clear">Remover prazo</button>
-          <button type="button" class="modal-btn secondary" id="due-modal-cancel">Cancelar</button>
-          <button type="button" class="modal-btn primary" id="due-modal-save">Salvar</button>
-        </div>
+  <!-- IA Briefing -->
+  <section class="ia-briefing">
+    <div class="ia-avatar">🤖</div>
+    <div class="ia-content">
+      <div class="ia-label">Briefing inteligente</div>
+      <div class="ia-text" id="ia-briefing-text">Analisando os dados da sua operação…</div>
+      <div class="ia-actions">
+        <button class="ia-chip" data-q="O que devo fazer hoje?">📌 O que fazer hoje?</button>
+        <button class="ia-chip" data-q="Resumo do mês">📈 Resumo do mês</button>
+        <button class="ia-chip" data-q="Há tarefas atrasadas?">⚠️ Atrasadas</button>
+        <button class="ia-chip" data-q="Como está a produção?">🍄 Produção</button>
       </div>
     </div>
+  </section>
 
-    <!-- Modal de Nova Tarefa -->
-    <div class="modal-backdrop" id="new-task-modal" role="dialog" aria-modal="true" aria-labelledby="new-task-modal-title">
-      <div class="modal-card large">
-        <h3 class="modal-title" id="new-task-modal-title">➕ Nova tarefa</h3>
-        <p class="modal-subtitle">Crie um novo card no quadro da equipe.</p>
+  <!-- KPIs principais -->
+  <section class="section-head">
+    <div class="title-block">
+      <div class="eyebrow">Indicadores chave</div>
+      <h2 class="h-title">Visão executiva de hoje</h2>
+      <p class="h-sub">Métricas vivas atualizadas em tempo real conforme a equipe registra atividades.</p>
+    </div>
+    <span class="sync-pill"><span class="sync-dot" id="sync-dot"></span><span id="sync-text">Sincronizado</span></span>
+  </section>
 
-        <div class="modal-field">
-          <label for="new-task-title">Título *</label>
-          <input type="text" id="new-task-title" class="modal-input" placeholder="Ex.: Enviar contrato à diretoria" maxlength="200" />
-        </div>
+  <div class="grid grid-4 mb-6">
+    <div class="kpi-card kpi-emerald">
+      <span class="kpi-label">📊 Produtividade</span>
+      <span class="kpi-value" id="kpi-productivity">0%</span>
+      <span class="kpi-trend" id="kpi-productivity-trend">— sem variação</span>
+    </div>
+    <div class="kpi-card kpi-clay">
+      <span class="kpi-label">✅ Concluídas no mês</span>
+      <span class="kpi-value" id="kpi-month-done">0</span>
+      <span class="text-sm text-secondary" id="kpi-month-done-sub">de 0 totais no período</span>
+    </div>
+    <div class="kpi-card kpi-gold">
+      <span class="kpi-label">⏳ Em andamento</span>
+      <span class="kpi-value" id="kpi-pending">0</span>
+      <span class="text-sm text-secondary" id="kpi-pending-sub">tarefas no quadro</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">⚠️ Atrasadas</span>
+      <span class="kpi-value" id="kpi-late" style="color:var(--accent)">0</span>
+      <span class="text-sm text-secondary" id="kpi-late-sub">precisam de atenção</span>
+    </div>
+  </div>
 
-        <div class="modal-field">
-          <label for="new-task-desc">Descrição</label>
-          <textarea id="new-task-desc" class="modal-textarea" placeholder="Detalhes, contexto e observações" maxlength="800"></textarea>
-        </div>
-
-        <div class="modal-field">
-          <label for="new-task-category">Categoria</label>
-          <select id="new-task-category" class="modal-select">
-            <option value="institucional">Institucional</option>
-            <option value="financeiro">Financeiro</option>
-            <option value="fiscal">Fiscal</option>
-            <option value="juridico">Jurídico</option>
-            <option value="comercial">Comercial</option>
-            <option value="operacional">Operacional</option>
-            <option value="estrategico">Estratégico</option>
-            <option value="marketing">Marketing</option>
-            <option value="ti">TI</option>
-            <option value="consultoria">Consultoria</option>
-            <option value="outras">Outras</option>
-          </select>
-        </div>
-
-        <div class="modal-field">
-          <label for="new-task-due">Prazo (opcional)</label>
-          <input type="date" id="new-task-due" class="modal-input" />
-        </div>
-
-        <div class="modal-field">
-          <label for="new-task-author">Quem está criando? (opcional)</label>
-          <input type="text" id="new-task-author" class="modal-input" placeholder="Seu nome" maxlength="80" />
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="modal-btn secondary" id="new-task-cancel">Cancelar</button>
-          <button type="button" class="modal-btn primary" id="new-task-save">Criar tarefa</button>
-        </div>
+  <!-- Quick row -->
+  <div class="quick-row">
+    <div class="q-card">
+      <div class="q-icon" style="background:var(--taoca-green-50);color:var(--brand);">🍄</div>
+      <div class="q-text">
+        <div class="q-label">Lotes ativos</div>
+        <div class="q-value" id="q-lotes">—</div>
       </div>
     </div>
+    <div class="q-card">
+      <div class="q-icon" style="background:var(--taoca-clay-100);color:#8B4A30;">👥</div>
+      <div class="q-text">
+        <div class="q-label">Clientes ativos</div>
+        <div class="q-value" id="q-clientes">—</div>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="q-icon" style="background:var(--taoca-gold-100);color:#7A5A2A;">📑</div>
+      <div class="q-text">
+        <div class="q-label">ATAs registradas</div>
+        <div class="q-value" id="q-atas">—</div>
+      </div>
+    </div>
+  </div>
 
-    <script>
-      (function () {
-        // ---------- Auth gate ----------
-        const SESSION_KEY = 'taoca-auth-ok';
-        try {
-          if (sessionStorage.getItem(SESSION_KEY) !== '1') {
-            window.location.replace('login.html');
-            return;
-          }
-        } catch (e) {
-          window.location.replace('login.html');
+  <!-- Módulos do sistema -->
+  <section class="section-head">
+    <div class="title-block">
+      <div class="eyebrow">Módulos do Taoca OS</div>
+      <h2 class="h-title">Áreas de gestão</h2>
+      <p class="h-sub">Acesse rapidamente cada núcleo da operação.</p>
+    </div>
+  </section>
+
+  <div class="module-grid mb-6">
+    <a class="module-card" href="tarefas.html">
+      <div class="m-icon">✅</div>
+      <div class="m-title">Tarefas</div>
+      <div class="m-desc">Quadro Kanban da equipe, prazos, categorias e progresso em tempo real.</div>
+      <div class="m-stat"><strong id="m-tasks">0</strong> tarefas no quadro</div>
+    </a>
+    <a class="module-card m-info" href="dashboard.html">
+      <div class="m-icon">📊</div>
+      <div class="m-title">Painel Gerencial</div>
+      <div class="m-desc">Indicadores de performance, ranking, evolução e distribuição.</div>
+      <div class="m-stat"><strong id="m-perf">0%</strong> de progresso geral</div>
+    </a>
+    <a class="module-card" href="atas.html">
+      <div class="m-icon">📑</div>
+      <div class="m-title">ATAs</div>
+      <div class="m-desc">Registre reuniões e gere tarefas em lote a partir de decisões.</div>
+      <div class="m-stat"><strong id="m-atas">0</strong> atas registradas</div>
+    </a>
+    <a class="module-card m-clay" href="producao.html">
+      <div class="m-icon">🍄</div>
+      <div class="m-title">Produção</div>
+      <div class="m-desc">Lotes de cultivo, inoculação, frutificação, colheita e rendimento.</div>
+      <div class="m-stat"><strong id="m-lotes">0</strong> lotes ativos</div>
+    </a>
+    <a class="module-card m-clay" href="clientes.html">
+      <div class="m-icon">👥</div>
+      <div class="m-title">Clientes &amp; CRM</div>
+      <div class="m-desc">Pipeline, histórico, segmentação e oportunidades de relacionamento.</div>
+      <div class="m-stat"><strong id="m-clientes">0</strong> clientes cadastrados</div>
+    </a>
+    <a class="module-card m-gold" href="financeiro.html">
+      <div class="m-icon">💰</div>
+      <div class="m-title">Financeiro</div>
+      <div class="m-desc">Fluxo de caixa, contas a pagar/receber, margem por produto.</div>
+      <div class="m-stat"><strong id="m-fin">—</strong> visão financeira</div>
+    </a>
+    <a class="module-card m-info" href="estrategia.html">
+      <div class="m-icon">🎯</div>
+      <div class="m-title">Estratégia &amp; OKRs</div>
+      <div class="m-desc">Plano de negócios vivo, objetivos trimestrais e cenários.</div>
+      <div class="m-stat"><strong id="m-okr">—</strong> OKRs em curso</div>
+    </a>
+    <a class="module-card m-gold" href="#" id="open-ia-card">
+      <div class="m-icon">🤖</div>
+      <div class="m-title">Taoca IA</div>
+      <div class="m-desc">Sua copiloto. Análises, insights e geração de conteúdo sob demanda.</div>
+      <div class="m-stat"><strong>Disponível 24/7</strong></div>
+    </a>
+  </div>
+
+  <!-- Atividade recente + spark -->
+  <section class="grid grid-2 mb-6">
+    <div class="card card-pad">
+      <div class="section-head" style="margin-bottom:8px">
+        <div class="title-block">
+          <h3 class="h-title" style="font-size:1.15rem">Atividade recente</h3>
+          <p class="h-sub">Últimas conclusões e movimentos da equipe.</p>
+        </div>
+      </div>
+      <ul class="activity-feed" id="activity-feed">
+        <li><div class="a-icon">⏳</div><div class="a-text"><div class="a-title">Carregando atividades…</div><div class="a-meta">Aguarde um momento</div></div></li>
+      </ul>
+    </div>
+
+    <div class="card card-pad">
+      <div class="section-head" style="margin-bottom:8px">
+        <div class="title-block">
+          <h3 class="h-title" style="font-size:1.15rem">Pulso da equipe</h3>
+          <p class="h-sub">Tarefas concluídas nos últimos 14 dias.</p>
+        </div>
+      </div>
+      <div class="mini-spark" id="mini-spark"></div>
+      <div class="flex justify-between mt-3 text-xs text-muted">
+        <span>14 dias atrás</span>
+        <span>Hoje</span>
+      </div>
+      <div class="mt-4 text-sm">
+        <strong id="spark-total">0</strong> conclusões neste período · 
+        <span class="text-secondary">média de <strong id="spark-avg">0</strong>/dia</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cita ção / rodapé orgânico -->
+  <div class="card card-pad" style="background:linear-gradient(135deg, var(--taoca-cream-50), #FFF); text-align:center; border-style:dashed;">
+    <div class="text-xs uppercase font-bold" style="color:var(--accent); letter-spacing:0.18em; margin-bottom:8px;">Filosofia Taoca</div>
+    <p style="font-family:var(--font-serif); font-size:1.2rem; font-style:italic; color:var(--brand-strong); margin:0;">
+      "Cultivar cogumelos é cultivar tempo, paciência e cuidado.<br>
+      A Taoca OS está aqui para que cada decisão seja feita com a mesma serenidade."
+    </p>
+    <p class="text-secondary text-sm mt-3" style="margin:12px 0 0;">Natureza · Qualidade · Afeto</p>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/taoca-shell.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/taoca-ai.js"></script>
+  <script>
+    (function () {
+      // Monta o shell (sidebar + topbar)
+      TaocaShell.mount({
+        active: 'home',
+        breadcrumb: 'Taoca OS',
+        title: 'Home Executiva',
+      });
+
+      // ---- Saudação dinâmica ----
+      const user = TaocaShell.getCurrentUser();
+      const h = new Date().getHours();
+      const periodo = h < 12 ? 'Bom dia' : (h < 18 ? 'Boa tarde' : 'Boa noite');
+      const greetEl = document.getElementById('greeting');
+      if (greetEl) greetEl.textContent = `${periodo}, ${user || 'cultivador(a)'} 🌿`;
+
+      // ---- Sync indicator ----
+      const syncDot = document.getElementById('sync-dot');
+      const syncText = document.getElementById('sync-text');
+      function setSync(state, msg) {
+        syncDot.classList.remove('syncing','error');
+        if (state === 'syncing') syncDot.classList.add('syncing');
+        if (state === 'error')   syncDot.classList.add('error');
+        syncText.textContent = msg || (state==='syncing'?'Sincronizando…':state==='error'?'Falha':'Sincronizado');
+      }
+
+      // ---- Helpers ----
+      function startOfDay(d){const x=new Date(d);x.setHours(0,0,0,0);return x;}
+      function startOfMonth(d){const x=startOfDay(d);x.setDate(1);return x;}
+      function parseCompleted(t){
+        if(t.completed_at_iso){const d=new Date(t.completed_at_iso); if(!isNaN(d)) return d;}
+        if(t.completed_at){const m=String(t.completed_at).match(/(\d{2})\/(\d{2})\/(\d{4})[ ,]+(\d{2}):(\d{2})/); if(m) return new Date(+m[3],+m[2]-1,+m[1],+m[4],+m[5]);}
+        return null;
+      }
+
+      async function fetchJson(url) {
+        try { const r = await fetch(url); if (!r.ok) return null; return await r.json(); } catch(e) { return null; }
+      }
+
+      // ---- Render Briefing IA ----
+      function buildBriefing(tasks) {
+        const today = startOfDay(new Date());
+        const monthStart = startOfMonth(new Date());
+        const total = tasks.length;
+        const done = tasks.filter(t => t.status === 'concluida').length;
+        const pending = total - done;
+        const monthDone = tasks.filter(t => { if (t.status!=='concluida') return false; const d=parseCompleted(t); return d&&d>=monthStart;}).length;
+        const late = tasks.filter(t => {
+          if (t.status==='concluida' || !t.due_date) return false;
+          const m = String(t.due_date).match(/^(\d{4})-(\d{2})-(\d{2})/);
+          if(!m) return false;
+          return new Date(+m[1],+m[2]-1,+m[3]) < today;
+        }).length;
+
+        let msg;
+        if (total === 0) {
+          msg = `Sua operação está pronta para começar! Crie sua primeira tarefa em <strong>Tarefas</strong> ou cadastre uma ATA. 🌱`;
+        } else if (late > 0) {
+          msg = `Você tem <strong>${late}</strong> tarefa(s) atrasada(s) e <strong>${pending}</strong> em andamento. Sugiro abrir o quadro e priorizar essas pendências. 📌`;
+        } else if (monthDone > 0) {
+          msg = `Excelente! Você concluiu <strong>${monthDone}</strong> tarefa(s) este mês. Há <strong>${pending}</strong> pendente(s) — mantenha o ritmo. 🚀`;
+        } else {
+          msg = `Você tem <strong>${pending}</strong> tarefa(s) em andamento. Que tal começar pela mais antiga? Posso te ajudar a priorizar. 💪`;
+        }
+        document.getElementById('ia-briefing-text').innerHTML = msg;
+      }
+
+      // ---- KPIs ----
+      function renderKpis(tasks) {
+        const today = startOfDay(new Date());
+        const monthStart = startOfMonth(new Date());
+        const total = tasks.length;
+        const done = tasks.filter(t => t.status === 'concluida').length;
+        const pending = total - done;
+        const pct = total ? Math.round((done/total)*100) : 0;
+        const monthDone = tasks.filter(t => { if (t.status!=='concluida') return false; const d=parseCompleted(t); return d&&d>=monthStart;}).length;
+        const monthTotal = tasks.filter(t => {
+          // criadas neste mês? sem campo created_at, usamos tudo no quadro como base do mês
+          return true;
+        }).length;
+        const late = tasks.filter(t => {
+          if (t.status==='concluida' || !t.due_date) return false;
+          const m = String(t.due_date).match(/^(\d{4})-(\d{2})-(\d{2})/);
+          if(!m) return false;
+          return new Date(+m[1],+m[2]-1,+m[3]) < today;
+        }).length;
+
+        document.getElementById('kpi-productivity').textContent = pct + '%';
+        const trend = document.getElementById('kpi-productivity-trend');
+        if (pct >= 70) { trend.textContent='↑ ótimo ritmo'; trend.className='kpi-trend'; }
+        else if (pct >= 40) { trend.textContent='→ ritmo estável'; trend.className='kpi-trend flat'; }
+        else { trend.textContent='↓ pode melhorar'; trend.className='kpi-trend down'; }
+
+        document.getElementById('kpi-month-done').textContent = monthDone;
+        document.getElementById('kpi-month-done-sub').textContent = `de ${monthTotal} totais no quadro`;
+        document.getElementById('kpi-pending').textContent = pending;
+        document.getElementById('kpi-pending-sub').textContent = pending === 1 ? 'tarefa em andamento' : 'tarefas em andamento';
+        document.getElementById('kpi-late').textContent = late;
+        document.getElementById('kpi-late-sub').textContent = late === 0 ? 'nada urgente 🎉' : (late === 1 ? 'precisa de atenção' : 'precisam de atenção');
+
+        // module cards
+        document.getElementById('m-tasks').textContent = total;
+        document.getElementById('m-perf').textContent = pct + '%';
+      }
+
+      // ---- Activity feed ----
+      function renderActivity(tasks) {
+        const feed = document.getElementById('activity-feed');
+        const recents = tasks
+          .filter(t => t.status === 'concluida')
+          .map(t => ({ t, d: parseCompleted(t) }))
+          .filter(x => x.d)
+          .sort((a,b) => b.d - a.d)
+          .slice(0, 6);
+
+        if (!recents.length) {
+          feed.innerHTML = `<li><div class="a-icon">🌱</div><div class="a-text"><div class="a-title">Nenhuma atividade ainda</div><div class="a-meta">Conclua a primeira tarefa para começar a história da Taoca</div></div></li>`;
           return;
         }
-
-        // ---------- Constantes ----------
-        const TABLE = 'tasks';
-        const POLL_MS = 8000;
-        const CATEGORY_LABEL = {
-          institucional: 'Institucional',
-          financeiro: 'Financeiro',
-          fiscal: 'Fiscal',
-          juridico: 'Jurídico',
-          comercial: 'Comercial',
-          operacional: 'Operacional',
-          estrategico: 'Estratégico',
-          marketing: 'Marketing',
-          ti: 'TI',
-          consultoria: 'Consultoria',
-          outras: 'Outras',
-        };
-        // Mapa de migração de categorias antigas → novas
-        const LEGACY_CATEGORY_MAP = {
-          empresarial: 'institucional',
-          fazenda: 'outras',
-        };
-
-        let currentStatus = 'todas';
-        let currentCategory = 'todas';
-        let tasks = [];
-
-        // ---------- Refs ----------
-        const grid = document.getElementById('task-grid');
-        const emptyState = document.getElementById('empty-state');
-        const loadingState = document.getElementById('loading-state');
-        const filterBar = document.getElementById('filter-bar');
-        const inviteBtn = document.getElementById('invite-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-
-        const statTotal = document.getElementById('stat-total');
-        const statCompleted = document.getElementById('stat-completed');
-        const statPending = document.getElementById('stat-pending');
-        const progressText = document.getElementById('progress-text');
-        const progressBar = document.getElementById('progress-bar');
-        const syncDot = document.getElementById('sync-dot');
-        const syncText = document.getElementById('sync-text');
-
-        // ---------- Helpers ----------
-        function escapeHtml(text) {
-          return String(text == null ? '' : text).replace(/[&<>"']/g, (m) => (
-            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]
-          ));
-        }
-        function formatNowBR() {
-          return new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-        }
-        function nowIso() { return new Date().toISOString(); }
-        function startOfDay(d) {
-          const x = new Date(d);
-          x.setHours(0, 0, 0, 0);
-          return x;
-        }
-        function diffDays(a, b) {
-          return Math.round((startOfDay(a) - startOfDay(b)) / 86400000);
-        }
-        function parseDueDate(t) {
-          if (!t.due_date) return null;
-          const m = String(t.due_date).match(/^(\d{4})-(\d{2})-(\d{2})/);
-          if (!m) return null;
-          return new Date(+m[1], +m[2] - 1, +m[3]);
-        }
-        function formatDateBR(d) {
-          if (!d) return '';
-          return d.toLocaleDateString('pt-BR');
-        }
-        function setSync(state, message) {
-          syncDot.classList.remove('syncing', 'error');
-          if (state === 'syncing') syncDot.classList.add('syncing');
-          if (state === 'error') syncDot.classList.add('error');
-          syncText.textContent = message || (state === 'syncing' ? 'Sincronizando…' : state === 'error' ? 'Falha de sincronização' : 'Sincronizado');
-        }
-
-        // ---------- API ----------
-        async function fetchTasks() {
-          const res = await fetch(`tables/${TABLE}?limit=200&sort=task_number`);
-          if (!res.ok) throw new Error('Falha ao carregar tarefas');
-          const json = await res.json();
-          let data = (json.data || []).filter((row) => !row.deleted);
-          data.sort((a, b) => (a.task_number || 0) - (b.task_number || 0));
-          return data;
-        }
-        async function patchTask(id, payload) {
-          const res = await fetch(`tables/${TABLE}/${id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          if (!res.ok) throw new Error('Falha ao atualizar tarefa');
-          return await res.json();
-        }
-        async function createTask(payload) {
-          const res = await fetch(`tables/${TABLE}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          if (!res.ok) throw new Error('Falha ao criar tarefa');
-          return await res.json();
-        }
-        function nextTaskNumber() {
-          if (!tasks.length) return 1;
-          return Math.max(...tasks.map((t) => Number(t.task_number) || 0)) + 1;
-        }
-
-        // ---------- Render ----------
-        function buildCard(task) {
-          const article = document.createElement('article');
-          const isDone = task.status === 'concluida';
-          const due = parseDueDate(task);
-          const today = startOfDay(new Date());
-          const isLate = !isDone && due && due < today;
-          const isSoon = !isDone && due && diffDays(due, today) >= 0 && diffDays(due, today) <= 7;
-
-          article.className = 'task-card' + (isDone ? ' realizado' : '') + (isLate ? ' atrasada' : '');
-          article.dataset.id = task.id;
-          article.dataset.category = task.category;
-          article.dataset.status = task.status;
-
-          const tagClass = task.category || '';
-          const tagLabel = CATEGORY_LABEL[task.category] || task.category || '—';
-          const stateLabel = isDone ? 'Concluída' : (isLate ? 'Atrasada' : 'Pendente');
-          const btnLabel = isDone ? 'Reabrir tarefa' : 'Concluir';
-          const completionHtml = isDone
-            ? `✓ Concluído por <strong>${escapeHtml(task.completed_by || 'Equipe')}</strong> · ${escapeHtml(task.completed_at || '')}`
-            : '';
-
-          let dueHtml = '';
-          if (!isDone) {
-            const dueClass = isLate ? 'late' : (isSoon ? 'soon' : '');
-            const dueText = due
-              ? `${formatDateBR(due)}${isLate ? ' (atrasada)' : (isSoon ? ` (em ${diffDays(due, today)}d)` : '')}`
-              : 'Sem prazo';
-            dueHtml = `
-              <div class="due-row ${dueClass}">
-                <span class="due-label">📌 Prazo:</span>
-                <span class="due-value">${escapeHtml(dueText)}</span>
-                <button class="due-edit-btn" type="button" data-action="edit-due">${due ? 'Alterar' : 'Definir'}</button>
-              </div>
-            `;
-          }
-
-          const categoryOptionsHtml = Object.keys(CATEGORY_LABEL).map((key) => `
-            <button type="button" class="category-option ${key === task.category ? 'selected' : ''}" data-category-value="${escapeHtml(key)}">
-              <span class="swatch ${escapeHtml(key)}"></span>
-              <span>${escapeHtml(CATEGORY_LABEL[key])}</span>
-            </button>
-          `).join('');
-
-          article.innerHTML = `
-            <div class="card-header">
-              <div class="card-meta">
-                <span class="category-wrap">
-                  <button type="button" class="tag tag-editable ${escapeHtml(tagClass)}" data-action="open-category-menu" title="Clique para alterar a categoria">
-                    ${escapeHtml(tagLabel)}
-                  </button>
-                  <div class="category-menu" data-role="category-menu">
-                    <div class="category-menu-title">Alterar categoria</div>
-                    ${categoryOptionsHtml}
-                  </div>
-                </span>
-                <span class="task-number">${escapeHtml(task.task_number)}</span>
-              </div>
-              <span class="task-state">${escapeHtml(stateLabel)}</span>
+        feed.innerHTML = recents.map(({t,d}) => `
+          <li>
+            <div class="a-icon">✅</div>
+            <div class="a-text">
+              <div class="a-title">${escapeHtml(t.title || 'Tarefa')}</div>
+              <div class="a-meta">${escapeHtml(t.completed_by||'Equipe')} · ${d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})} ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
             </div>
-            <div class="task-content">
-              <h3 class="task-title">${escapeHtml(task.title)}</h3>
-              <p class="task-desc">${escapeHtml(task.description)}</p>
-              ${dueHtml}
-              <div class="completion-info">${completionHtml}</div>
-            </div>
-            <div class="task-actions">
-              <button class="action-btn toggle-btn" type="button">${escapeHtml(btnLabel)}</button>
-            </div>
-          `;
+          </li>
+        `).join('');
+      }
 
-          const toggleBtn = article.querySelector('.toggle-btn');
-          toggleBtn.addEventListener('click', () => onToggle(task, toggleBtn));
-
-          const dueEditBtn = article.querySelector('[data-action="edit-due"]');
-          if (dueEditBtn) dueEditBtn.addEventListener('click', () => onEditDue(task));
-
-          const catTrigger = article.querySelector('[data-action="open-category-menu"]');
-          const catMenu = article.querySelector('[data-role="category-menu"]');
-          if (catTrigger && catMenu) {
-            catTrigger.addEventListener('click', (ev) => {
-              ev.stopPropagation();
-              closeAllCategoryMenus(catMenu);
-              catMenu.classList.toggle('open');
-            });
-            Array.from(catMenu.querySelectorAll('.category-option')).forEach((opt) => {
-              opt.addEventListener('click', (ev) => {
-                ev.stopPropagation();
-                const value = opt.getAttribute('data-category-value');
-                catMenu.classList.remove('open');
-                if (value && value !== task.category) {
-                  onEditCategory(task, value);
-                }
-              });
-            });
-          }
-
-          return article;
+      // ---- Spark ----
+      function renderSpark(tasks) {
+        const days = 14;
+        const buckets = [];
+        const now = new Date();
+        for (let i = days-1; i >= 0; i--) {
+          const d = startOfDay(new Date(now));
+          d.setDate(d.getDate() - i);
+          buckets.push({ key: d.toISOString().slice(0,10), count: 0 });
         }
-
-        function closeAllCategoryMenus(except) {
-          document.querySelectorAll('.category-menu.open').forEach((el) => {
-            if (el !== except) el.classList.remove('open');
-          });
-        }
-        document.addEventListener('click', () => closeAllCategoryMenus(null));
-
-        function renderGrid() {
-          Array.from(grid.querySelectorAll('.task-card')).forEach((el) => el.remove());
-
-          const today = startOfDay(new Date());
-          let visibleCount = 0;
-          tasks.forEach((task) => {
-            const card = buildCard(task);
-            const isDone = task.status === 'concluida';
-            const due = parseDueDate(task);
-            const isLate = !isDone && due && due < today;
-            const isSoon = !isDone && due && diffDays(due, today) >= 0 && diffDays(due, today) <= 7;
-
-            const matchStatus =
-              currentStatus === 'todas' ||
-              (currentStatus === 'pendentes' && task.status === 'pendente') ||
-              (currentStatus === 'concluida' && task.status === 'concluida') ||
-              (currentStatus === 'atrasadas' && isLate) ||
-              (currentStatus === 'proximas' && isSoon);
-
-            const matchCategory = currentCategory === 'todas' || currentCategory === task.category;
-            const shouldShow = matchStatus && matchCategory;
-
-            card.style.display = shouldShow ? 'flex' : 'none';
-            if (shouldShow) visibleCount += 1;
-            grid.insertBefore(card, emptyState);
-          });
-
-          loadingState.style.display = 'none';
-          emptyState.style.display = tasks.length > 0 && visibleCount === 0 ? 'block' : 'none';
-        }
-
-        function updateMetrics() {
-          const total = tasks.length;
-          const completed = tasks.filter((t) => t.status === 'concluida').length;
-          const pending = total - completed;
-          const percent = total ? Math.round((completed / total) * 100) : 0;
-
-          statTotal.textContent = String(total);
-          statCompleted.textContent = String(completed);
-          statPending.textContent = String(pending);
-          progressText.textContent = `${percent}%`;
-          progressBar.style.width = `${percent}%`;
-        }
-
-        function updateAll() {
-          updateMetrics();
-          renderGrid();
-        }
-
-        // ---------- Filtros ----------
-        const catFilterTrigger = document.getElementById('cat-filter-trigger');
-        const catFilterMenu = document.getElementById('cat-filter-menu');
-        const catFilterLabel = document.getElementById('cat-filter-label');
-        const catFilterSwatch = document.getElementById('cat-filter-swatch');
-
-        function buildCatFilterMenu() {
-          const opts = [['todas', 'Todas']].concat(
-            Object.keys(CATEGORY_LABEL).map((k) => [k, CATEGORY_LABEL[k]])
-          );
-          catFilterMenu.innerHTML = opts.map(([key, label]) => `
-            <button type="button" class="cat-filter-option${key === currentCategory ? ' selected' : ''}" data-value="${key}" role="menuitem">
-              <span class="swatch ${key}"></span>
-              <span>${label}</span>
-            </button>
-          `).join('');
-        }
-        function updateCatFilterTrigger() {
-          const label = currentCategory === 'todas' ? 'Todas' : (CATEGORY_LABEL[currentCategory] || 'Todas');
-          catFilterLabel.textContent = label;
-          catFilterSwatch.className = `swatch ${currentCategory}`;
-          catFilterTrigger.classList.toggle('active', currentCategory !== 'todas');
-        }
-        function updateFilterButtons() {
-          const buttons = Array.from(filterBar.querySelectorAll('.filter-btn'));
-          buttons.forEach((button) => {
-            const type = button.dataset.filterType;
-            const value = button.dataset.value;
-            if (type === 'status') button.classList.toggle('active', value === currentStatus);
-          });
-          updateCatFilterTrigger();
-        }
-        function handleFilterClick(button) {
-          if (!button) return;
-          const type = button.getAttribute('data-filter-type');
-          const value = button.getAttribute('data-value');
-          if (!type || !value) return;
-          if (type === 'status') {
-            currentStatus = value;
-          }
-          updateFilterButtons();
-          renderGrid();
-        }
-        filterBar.addEventListener('click', (event) => {
-          const button = event.target.closest('.filter-btn');
-          if (!button) return;
-          event.preventDefault();
-          event.stopPropagation();
-          handleFilterClick(button);
+        tasks.forEach(t => {
+          if (t.status !== 'concluida') return;
+          const d = parseCompleted(t);
+          if (!d) return;
+          const key = startOfDay(d).toISOString().slice(0,10);
+          const b = buckets.find(x => x.key === key);
+          if (b) b.count++;
         });
+        const max = Math.max(1, ...buckets.map(b => b.count));
+        const sp = document.getElementById('mini-spark');
+        sp.innerHTML = buckets.map(b => `<div class="bar" style="height:${(b.count/max)*100}%" title="${b.key}: ${b.count}"></div>`).join('');
+        const total = buckets.reduce((s,b)=>s+b.count,0);
+        document.getElementById('spark-total').textContent = total;
+        document.getElementById('spark-avg').textContent = (total/days).toFixed(1);
+      }
 
-        // Dropdown de categoria
-        catFilterTrigger.addEventListener('click', (event) => {
-          event.stopPropagation();
-          const open = catFilterMenu.classList.toggle('open');
-          catFilterTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
-          if (open) buildCatFilterMenu();
-        });
-        catFilterMenu.addEventListener('click', (event) => {
-          const opt = event.target.closest('.cat-filter-option');
-          if (!opt) return;
-          event.stopPropagation();
-          currentCategory = opt.getAttribute('data-value') || 'todas';
-          catFilterMenu.classList.remove('open');
-          catFilterTrigger.setAttribute('aria-expanded', 'false');
-          updateFilterButtons();
-          renderGrid();
-        });
-        document.addEventListener('click', (event) => {
-          if (!catFilterMenu.classList.contains('open')) return;
-          if (event.target.closest('#cat-filter-wrap')) return;
-          catFilterMenu.classList.remove('open');
-          catFilterTrigger.setAttribute('aria-expanded', 'false');
-        });
+      function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 
-        // ---------- Ações ----------
-        async function onToggle(task, btn) {
-          const isCompleted = task.status === 'concluida';
-          let payload;
-          let actor = '';
-          if (!isCompleted) {
-            let person = prompt('Quem concluiu esta tarefa?');
-            if (person === null) return;
-            person = (person || '').trim() || 'Equipe';
-            actor = person;
-            payload = {
-              status: 'concluida',
-              completed_by: person,
-              completed_at: formatNowBR(),
-              completed_at_iso: nowIso(),
-            };
-          } else {
-            payload = { status: 'pendente', completed_by: '', completed_at: '', completed_at_iso: '' };
-          }
-
-          btn.disabled = true;
-          setSync('syncing', 'Salvando…');
-          try {
-            const updated = await patchTask(task.id, payload);
-            const idx = tasks.findIndex((t) => t.id === task.id);
-            if (idx >= 0) tasks[idx] = { ...tasks[idx], ...updated };
-            updateAll();
-            setSync('ok', 'Sincronizado');
-            // Registrar notificação
-            if (window.TaocaNotif) {
-              if (!isCompleted) {
-                window.TaocaNotif.log({
-                  event_type: 'task_completed',
-                  icon: '✅',
-                  actor: actor,
-                  title: `${actor} concluiu #${task.task_number || ''} — ${task.title || ''}`,
-                  details: `Categoria: ${CATEGORY_LABEL[task.category] || task.category || '—'}`,
-                  task_id: task.id,
-                  task_number: task.task_number || 0,
-                });
-              } else {
-                window.TaocaNotif.log({
-                  event_type: 'task_reopened',
-                  icon: '🔄',
-                  actor: 'Equipe',
-                  title: `Tarefa #${task.task_number || ''} foi reaberta`,
-                  details: task.title || '',
-                  task_id: task.id,
-                  task_number: task.task_number || 0,
-                });
-              }
-            }
-          } catch (err) {
-            console.error(err);
-            setSync('error', 'Erro ao salvar');
-            alert('Não foi possível salvar a alteração. Tente novamente.');
-          } finally {
-            btn.disabled = false;
-          }
-        }
-
-        // ===== Modal de prazo (calendário) =====
-        const dueModal = document.getElementById('due-modal');
-        const dueModalTask = document.getElementById('due-modal-task');
-        const dueModalDate = document.getElementById('due-modal-date');
-        const dueModalSave = document.getElementById('due-modal-save');
-        const dueModalCancel = document.getElementById('due-modal-cancel');
-        const dueModalClear = document.getElementById('due-modal-clear');
-        const dueModalQuick = document.getElementById('due-modal-quick');
-        let dueModalTaskRef = null;
-
-        function toIsoDate(d) {
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, '0');
-          const day = String(d.getDate()).padStart(2, '0');
-          return `${y}-${m}-${day}`;
-        }
-        function openDueModal(task) {
-          dueModalTaskRef = task;
-          dueModalTask.textContent = task.title || 'Tarefa';
-          dueModalDate.value = task.due_date && /^\d{4}-\d{2}-\d{2}/.test(task.due_date)
-            ? task.due_date.slice(0, 10)
-            : toIsoDate(new Date());
-          // min = hoje (apenas como sugestão; usuário ainda pode digitar manualmente datas passadas)
-          dueModalDate.removeAttribute('min');
-          dueModal.classList.add('open');
-          // Tenta abrir o calendário automaticamente (suportado em navegadores modernos)
-          setTimeout(() => {
-            try {
-              if (typeof dueModalDate.showPicker === 'function') {
-                dueModalDate.showPicker();
-              } else {
-                dueModalDate.focus();
-              }
-            } catch (e) {
-              dueModalDate.focus();
-            }
-          }, 60);
-        }
-        function closeDueModal() {
-          dueModal.classList.remove('open');
-          dueModalTaskRef = null;
-        }
-        async function saveDueModal(value) {
-          const task = dueModalTaskRef;
-          if (!task) return;
-          if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-            alert('Data inválida. Tente novamente.');
-            return;
-          }
-          const oldDue = task.due_date || '';
-          closeDueModal();
-          setSync('syncing', 'Salvando prazo…');
-          try {
-            const updated = await patchTask(task.id, { due_date: value });
-            const idx = tasks.findIndex((t) => t.id === task.id);
-            if (idx >= 0) tasks[idx] = { ...tasks[idx], ...updated };
-            updateAll();
-            setSync('ok', 'Sincronizado');
-            // Registrar notificação
-            if (window.TaocaNotif && oldDue !== value) {
-              const fmt = (s) => {
-                if (!s) return 'sem prazo';
-                const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
-                return m ? `${m[3]}/${m[2]}/${m[1]}` : s;
-              };
-              window.TaocaNotif.log({
-                event_type: 'task_due_changed',
-                icon: '📅',
-                actor: 'Equipe',
-                title: `Prazo de #${task.task_number || ''} — ${task.title || ''}`,
-                details: `${fmt(oldDue)} → ${fmt(value)}`,
-                task_id: task.id,
-                task_number: task.task_number || 0,
-              });
-            }
-          } catch (err) {
-            console.error(err);
-            setSync('error', 'Erro ao salvar prazo');
-            alert('Não foi possível salvar o prazo. Tente novamente.');
-          }
-        }
-
-        dueModalSave.addEventListener('click', () => {
-          saveDueModal((dueModalDate.value || '').trim());
-        });
-        dueModalClear.addEventListener('click', () => saveDueModal(''));
-        dueModalCancel.addEventListener('click', () => closeDueModal());
-        dueModal.addEventListener('click', (e) => {
-          if (e.target === dueModal) closeDueModal();
-        });
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' && dueModal.classList.contains('open')) closeDueModal();
-        });
-        dueModalQuick.addEventListener('click', (e) => {
-          const btn = e.target.closest('[data-quick]');
-          if (!btn) return;
-          const quick = btn.getAttribute('data-quick');
-          const d = new Date();
-          d.setHours(0, 0, 0, 0);
-          if (quick === 'today') { /* hoje */ }
-          else if (quick === 'tomorrow') d.setDate(d.getDate() + 1);
-          else if (quick === '3d') d.setDate(d.getDate() + 3);
-          else if (quick === '7d') d.setDate(d.getDate() + 7);
-          else if (quick === '15d') d.setDate(d.getDate() + 15);
-          else if (quick === '30d') d.setDate(d.getDate() + 30);
-          dueModalDate.value = toIsoDate(d);
-        });
-
-        function onEditDue(task) {
-          openDueModal(task);
-        }
-
-        async function onEditCategory(task, newCategory) {
-          if (!CATEGORY_LABEL[newCategory]) {
-            alert('Categoria inválida.');
-            return;
-          }
-          if (newCategory === task.category) return;
-          const oldCategory = task.category;
-
-          setSync('syncing', 'Salvando categoria…');
-          try {
-            const updated = await patchTask(task.id, { category: newCategory });
-            const idx = tasks.findIndex((t) => t.id === task.id);
-            if (idx >= 0) tasks[idx] = { ...tasks[idx], ...updated };
-            // Se o filtro ativo era a categoria antiga, volta para "todas" para que o card continue visível
-            if (currentCategory !== 'todas' && currentCategory !== newCategory) {
-              currentCategory = 'todas';
-              updateFilterButtons();
-            }
-            updateAll();
-            setSync('ok', 'Sincronizado');
-            // Registrar notificação
-            if (window.TaocaNotif) {
-              const oldLabel = CATEGORY_LABEL[oldCategory] || oldCategory || '—';
-              const newLabel = CATEGORY_LABEL[newCategory] || newCategory;
-              window.TaocaNotif.log({
-                event_type: 'task_category_changed',
-                icon: '🏷️',
-                actor: 'Equipe',
-                title: `Categoria de #${task.task_number || ''} alterada`,
-                details: `${oldLabel} → ${newLabel}`,
-                task_id: task.id,
-                task_number: task.task_number || 0,
-              });
-            }
-          } catch (err) {
-            console.error(err);
-            setSync('error', 'Erro ao salvar categoria');
-            alert('Não foi possível alterar a categoria. Tente novamente.');
-          }
-        }
-
-        // ===== Modal de Nova Tarefa =====
-        const newTaskModal = document.getElementById('new-task-modal');
-        const newTaskBtn = document.getElementById('new-task-btn');
-        const newTaskTitle = document.getElementById('new-task-title');
-        const newTaskDesc = document.getElementById('new-task-desc');
-        const newTaskCategory = document.getElementById('new-task-category');
-        const newTaskDue = document.getElementById('new-task-due');
-        const newTaskAuthor = document.getElementById('new-task-author');
-        const newTaskSave = document.getElementById('new-task-save');
-        const newTaskCancel = document.getElementById('new-task-cancel');
-
-        function openNewTaskModal() {
-          newTaskTitle.value = '';
-          newTaskDesc.value = '';
-          newTaskCategory.value = 'institucional';
-          newTaskDue.value = '';
-          // Lembra o autor da última criação local
-          try {
-            const savedAuthor = sessionStorage.getItem('taoca-last-author') || '';
-            newTaskAuthor.value = savedAuthor;
-          } catch (e) { newTaskAuthor.value = ''; }
-          newTaskModal.classList.add('open');
-          setTimeout(() => newTaskTitle.focus(), 60);
-        }
-        function closeNewTaskModal() {
-          newTaskModal.classList.remove('open');
-        }
-
-        newTaskBtn.addEventListener('click', openNewTaskModal);
-        newTaskCancel.addEventListener('click', closeNewTaskModal);
-        newTaskModal.addEventListener('click', (e) => {
-          if (e.target === newTaskModal) closeNewTaskModal();
-        });
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' && newTaskModal.classList.contains('open')) closeNewTaskModal();
-        });
-
-        newTaskSave.addEventListener('click', async () => {
-          const title = (newTaskTitle.value || '').trim();
-          const description = (newTaskDesc.value || '').trim();
-          const category = newTaskCategory.value;
-          const due = (newTaskDue.value || '').trim();
-          const author = (newTaskAuthor.value || '').trim();
-
-          if (!title) {
-            alert('O título da tarefa é obrigatório.');
-            newTaskTitle.focus();
-            return;
-          }
-          if (!CATEGORY_LABEL[category]) {
-            alert('Selecione uma categoria válida.');
-            return;
-          }
-          if (due && !/^\d{4}-\d{2}-\d{2}$/.test(due)) {
-            alert('Data de prazo inválida.');
-            return;
-          }
-
-          newTaskSave.disabled = true;
-          setSync('syncing', 'Criando tarefa…');
-          try {
-            try { sessionStorage.setItem('taoca-last-author', author); } catch (e) {}
-            const payload = {
-              task_number: nextTaskNumber(),
-              category,
-              title,
-              description,
-              status: 'pendente',
-              completed_by: '',
-              completed_at: '',
-              completed_at_iso: '',
-              due_date: due,
-              created_by: author,
-            };
-            const created = await createTask(payload);
-            tasks.push(created);
-            tasks.sort((a, b) => (a.task_number || 0) - (b.task_number || 0));
-            updateAll();
-            setSync('ok', 'Sincronizado');
-            closeNewTaskModal();
-            // Registrar notificação
-            if (window.TaocaNotif) {
-              const actor = author || 'Equipe';
-              window.TaocaNotif.log({
-                event_type: 'task_created',
-                icon: '➕',
-                actor: actor,
-                title: `${actor} criou #${created.task_number || ''} — ${title}`,
-                details: `Categoria: ${CATEGORY_LABEL[category] || category}${due ? ' · Prazo: ' + due.split('-').reverse().join('/') : ''}`,
-                task_id: created.id,
-                task_number: created.task_number || 0,
-              });
-            }
-          } catch (err) {
-            console.error(err);
-            setSync('error', 'Erro ao criar tarefa');
-            alert('Não foi possível criar a tarefa. Tente novamente.');
-          } finally {
-            newTaskSave.disabled = false;
+      // ---- Atalhos ----
+      document.getElementById('open-ia-btn').addEventListener('click', () => {
+        if (window.TaocaAI) window.TaocaAI.open();
+      });
+      document.getElementById('open-ia-card').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (window.TaocaAI) window.TaocaAI.open();
+      });
+      document.querySelectorAll('.ia-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const q = chip.getAttribute('data-q');
+          if (window.TaocaAI) {
+            window.TaocaAI.open();
+            setTimeout(() => window.TaocaAI.sendUser(q), 250);
           }
         });
+      });
 
-        // ---------- Convidar / Sair ----------
-        inviteBtn.addEventListener('click', async () => {
-          const inviteText =
-            'Olá! Vamos acompanhar juntos este quadro de tarefas de Nílzon Spínola e Marco Monteiro.\n\nAcesse o link, use a senha da equipe e atualize as etapas concluídas.';
-          const fullMessage = `${inviteText}\n\nLink: ${window.location.href}\nSenha da equipe: TAOCA2026`;
+      // ---- Bootstrap ----
+      async function refresh() {
+        setSync('syncing','Sincronizando…');
+        const j = await fetchJson('tables/tasks?limit=500');
+        const tasks = j ? (j.data || []).filter(r => !r.deleted) : [];
 
-          if (navigator.share) {
-            try {
-              await navigator.share({
-                title: 'Gestão de Tarefas',
-                text: `${inviteText}\n\nSenha da equipe: TAOCA2026`,
-                url: window.location.href,
-              });
-              return;
-            } catch (error) { /* cancelado */ }
-          }
-          try {
-            await navigator.clipboard.writeText(fullMessage);
-            alert('Convite copiado com sucesso. Agora é só colar e enviar.');
-          } catch (error) {
-            alert(fullMessage);
-          }
-        });
+        buildBriefing(tasks);
+        renderKpis(tasks);
+        renderActivity(tasks);
+        renderSpark(tasks);
 
-        logoutBtn.addEventListener('click', () => {
-          try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
-          window.location.replace('login.html');
-        });
+        // Outros módulos (best-effort)
+        const [atas, lotes, clientes] = await Promise.all([
+          fetchJson('tables/atas?limit=500'),
+          fetchJson('tables/lots?limit=500'),
+          fetchJson('tables/customers?limit=500'),
+        ]);
+        const atasN = atas ? (atas.data||[]).filter(r=>!r.deleted).length : 0;
+        const lotesAll = lotes ? (lotes.data||[]).filter(r=>!r.deleted) : [];
+        const lotesAtivos = lotesAll.filter(l => l.status !== 'colhido' && l.status !== 'descartado').length;
+        const cliN = clientes ? (clientes.data||[]).filter(r=>!r.deleted).length : 0;
 
-        // ---------- Migração automática de categorias antigas ----------
-        const MIGRATION_KEY = 'taoca-cat-migrated-v1';
-        async function migrateLegacyCategories() {
-          try {
-            if (localStorage.getItem(MIGRATION_KEY) === '1') return;
-          } catch (e) {}
-          try {
-            const all = await fetchTasks();
-            const toMigrate = all.filter((t) => LEGACY_CATEGORY_MAP[t.category]);
-            if (toMigrate.length === 0) {
-              try { localStorage.setItem(MIGRATION_KEY, '1'); } catch (e) {}
-              return;
-            }
-            setSync('syncing', `Atualizando categorias (${toMigrate.length})…`);
-            for (const t of toMigrate) {
-              try {
-                await patchTask(t.id, { category: LEGACY_CATEGORY_MAP[t.category] });
-              } catch (e) { console.error('Falha ao migrar tarefa', t.id, e); }
-            }
-            try { localStorage.setItem(MIGRATION_KEY, '1'); } catch (e) {}
-          } catch (e) {
-            console.error('Migração de categorias falhou', e);
-          }
-        }
+        document.getElementById('m-atas').textContent = atasN;
+        document.getElementById('m-lotes').textContent = lotesAtivos;
+        document.getElementById('m-clientes').textContent = cliN;
+        document.getElementById('q-lotes').textContent = lotesAtivos > 0 ? lotesAtivos : 'Nenhum';
+        document.getElementById('q-clientes').textContent = cliN > 0 ? cliN : 'Nenhum';
+        document.getElementById('q-atas').textContent = atasN;
 
-        // ---------- Bootstrap & polling ----------
-        async function refresh(initial) {
-          if (!initial) setSync('syncing', 'Sincronizando…');
-          try {
-            tasks = await fetchTasks();
-            // Normaliza categorias antigas em memória (caso ainda não tenha migrado no banco)
-            tasks.forEach((t) => {
-              if (LEGACY_CATEGORY_MAP[t.category]) t.category = LEGACY_CATEGORY_MAP[t.category];
-            });
-            updateAll();
-            setSync('ok', 'Sincronizado');
-          } catch (err) {
-            console.error(err);
-            setSync('error', 'Falha de sincronização');
-            if (initial) loadingState.textContent = 'Não foi possível carregar as tarefas. Recarregue a página.';
-          }
-        }
+        setSync('ok','Sincronizado');
+      }
 
-        updateFilterButtons();
-        (async () => {
-          await migrateLegacyCategories();
-          refresh(true);
-          setInterval(() => refresh(false), POLL_MS);
-        })();
-      })();
-    </script>
-
-    <!-- Módulo de notificações compartilhadas -->
-    <script src="js/notifications.js"></script>
-    <script>
-      (function () {
-        if (!window.TaocaNotif) return;
-        const host = document.getElementById('hero-actions-top');
-        if (!host) return;
-        const logoutBtn = document.getElementById('logout-btn');
-        // Container temporário para o sino, posicionado antes do botão Sair
-        const slot = document.createElement('div');
-        slot.style.display = 'inline-flex';
-        if (logoutBtn) host.insertBefore(slot, logoutBtn);
-        else host.appendChild(slot);
-        window.TaocaNotif.mount(slot);
-      })();
-    </script>
-  </body>
+      refresh();
+      setInterval(refresh, 15000);
+    })();
+  </script>
+</body>
 </html>

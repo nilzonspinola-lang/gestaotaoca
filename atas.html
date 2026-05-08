@@ -1,1513 +1,270 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ATA's - Nílzon e Marco</title>
-    <style>
-      * { box-sizing: border-box; }
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATAs — Taoca OS</title>
+  <link rel="stylesheet" href="css/taoca-design-system.css" />
+  <link rel="stylesheet" href="css/notifications.css" />
+  <link rel="icon" href="assets/taoca-logo.png" />
+  <style>
+    .ata-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 22px;
+    }
+    @media (max-width: 1024px) { .ata-grid { grid-template-columns: 1fr; } }
 
-      body {
-        margin: 0;
-        background: #f3f6fb;
-        color: #1f2a44;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      }
+    .task-line {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 12px;
+      background: var(--taoca-cream-50);
+      border-radius: var(--radius-md);
+      margin-bottom: 6px;
+    }
+    .task-line .num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--brand); color: #FFF;
+      display: grid; place-items: center;
+      font-weight: 700; font-size: 0.78rem;
+      flex-shrink: 0;
+    }
+    .task-line .text { flex: 1; font-size: 0.92rem; }
+    .task-line .remove { background: transparent; border: 0; cursor: pointer; color: var(--danger); font-size: 1.1rem; }
 
-      .page { min-height: 100vh; }
+    .ata-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .ata-card .ata-head { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+    .ata-card .ata-title { font-family: var(--font-serif); font-weight: 600; font-size: 1.05rem; }
+    .ata-card .ata-meta { font-size: 0.8rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
 
-      .hero {
-        background: linear-gradient(135deg, #204ccf 0%, #3b82f6 100%);
-        color: #ffffff;
-        padding: 28px 24px 22px;
-        box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
-      }
-      .hero-inner, .content-inner {
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-      .hero-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 20px;
-        flex-wrap: wrap;
-      }
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-      }
-      .brand-icon {
-        width: 54px;
-        height: 54px;
-        display: grid;
-        place-items: center;
-        border-radius: 14px;
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.22);
-        font-size: 24px;
-      }
-      h1 {
-        margin: 0 0 4px;
-        font-size: 2rem;
-        line-height: 1.1;
-        font-weight: 700;
-      }
-      h2 {
-        margin: 0;
-        font-size: 0.98rem;
-        font-weight: 500;
-        color: rgba(255, 255, 255, 0.84);
-      }
-      .hero-actions-top {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-      .nav-btn, .logout-btn {
-        padding: 9px 16px;
-        font-size: 0.9rem;
-        border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.32);
-        background: rgba(255, 255, 255, 0.14);
-        color: #ffffff;
-        cursor: pointer;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .nav-btn:hover, .logout-btn:hover { background: rgba(255, 255, 255, 0.24); }
-      .logout-btn { background: rgba(255, 255, 255, 0.06); }
-
-      .content-inner { padding: 18px 24px 36px; }
-
-      .panel {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 18px;
-        padding: 22px;
-        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
-        margin-bottom: 22px;
-      }
-      .panel-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-bottom: 16px;
-      }
-      .panel-title {
-        margin: 0;
-        font-size: 1.08rem;
-        font-weight: 700;
-        color: #1e293b;
-      }
-      .panel-subtitle {
-        margin: 2px 0 0;
-        font-size: 0.88rem;
-        color: #64748b;
-      }
-
-      .form-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px;
-        margin-bottom: 14px;
-      }
-      .form-field { display: flex; flex-direction: column; }
-      .form-field.full { grid-column: 1 / -1; }
-      .form-label {
-        font-size: 0.78rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: #475569;
-        margin-bottom: 6px;
-      }
-      .form-input,
-      .form-textarea,
-      .form-select {
-        width: 100%;
-        padding: 10px 12px;
-        font-size: 0.95rem;
-        border-radius: 10px;
-        border: 1px solid #cbd5e1;
-        background: #f8fafc;
-        color: #1e293b;
-        font-family: inherit;
-        outline: none;
-      }
-      .form-textarea { min-height: 90px; resize: vertical; }
-      .form-input:focus,
-      .form-textarea:focus,
-      .form-select:focus {
-        border-color: #2563eb;
-        background: #ffffff;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-      }
-
-      .tabs {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-bottom: 14px;
-      }
-      .tab-btn {
-        padding: 8px 14px;
-        font-size: 0.86rem;
-        font-weight: 600;
-        border-radius: 999px;
-        border: 1px solid #dbe4f0;
-        background: #ffffff;
-        color: #64748b;
-        cursor: pointer;
-        font-family: inherit;
-      }
-      .tab-btn:hover { background: #f8fafc; }
-      .tab-btn.active {
-        background: #2563eb;
-        border-color: #2563eb;
-        color: #ffffff;
-      }
-      .tab-pane { display: none; }
-      .tab-pane.active { display: block; }
-
-      .item-list {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-bottom: 12px;
-      }
-      .item-row {
-        display: grid;
-        grid-template-columns: 36px 1fr 160px 150px 36px;
-        gap: 10px;
-        align-items: center;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 8px 10px;
-      }
-      .item-row .item-pos {
-        text-align: center;
-        font-weight: 700;
-        color: #2563eb;
-        background: #eff6ff;
-        border-radius: 8px;
-        padding: 8px 0;
-        font-size: 0.85rem;
-      }
-      .item-row .item-input {
-        width: 100%;
-        padding: 9px 10px;
-        font-size: 0.93rem;
-        border-radius: 8px;
-        border: 1px solid #cbd5e1;
-        background: #ffffff;
-        color: #1e293b;
-        font-family: inherit;
-        outline: none;
-      }
-      .item-row .item-select,
-      .item-row .item-date {
-        width: 100%;
-        padding: 9px 10px;
-        font-size: 0.9rem;
-        border-radius: 8px;
-        border: 1px solid #cbd5e1;
-        background: #ffffff;
-        color: #1e293b;
-        font-family: inherit;
-        outline: none;
-      }
-      .item-remove {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
-        color: #b91c1c;
-        border-radius: 8px;
-        padding: 8px;
-        cursor: pointer;
-        font-weight: 700;
-      }
-      .item-remove:hover { background: #fee2e2; }
-      .item-remove:disabled { opacity: 0.4; cursor: not-allowed; }
-
-      .row-actions {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .btn {
-        padding: 11px 18px;
-        font-size: 0.95rem;
-        font-weight: 700;
-        border-radius: 12px;
-        border: 0;
-        cursor: pointer;
-        font-family: inherit;
-      }
-      .btn.primary {
-        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-        color: #ffffff;
-        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
-      }
-      .btn.primary:hover { filter: brightness(0.97); }
-      .btn.secondary {
-        background: #f1f5f9;
-        color: #334155;
-      }
-      .btn.secondary:hover { background: #e2e8f0; }
-      .btn.ghost {
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
-        color: #475569;
-      }
-      .btn.ghost:hover { background: #f8fafc; }
-      .btn:disabled { opacity: 0.6; cursor: progress; }
-
-      .helper {
-        font-size: 0.82rem;
-        color: #64748b;
-        margin-top: 4px;
-      }
-
-      .feedback {
-        margin-top: 12px;
-        padding: 10px 12px;
-        border-radius: 10px;
-        font-size: 0.88rem;
-        display: none;
-      }
-      .feedback.success {
-        background: #dcfce7;
-        color: #166534;
-        border: 1px solid #86efac;
-      }
-      .feedback.error {
-        background: #fef2f2;
-        color: #b91c1c;
-        border: 1px solid #fecaca;
-      }
-      .feedback.info {
-        background: #eff6ff;
-        color: #1d4ed8;
-        border: 1px solid #bfdbfe;
-      }
-
-      .ata-history {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-      .ata-card {
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        padding: 14px 16px;
-        background: #f8fafc;
-      }
-      .ata-card-head {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-bottom: 6px;
-      }
-      .ata-card-title {
-        margin: 0;
-        font-size: 1rem;
-        font-weight: 700;
-        color: #1e293b;
-      }
-      .ata-card-meta {
-        font-size: 0.82rem;
-        color: #64748b;
-      }
-      .ata-card-meta strong { color: #1e293b; }
-      .ata-card-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 8px;
-      }
-      .ata-tag {
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        padding: 4px 8px;
-        border-radius: 999px;
-      }
-      .ata-tag.institucional { background: #eef2ff; color: #4338ca; }
-      .ata-tag.financeiro    { background: #ecfdf5; color: #047857; }
-      .ata-tag.fiscal        { background: #ecfeff; color: #0f766e; }
-      .ata-tag.juridico      { background: #f5f3ff; color: #7c3aed; }
-      .ata-tag.comercial     { background: #fff1f2; color: #be123c; }
-      .ata-tag.operacional   { background: #f1f5f9; color: #334155; }
-      .ata-tag.estrategico   { background: #fef3c7; color: #b45309; }
-      .ata-tag.marketing     { background: #fdf2f8; color: #c026d3; }
-      .ata-tag.ti            { background: #e0f2fe; color: #0369a1; }
-      .ata-tag.consultoria   { background: #fff7ed; color: #c2410c; }
-      .ata-tag.outras        { background: #f1f5f9; color: #64748b; }
-      .ata-tag.count {
-        background: #e0f2fe;
-        color: #0c4a6e;
-      }
-      .ata-card-notes {
-        margin-top: 10px;
-        background: #ffffff;
-        border: 1px dashed #cbd5e1;
-        border-radius: 10px;
-        padding: 8px 10px;
-        font-size: 0.88rem;
-        color: #475569;
-        white-space: pre-wrap;
-      }
-      .empty-history {
-        text-align: center;
-        color: #94a3b8;
-        padding: 30px 10px;
-      }
-
-      @media (max-width: 760px) {
-        .form-grid { grid-template-columns: 1fr; }
-        .item-row {
-          grid-template-columns: 1fr;
-        }
-        .item-row .item-pos {
-          width: 36px;
-          padding: 6px 0;
-        }
-        .row-actions { flex-direction: column; align-items: stretch; }
-        .btn { width: 100%; }
-      }
-
-      /* ===== Toolbar do histórico ===== */
-      .history-toolbar {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 14px;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-      .history-search {
-        flex: 2;
-        min-width: 220px;
-      }
-      .history-select {
-        flex: 1;
-        min-width: 150px;
-        background: #ffffff;
-      }
-      .history-toolbar.custom-range {
-        margin-top: -6px;
-        margin-bottom: 18px;
-      }
-
-      /* Card de ATA clicável */
-      .ata-card {
-        cursor: pointer;
-        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-      }
-      .ata-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.10);
-        border-color: #cfddf6;
-      }
-
-      /* ===== Modal de detalhes da ATA ===== */
-      .modal-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.55);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        z-index: 100;
-      }
-      .modal-backdrop.open { display: flex; }
-      .modal-card {
-        background: #ffffff;
-        border-radius: 18px;
-        box-shadow: 0 22px 48px rgba(15, 23, 42, 0.28);
-        width: 100%;
-        max-width: 720px;
-        max-height: 90vh;
-        overflow-y: auto;
-        padding: 24px;
-      }
-      .ata-detail-card { padding: 26px 28px; }
-      .ata-detail-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 14px;
-        margin-bottom: 14px;
-        padding-bottom: 14px;
-        border-bottom: 1px solid #f1f5f9;
-      }
-      .modal-title {
-        margin: 0 0 6px;
-        font-size: 1.25rem;
-        color: #1e293b;
-      }
-      .ata-detail-meta {
-        font-size: 0.85rem;
-        color: #64748b;
-      }
-      .modal-close-btn {
-        flex: 0 0 auto;
-        width: 36px;
-        height: 36px;
-        padding: 0 !important;
-        font-size: 1rem;
-      }
-
-      .ata-detail-section { margin: 16px 0; }
-      .ata-detail-section-title {
-        margin: 0 0 10px;
-        font-size: 0.78rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: #94a3b8;
-        font-weight: 700;
-      }
-      .ata-detail-task-count {
-        font-size: 0.78rem;
-        color: #2563eb;
-        margin-left: 6px;
-      }
-      .ata-detail-info-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px 18px;
-      }
-      .ata-detail-info-item {
-        font-size: 0.88rem;
-        color: #1e293b;
-      }
-      .ata-detail-info-item strong {
-        display: block;
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: #94a3b8;
-        margin-bottom: 2px;
-      }
-      .ata-detail-notes {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 12px 14px;
-        font-size: 0.9rem;
-        color: #1e293b;
-        white-space: pre-wrap;
-      }
-      .ata-detail-tasks {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .ata-detail-task {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 12px;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        background: #ffffff;
-        font-size: 0.9rem;
-      }
-      .ata-detail-task .task-num {
-        flex: 0 0 32px;
-        height: 28px;
-        display: grid;
-        place-items: center;
-        background: #f1f5f9;
-        color: #475569;
-        border-radius: 999px;
-        font-weight: 700;
-        font-size: 0.78rem;
-      }
-      .ata-detail-task .task-title {
-        flex: 1;
-        color: #1e293b;
-      }
-      .ata-detail-task .task-status {
-        font-size: 0.72rem;
-        font-weight: 700;
-        padding: 4px 8px;
-        border-radius: 999px;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-      }
-      .ata-detail-task .task-status.pendente {
-        background: #fef3c7;
-        color: #92400e;
-      }
-      .ata-detail-task .task-status.concluida {
-        background: #dcfce7;
-        color: #166534;
-      }
-      .ata-detail-task.concluida .task-title {
-        text-decoration: line-through;
-        color: #94a3b8;
-      }
-      .ata-detail-task .task-cat {
-        font-size: 0.7rem;
-        font-weight: 700;
-        padding: 3px 7px;
-        border-radius: 999px;
-        text-transform: uppercase;
-      }
-
-      .modal-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 20px;
-        padding-top: 16px;
-        border-top: 1px solid #f1f5f9;
-        flex-wrap: wrap;
-      }
-      .modal-btn {
-        padding: 10px 16px;
-        border-radius: 999px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        cursor: pointer;
-        font-family: inherit;
-        border: 1px solid transparent;
-      }
-      .modal-btn.primary {
-        background: linear-gradient(135deg, #2563eb, #3b82f6);
-        color: #ffffff;
-        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
-      }
-      .modal-btn.primary:hover { filter: brightness(0.96); }
-      .modal-btn.secondary {
-        background: #f1f5f9;
-        color: #334155;
-      }
-      .modal-btn.secondary:hover { background: #e2e8f0; }
-
-      /* ===== Print ===== */
-      @media print {
-        body * { visibility: hidden; }
-        #ata-detail-modal, #ata-detail-modal * { visibility: visible; }
-        #ata-detail-modal {
-          position: absolute;
-          inset: 0;
-          background: #ffffff;
-          padding: 0;
-          display: block !important;
-        }
-        .modal-card {
-          box-shadow: none;
-          max-width: 100%;
-          max-height: none;
-          border-radius: 0;
-        }
-        .modal-actions, .modal-close-btn { display: none !important; }
-      }
-
-      @media (max-width: 640px) {
-        .ata-detail-info-grid { grid-template-columns: 1fr; }
-        .modal-actions { justify-content: stretch; }
-        .modal-btn { flex: 1; text-align: center; }
-      }
-    </style>
-    <link rel="stylesheet" href="css/notifications.css" />
-  </head>
-  <body>
-    <div class="page">
-      <header class="hero">
-        <div class="hero-inner">
-          <div class="hero-top">
-            <div class="brand">
-              <div class="brand-icon">📑</div>
-              <div>
-                <h1>ATA's</h1>
-                <h2>Registre tarefas em série e gere cards no quadro</h2>
-              </div>
-            </div>
-            <div class="hero-actions-top" id="hero-actions-top">
-              <a class="nav-btn" href="index.html" title="Voltar ao quadro de cards">📋 Quadro</a>
-              <a class="nav-btn" href="dashboard.html" title="Painel gerencial">📊 Painel gerencial</a>
-              <button class="logout-btn" id="logout-btn" type="button">Sair</button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main class="content-inner">
-        <!-- Nova ATA -->
-        <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h3 class="panel-title">Nova ATA</h3>
-              <p class="panel-subtitle">Preencha o cabeçalho, adicione as tarefas e gere os cards de uma só vez.</p>
-            </div>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-field full">
-              <label class="form-label" for="ata-title">Título da ATA *</label>
-              <input type="text" id="ata-title" class="form-input" placeholder="Ex.: Reunião 30/04 - Marco e Nílzon" maxlength="200" />
-            </div>
-            <div class="form-field">
-              <label class="form-label" for="ata-meeting-date">Data da reunião *</label>
-              <input type="date" id="ata-meeting-date" class="form-input" />
-              <span class="helper">Data em que a reunião aconteceu.</span>
-            </div>
-            <div class="form-field">
-              <label class="form-label" for="ata-author">Autor / responsável *</label>
-              <input type="text" id="ata-author" class="form-input" placeholder="Seu nome" maxlength="80" />
-              <span class="helper">Quem está registrando esta ATA.</span>
-            </div>
-            <div class="form-field full">
-              <label class="form-label" for="ata-participants">Nome dos participantes</label>
-              <input type="text" id="ata-participants" class="form-input" placeholder="Ex.: Marco Monteiro, Nílzon Spínola, Carlos ABE" maxlength="400" />
-              <span class="helper">Separe os nomes por vírgula.</span>
-            </div>
-            <div class="form-field full">
-              <label class="form-label" for="ata-notes">Observações da ATA (opcional)</label>
-              <textarea id="ata-notes" class="form-textarea" placeholder="Contexto, decisões, encaminhamentos..." maxlength="2000"></textarea>
-            </div>
-          </div>
-
-          <div class="tabs" role="tablist">
-            <button class="tab-btn active" type="button" data-tab="structured">Editor estruturado</button>
-            <button class="tab-btn" type="button" data-tab="paste">Colar lista corrida</button>
-          </div>
-
-          <!-- Aba: estruturado -->
-          <div class="tab-pane active" id="tab-structured">
-            <div class="item-list" id="item-list"></div>
-            <div class="row-actions">
-              <button class="btn ghost" id="add-item" type="button">➕ Adicionar tarefa</button>
-              <div style="flex: 1"></div>
-              <button class="btn secondary" id="clear-items" type="button">Limpar lista</button>
-            </div>
-          </div>
-
-          <!-- Aba: colar -->
-          <div class="tab-pane" id="tab-paste">
-            <div class="form-field full">
-              <label class="form-label" for="paste-area">Cole aqui a lista de tarefas (uma por linha)</label>
-              <textarea id="paste-area" class="form-textarea" style="min-height: 160px;" placeholder="Ex.:&#10;1. Elaborar contrato XPTO&#10;- Confirmar endereço fiscal&#10;Definir CNAE&#10;Listar perguntas para consultoria"></textarea>
-              <span class="helper">Numeração e marcadores (1., -, *, •) são removidos automaticamente. Cada linha vira uma tarefa com a categoria padrão.</span>
-            </div>
-            <div class="row-actions">
-              <button class="btn ghost" id="import-paste" type="button">⬇ Importar para o editor</button>
-              <div style="flex: 1"></div>
-              <button class="btn secondary" id="clear-paste" type="button">Limpar texto</button>
-            </div>
-          </div>
-
-          <div class="feedback" id="feedback"></div>
-
-          <div class="row-actions" style="margin-top: 18px;">
-            <span class="helper" id="counter">0 tarefa(s) na lista</span>
-            <div style="flex: 1"></div>
-            <button class="btn primary" id="save-ata" type="button">💾 Gerar cards no quadro</button>
-          </div>
-        </section>
-
-        <!-- Histórico -->
-        <section class="panel" id="history-panel">
-          <div class="panel-head">
-            <div>
-              <h3 class="panel-title">Histórico de ATAs</h3>
-              <p class="panel-subtitle" id="history-counter">Carregando…</p>
-            </div>
-          </div>
-
-          <!-- Toolbar de busca e filtros -->
-          <div class="history-toolbar">
-            <input type="text" id="history-search" class="form-input history-search" placeholder="🔍 Buscar por título, autor ou participante…" maxlength="120" />
-            <select id="history-period" class="form-input history-select">
-              <option value="all">Todos os períodos</option>
-              <option value="7">Últimos 7 dias</option>
-              <option value="30">Últimos 30 dias</option>
-              <option value="month">Este mês</option>
-              <option value="custom">Personalizado…</option>
-            </select>
-            <select id="history-category" class="form-input history-select">
-              <option value="all">Todas as categorias</option>
-            </select>
-            <select id="history-sort" class="form-input history-select">
-              <option value="recent">Mais recente</option>
-              <option value="oldest">Mais antiga</option>
-              <option value="tasks">Mais tarefas</option>
-            </select>
-          </div>
-          <div class="history-toolbar custom-range" id="history-custom-range" style="display:none;">
-            <label class="helper" style="display:flex; align-items:center; gap:6px;">De
-              <input type="date" id="history-from" class="form-input" />
-            </label>
-            <label class="helper" style="display:flex; align-items:center; gap:6px;">Até
-              <input type="date" id="history-to" class="form-input" />
-            </label>
-          </div>
-
-          <div class="ata-history" id="ata-history">
-            <div class="empty-history" id="ata-history-empty">Carregando histórico…</div>
-          </div>
-        </section>
-      </main>
-    </div>
-
-    <!-- Modal: Detalhes da ATA -->
-    <div class="modal-backdrop" id="ata-detail-modal" role="dialog" aria-modal="true" aria-labelledby="ata-detail-title">
-      <div class="modal-card ata-detail-card" id="ata-detail-printable">
-        <div class="ata-detail-head">
-          <div>
-            <h3 class="modal-title" id="ata-detail-title">ATA</h3>
-            <div class="ata-detail-meta" id="ata-detail-meta"></div>
-          </div>
-          <button type="button" class="modal-btn secondary modal-close-btn" id="ata-detail-close" aria-label="Fechar">✕</button>
-        </div>
-
-        <div class="ata-detail-section" id="ata-detail-info"></div>
-        <div class="ata-detail-section" id="ata-detail-notes-wrap" style="display:none;">
-          <h4 class="ata-detail-section-title">Observações</h4>
-          <div class="ata-detail-notes" id="ata-detail-notes"></div>
-        </div>
-
-        <div class="ata-detail-section">
-          <h4 class="ata-detail-section-title">Tarefas geradas <span class="ata-detail-task-count" id="ata-detail-task-count"></span></h4>
-          <div class="ata-detail-tasks" id="ata-detail-tasks">
-            <div class="empty-history">Carregando tarefas…</div>
+  <div class="ata-grid">
+    <!-- Coluna esquerda: criar nova ATA -->
+    <div>
+      <div class="card card-pad mb-4">
+        <div class="section-head" style="margin-bottom:6px;">
+          <div class="title-block">
+            <div class="eyebrow">Nova ATA</div>
+            <h3 class="h-title" style="font-size:1.25rem;">Registrar reunião</h3>
+            <p class="h-sub">Preencha o cabeçalho, adicione tarefas e gere os cards de uma só vez.</p>
           </div>
         </div>
 
-        <div class="modal-actions ata-detail-actions">
-          <button type="button" class="modal-btn secondary" id="ata-detail-copy">📋 Copiar resumo</button>
-          <button type="button" class="modal-btn secondary" id="ata-detail-print">🖨️ Imprimir / PDF</button>
-          <button type="button" class="modal-btn primary" id="ata-detail-close-btn">Fechar</button>
+        <div class="field">
+          <label for="ata-title">Título da ATA *</label>
+          <input type="text" id="ata-title" class="input" placeholder="Ex.: Reunião de produção — semana 18" maxlength="200" />
+        </div>
+        <div class="grid grid-2">
+          <div class="field">
+            <label for="ata-date">Data da reunião *</label>
+            <input type="date" id="ata-date" class="input" />
+          </div>
+          <div class="field">
+            <label for="ata-author">Autor / responsável *</label>
+            <input type="text" id="ata-author" class="input" placeholder="Quem registra a ATA" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="ata-participants">Participantes</label>
+          <input type="text" id="ata-participants" class="input" placeholder="Separe os nomes por vírgula" />
+        </div>
+        <div class="field">
+          <label for="ata-notes">Observações (opcional)</label>
+          <textarea id="ata-notes" class="textarea" placeholder="Decisões tomadas, contexto, próximos passos…" maxlength="2000"></textarea>
+        </div>
+
+        <hr style="border:0; border-top:1px solid var(--border-soft); margin:16px 0;" />
+
+        <div class="field">
+          <label for="ata-tasks">Lista de tarefas (uma por linha) — IA remove numeração automática</label>
+          <textarea id="ata-tasks" class="textarea" style="min-height:140px;" placeholder="1. Inocular novo lote de Shimeji
+- Atualizar planilha de custos
+• Visitar fornecedor de substrato"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="ata-default-category">Categoria padrão das tarefas</label>
+          <select id="ata-default-category" class="select">
+            <option value="producao">🍄 Produção</option>
+            <option value="cultivo">🌱 Cultivo</option>
+            <option value="operacional" selected>Operacional</option>
+            <option value="institucional">Institucional</option>
+            <option value="financeiro">Financeiro</option>
+            <option value="comercial">Comercial</option>
+            <option value="estrategico">Estratégico</option>
+            <option value="marketing">Marketing</option>
+            <option value="outras">Outras</option>
+          </select>
+        </div>
+
+        <div class="text-sm text-secondary mb-3"><span id="ata-task-count">0</span> tarefa(s) na lista</div>
+
+        <div class="flex gap-2" style="flex-wrap:wrap;">
+          <button class="btn btn-primary" id="ata-save-btn" type="button">💾 Salvar ATA &amp; gerar tarefas</button>
+          <button class="btn btn-ghost" id="ata-clear-btn" type="button">Limpar</button>
         </div>
       </div>
     </div>
 
-    <script>
-      (function () {
-        // ---------- Auth gate ----------
-        const SESSION_KEY = 'taoca-auth-ok';
+    <!-- Coluna direita: histórico -->
+    <div>
+      <div class="section-head" style="margin-bottom:10px;">
+        <div class="title-block">
+          <div class="eyebrow">Histórico</div>
+          <h3 class="h-title" style="font-size:1.25rem;">ATAs registradas</h3>
+          <p class="h-sub">Acompanhe as últimas reuniões da equipe.</p>
+        </div>
+        <span class="sync-pill"><span class="sync-dot" id="sync-dot"></span><span id="sync-text">Sincronizado</span></span>
+      </div>
+      <div id="atas-list">
+        <div class="loading-state">Carregando histórico…</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/taoca-shell.js"></script>
+  <script>TaocaShell.mount({ active: 'atas', breadcrumb: 'Operação · ATAs', title: 'Atas de Reunião' });</script>
+
+  <script>
+    (function () {
+      const ATAS_TABLE='atas', TASKS_TABLE='tasks';
+      const POLL_MS=12000;
+
+      const $ = (id) => document.getElementById(id);
+      const titleI=$('ata-title'), dateI=$('ata-date'), authorI=$('ata-author'), partsI=$('ata-participants'), notesI=$('ata-notes'), tasksI=$('ata-tasks'), catI=$('ata-default-category');
+      const taskCountEl=$('ata-task-count'), saveBtn=$('ata-save-btn'), clearBtn=$('ata-clear-btn');
+      const listEl=$('atas-list'), syncDot=$('sync-dot'), syncText=$('sync-text');
+
+      function setSync(state, msg){
+        syncDot.classList.remove('syncing','error');
+        if(state==='syncing') syncDot.classList.add('syncing');
+        if(state==='error') syncDot.classList.add('error');
+        syncText.textContent = msg || (state==='syncing'?'Sincronizando…':state==='error'?'Falha':'Sincronizado');
+      }
+      function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+      function parseLines(){
+        const raw = (tasksI.value||'').split('\n').map(l=>l.trim()).filter(Boolean);
+        return raw.map(l => l.replace(/^[\s]*([0-9]+[\.\)]\s*|[-•*]\s*)+/, '').trim()).filter(Boolean);
+      }
+      function updateCount(){ taskCountEl.textContent = parseLines().length; }
+      tasksI.addEventListener('input', updateCount);
+
+      // Defaults
+      try {
+        const today = new Date().toISOString().slice(0,10);
+        dateI.value = today;
+        const u = (window.TaocaShell && TaocaShell.getCurrentUser && TaocaShell.getCurrentUser()) || '';
+        if(u) authorI.value = u;
+      } catch(e){}
+
+      async function fetchAtas(){
         try {
-          if (sessionStorage.getItem(SESSION_KEY) !== '1') {
-            window.location.replace('login.html');
-            return;
-          }
-        } catch (e) {
-          window.location.replace('login.html');
-          return;
+          const r = await fetch(`tables/${ATAS_TABLE}?limit=200&sort=meeting_date`);
+          if(!r.ok) return [];
+          const j = await r.json();
+          return (j.data||[]).filter(x=>!x.deleted).sort((a,b)=>String(b.meeting_date||'').localeCompare(String(a.meeting_date||'')));
+        } catch(e){ return []; }
+      }
+      async function nextTaskNumber(){
+        try {
+          const r = await fetch(`tables/${TASKS_TABLE}?limit=500`);
+          if(!r.ok) return 1;
+          const j = await r.json();
+          const all=(j.data||[]).filter(x=>!x.deleted);
+          if(!all.length) return 1;
+          return Math.max(...all.map(t=>Number(t.task_number)||0))+1;
+        } catch(e){ return 1; }
+      }
+
+      async function renderHistory(){
+        setSync('syncing','Carregando histórico…');
+        const atas = await fetchAtas();
+        if(!atas.length){
+          listEl.innerHTML = `<div class="empty-state"><div class="em-icon">📑</div><div class="em-title">Nenhuma ATA registrada</div><div>Crie a primeira ao lado.</div></div>`;
+          setSync('ok','Sincronizado'); return;
         }
-
-        // ---------- Constantes ----------
-        const TASKS_TABLE = 'tasks';
-        const ATAS_TABLE = 'atas';
-        const CATEGORY_LABEL = {
-          institucional: 'Institucional',
-          financeiro: 'Financeiro',
-          fiscal: 'Fiscal',
-          juridico: 'Jurídico',
-          comercial: 'Comercial',
-          operacional: 'Operacional',
-          estrategico: 'Estratégico',
-          marketing: 'Marketing',
-          ti: 'TI',
-          consultoria: 'Consultoria',
-          outras: 'Outras',
-        };
-
-        // ---------- Refs ----------
-        const logoutBtn = document.getElementById('logout-btn');
-        const ataTitle = document.getElementById('ata-title');
-        const ataAuthor = document.getElementById('ata-author');
-        const ataMeetingDate = document.getElementById('ata-meeting-date');
-        const ataParticipants = document.getElementById('ata-participants');
-        const ataNotes = document.getElementById('ata-notes');
-
-        // Categoria/prazo padrão fixos (foram removidos do form, valores aplicados aos itens novos)
-        const DEFAULT_CATEGORY = 'institucional';
-        const DEFAULT_DUE = '';
-        const itemList = document.getElementById('item-list');
-        const addItemBtn = document.getElementById('add-item');
-        const clearItemsBtn = document.getElementById('clear-items');
-        const pasteArea = document.getElementById('paste-area');
-        const importPasteBtn = document.getElementById('import-paste');
-        const clearPasteBtn = document.getElementById('clear-paste');
-        const counterEl = document.getElementById('counter');
-        const saveAtaBtn = document.getElementById('save-ata');
-        const feedback = document.getElementById('feedback');
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        const ataHistory = document.getElementById('ata-history');
-        const ataHistoryEmpty = document.getElementById('ata-history-empty');
-
-        // ---------- Helpers ----------
-        function escapeHtml(text) {
-          return String(text == null ? '' : text).replace(/[&<>"']/g, (m) => (
-            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]
-          ));
-        }
-        function formatNowBR() {
-          return new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-        }
-        function nowIso() { return new Date().toISOString(); }
-
-        function showFeedback(type, message) {
-          feedback.className = `feedback ${type}`;
-          feedback.textContent = message;
-          feedback.style.display = 'block';
-          if (type === 'success') {
-            setTimeout(() => { feedback.style.display = 'none'; }, 6000);
-          }
-        }
-
-        // ---------- API ----------
-        async function fetchTasks() {
-          const res = await fetch(`tables/${TASKS_TABLE}?limit=500&sort=task_number`);
-          if (!res.ok) throw new Error('Falha ao carregar tarefas');
-          const json = await res.json();
-          return (json.data || []).filter((row) => !row.deleted);
-        }
-        async function createTask(payload) {
-          const res = await fetch(`tables/${TASKS_TABLE}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          if (!res.ok) throw new Error('Falha ao criar tarefa');
-          return await res.json();
-        }
-        async function fetchAtas() {
-          const res = await fetch(`tables/${ATAS_TABLE}?limit=200`);
-          if (!res.ok) throw new Error('Falha ao carregar atas');
-          const json = await res.json();
-          return (json.data || []).filter((row) => !row.deleted);
-        }
-        async function createAta(payload) {
-          const res = await fetch(`tables/${ATAS_TABLE}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          if (!res.ok) throw new Error('Falha ao salvar ATA');
-          return await res.json();
-        }
-
-        // ---------- Editor estruturado ----------
-        function createItemRow(prefill = {}) {
-          const row = document.createElement('div');
-          row.className = 'item-row';
-          row.innerHTML = `
-            <div class="item-pos">—</div>
-            <input type="text" class="item-input" placeholder="Descreva a tarefa" maxlength="200" />
-            <select class="item-select">
-              <option value="institucional">Institucional</option>
-              <option value="financeiro">Financeiro</option>
-              <option value="fiscal">Fiscal</option>
-              <option value="juridico">Jurídico</option>
-              <option value="comercial">Comercial</option>
-              <option value="operacional">Operacional</option>
-              <option value="estrategico">Estratégico</option>
-              <option value="marketing">Marketing</option>
-              <option value="ti">TI</option>
-              <option value="consultoria">Consultoria</option>
-              <option value="outras">Outras</option>
-            </select>
-            <input type="date" class="item-date" />
-            <button type="button" class="item-remove" title="Remover">✕</button>
-          `;
-          const input = row.querySelector('.item-input');
-          const select = row.querySelector('.item-select');
-          const date = row.querySelector('.item-date');
-          const removeBtn = row.querySelector('.item-remove');
-
-          input.value = prefill.title || '';
-          select.value = prefill.category || DEFAULT_CATEGORY;
-          date.value = prefill.due || DEFAULT_DUE;
-
-          removeBtn.addEventListener('click', () => {
-            row.remove();
-            updateItemPositions();
-            updateCounter();
-          });
-
-          return row;
-        }
-
-        function updateItemPositions() {
-          const rows = Array.from(itemList.querySelectorAll('.item-row'));
-          rows.forEach((row, i) => {
-            row.querySelector('.item-pos').textContent = String(i + 1);
-            const removeBtn = row.querySelector('.item-remove');
-            removeBtn.disabled = rows.length === 1;
-          });
-        }
-
-        function updateCounter() {
-          const rows = Array.from(itemList.querySelectorAll('.item-row'));
-          const valid = rows.filter((r) => (r.querySelector('.item-input').value || '').trim().length > 0).length;
-          counterEl.textContent = `${valid} tarefa(s) na lista`;
-        }
-
-        function addItem(prefill) {
-          const row = createItemRow(prefill);
-          itemList.appendChild(row);
-          row.querySelector('.item-input').addEventListener('input', updateCounter);
-          updateItemPositions();
-          updateCounter();
-          return row;
-        }
-
-        addItemBtn.addEventListener('click', () => {
-          const row = addItem({});
-          row.querySelector('.item-input').focus();
-        });
-
-        clearItemsBtn.addEventListener('click', () => {
-          if (!confirm('Tem certeza que deseja limpar a lista?')) return;
-          itemList.innerHTML = '';
-          addItem({});
-        });
-
-        // ---------- Importar lista colada ----------
-        function parsePastedList(text) {
-          const lines = String(text || '').split(/\r?\n/);
-          return lines
-            .map((l) => l.trim())
-            .filter(Boolean)
-            .map((l) => l.replace(/^\s*([0-9]+[\.\)]\s*|[-*•·]\s*)/, '').trim())
-            .filter(Boolean);
-        }
-
-        importPasteBtn.addEventListener('click', () => {
-          const items = parsePastedList(pasteArea.value);
-          if (!items.length) {
-            showFeedback('error', 'Nenhuma linha válida foi encontrada no texto colado.');
-            return;
-          }
-          // Limpa lista atual se houver apenas uma linha vazia
-          const existingRows = Array.from(itemList.querySelectorAll('.item-row'));
-          const onlyEmpty = existingRows.length === 1 && !existingRows[0].querySelector('.item-input').value.trim();
-          if (onlyEmpty) itemList.innerHTML = '';
-
-          items.forEach((title) => addItem({ title }));
-          // Volta para a aba estruturado
-          switchTab('structured');
-          showFeedback('info', `${items.length} tarefa(s) importada(s) do texto. Revise antes de gerar os cards.`);
-        });
-
-        clearPasteBtn.addEventListener('click', () => {
-          pasteArea.value = '';
-        });
-
-        // ---------- Tabs ----------
-        function switchTab(name) {
-          tabBtns.forEach((btn) => {
-            btn.classList.toggle('active', btn.dataset.tab === name);
-          });
-          document.querySelectorAll('.tab-pane').forEach((pane) => {
-            pane.classList.toggle('active', pane.id === `tab-${name}`);
-          });
-        }
-        tabBtns.forEach((btn) => {
-          btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-        });
-
-        // ---------- Salvar ATA ----------
-        function nextTaskNumber(existing) {
-          if (!existing.length) return 1;
-          return Math.max(...existing.map((t) => Number(t.task_number) || 0)) + 1;
-        }
-
-        saveAtaBtn.addEventListener('click', async () => {
-          const title = (ataTitle.value || '').trim();
-          const meetingDate = (ataMeetingDate.value || '').trim();
-          const author = (ataAuthor.value || '').trim();
-          const participants = (ataParticipants.value || '').trim();
-          const defaultCategory = DEFAULT_CATEGORY;
-          const defaultDue = DEFAULT_DUE;
-          const notes = (ataNotes.value || '').trim();
-
-          if (!title) {
-            showFeedback('error', 'Informe o título da ATA.');
-            ataTitle.focus();
-            return;
-          }
-          if (!meetingDate) {
-            showFeedback('error', 'Informe a data da reunião.');
-            ataMeetingDate.focus();
-            return;
-          }
-          if (!author) {
-            showFeedback('error', 'Informe o autor / responsável da ATA.');
-            ataAuthor.focus();
-            return;
-          }
-
-          const rows = Array.from(itemList.querySelectorAll('.item-row'));
-          const items = rows.map((row) => ({
-            title: (row.querySelector('.item-input').value || '').trim(),
-            category: row.querySelector('.item-select').value,
-            due: (row.querySelector('.item-date').value || '').trim(),
-          })).filter((it) => it.title);
-
-          if (!items.length) {
-            showFeedback('error', 'Adicione pelo menos uma tarefa antes de salvar a ATA.');
-            return;
-          }
-
-          if (!confirm(`Confirmar criação de ${items.length} card(s) no quadro?`)) return;
-
-          saveAtaBtn.disabled = true;
-          showFeedback('info', `Criando ${items.length} card(s) e registrando a ATA…`);
-
-          try {
-            // Pega tarefas atuais para calcular numeração
-            const existingTasks = await fetchTasks();
-            let nextNum = nextTaskNumber(existingTasks);
-
-            const createdIds = [];
-            for (const item of items) {
-              const payload = {
-                task_number: nextNum++,
-                category: CATEGORY_LABEL[item.category] ? item.category : defaultCategory,
-                title: item.title,
-                description: '',
-                status: 'pendente',
-                completed_by: '',
-                completed_at: '',
-                completed_at_iso: '',
-                due_date: item.due || '',
-                created_by: author,
-                source_ata: title,
-              };
-              const created = await createTask(payload);
-              if (created && created.id) createdIds.push(created.id);
-            }
-
-            // Salva a ATA com IDs gerados
-            const ataCreated = await createAta({
-              title,
-              meeting_date: meetingDate,
-              author,
-              participants,
-              default_category: defaultCategory,
-              default_due: defaultDue,
-              notes,
-              created_at: formatNowBR(),
-              created_at_iso: nowIso(),
-              task_ids: createdIds,
-              task_count: createdIds.length,
-            });
-
-            // Registrar notificação
-            if (window.TaocaNotif) {
-              window.TaocaNotif.log({
-                event_type: 'ata_created',
-                icon: '📑',
-                actor: author || 'Equipe',
-                title: `${author || 'Equipe'} registrou ATA "${title}"`,
-                details: `${createdIds.length} tarefa(s) gerada(s)${participants ? ' · Participantes: ' + participants : ''}`,
-                ata_id: (ataCreated && ataCreated.id) || '',
-              });
-            }
-
-            showFeedback('success', `✅ ATA registrada e ${createdIds.length} card(s) criado(s) no quadro!`);
-            // Reset do formulário
-            ataTitle.value = '';
-            ataMeetingDate.value = '';
-            ataParticipants.value = '';
-            ataNotes.value = '';
-            itemList.innerHTML = '';
-            addItem({});
-            updateCounter();
-            // Atualiza histórico
-            loadHistory();
-          } catch (err) {
-            console.error(err);
-            showFeedback('error', 'Erro ao salvar a ATA. Verifique sua conexão e tente novamente.');
-          } finally {
-            saveAtaBtn.disabled = false;
-          }
-        });
-
-        // ---------- Histórico ----------
-        const historySearch = document.getElementById('history-search');
-        const historyPeriod = document.getElementById('history-period');
-        const historyCategory = document.getElementById('history-category');
-        const historySort = document.getElementById('history-sort');
-        const historyCustomRange = document.getElementById('history-custom-range');
-        const historyFrom = document.getElementById('history-from');
-        const historyTo = document.getElementById('history-to');
-        const historyCounter = document.getElementById('history-counter');
-
-        let allAtas = [];
-        let allTasksCache = [];
-
-        // Popula seletor de categoria do filtro
-        (function populateHistoryCatFilter() {
-          const opts = ['<option value="all">Todas as categorias</option>'].concat(
-            Object.keys(CATEGORY_LABEL).map((k) => `<option value="${k}">${CATEGORY_LABEL[k]}</option>`)
-          );
-          historyCategory.innerHTML = opts.join('');
-        })();
-
-        function fmtMeetingDate(iso) {
-          if (!iso) return '';
-          const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
-          return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
-        }
-        function startOfDayLocal(d) {
-          const x = new Date(d);
-          x.setHours(0, 0, 0, 0);
-          return x;
-        }
-        function ataMatchesFilters(ata) {
-          // Busca textual
-          const q = (historySearch.value || '').trim().toLowerCase();
-          if (q) {
-            const blob = [
-              ata.title, ata.author, ata.participants, ata.notes,
-            ].filter(Boolean).join(' ').toLowerCase();
-            if (!blob.includes(q)) return false;
-          }
-          // Período
-          const period = historyPeriod.value;
-          const refIso = ata.created_at_iso || '';
-          if (period !== 'all' && refIso) {
-            const ref = new Date(refIso);
-            const today = startOfDayLocal(new Date());
-            if (period === '7') {
-              const lim = new Date(today); lim.setDate(lim.getDate() - 7);
-              if (ref < lim) return false;
-            } else if (period === '30') {
-              const lim = new Date(today); lim.setDate(lim.getDate() - 30);
-              if (ref < lim) return false;
-            } else if (period === 'month') {
-              if (ref.getFullYear() !== today.getFullYear() || ref.getMonth() !== today.getMonth()) return false;
-            } else if (period === 'custom') {
-              const from = historyFrom.value;
-              const to = historyTo.value;
-              if (from) {
-                const f = new Date(from + 'T00:00:00');
-                if (ref < f) return false;
-              }
-              if (to) {
-                const t = new Date(to + 'T23:59:59');
-                if (ref > t) return false;
-              }
-            }
-          }
-          // Categoria
-          const cat = historyCategory.value;
-          if (cat !== 'all') {
-            if ((ata.default_category || '') !== cat) return false;
-          }
-          return true;
-        }
-        function sortAtas(list) {
-          const mode = historySort.value;
-          if (mode === 'oldest') {
-            return list.slice().sort((a, b) => (a.created_at_iso || '').localeCompare(b.created_at_iso || ''));
-          }
-          if (mode === 'tasks') {
-            return list.slice().sort((a, b) => {
-              const ca = a.task_count || (Array.isArray(a.task_ids) ? a.task_ids.length : 0);
-              const cb = b.task_count || (Array.isArray(b.task_ids) ? b.task_ids.length : 0);
-              return cb - ca;
-            });
-          }
-          return list.slice().sort((a, b) => (b.created_at_iso || '').localeCompare(a.created_at_iso || ''));
-        }
-        function renderHistory() {
-          // Remove cards atuais
-          Array.from(ataHistory.querySelectorAll('.ata-card')).forEach((el) => el.remove());
-
-          if (!allAtas.length) {
-            ataHistoryEmpty.textContent = 'Nenhuma ATA registrada ainda. Crie a primeira acima 👆';
-            ataHistoryEmpty.style.display = 'block';
-            historyCounter.textContent = '0 ATAs registradas';
-            return;
-          }
-
-          const filtered = sortAtas(allAtas.filter(ataMatchesFilters));
-          const totalTasks = allAtas.reduce((acc, a) => acc + (a.task_count || (Array.isArray(a.task_ids) ? a.task_ids.length : 0)), 0);
-          historyCounter.textContent = `${allAtas.length} ATA(s) registrada(s) · ${totalTasks} tarefa(s) gerada(s) · mostrando ${filtered.length}`;
-
-          if (!filtered.length) {
-            ataHistoryEmpty.textContent = 'Nenhuma ATA encontrada para os filtros selecionados.';
-            ataHistoryEmpty.style.display = 'block';
-            return;
-          }
-
-          ataHistoryEmpty.style.display = 'none';
-          filtered.forEach((ata) => {
-            const card = document.createElement('div');
-            card.className = 'ata-card';
-            card.dataset.ataId = ata.id || '';
-            const cat = ata.default_category || 'institucional';
-            const catLabel = CATEGORY_LABEL[cat] || cat;
-            const count = ata.task_count || (Array.isArray(ata.task_ids) ? ata.task_ids.length : 0);
-            const meetingDateBR = fmtMeetingDate(ata.meeting_date);
-
-            const participantsHtml = ata.participants
-              ? `<div class="ata-card-meta" style="margin-top:4px;">👥 Participantes: <strong>${escapeHtml(ata.participants)}</strong></div>`
-              : '';
-            const meetingDateHtml = meetingDateBR
-              ? `<span class="ata-tag count" style="background:#fef3c7;color:#92400e;">📅 ${escapeHtml(meetingDateBR)}</span>`
-              : '';
-
-            card.innerHTML = `
-              <div class="ata-card-head">
-                <h4 class="ata-card-title">${escapeHtml(ata.title || 'ATA')}</h4>
-                <span class="ata-card-meta">Registrada em ${escapeHtml(ata.created_at || '')}</span>
+        listEl.innerHTML = atas.map(a => {
+          const date = a.meeting_date ? a.meeting_date.split('-').reverse().join('/') : '—';
+          const tasks = Array.isArray(a.tasks_titles) ? a.tasks_titles : (a.tasks_count?[]:[]);
+          const count = a.tasks_count || (Array.isArray(tasks)?tasks.length:0);
+          return `
+            <div class="ata-card">
+              <div class="ata-head">
+                <div>
+                  <div class="ata-title">${escapeHtml(a.title||'(sem título)')}</div>
+                  <div class="ata-meta">${escapeHtml(date)} · ${escapeHtml(a.author||'Equipe')}${a.participants?` · Participantes: ${escapeHtml(a.participants)}`:''}</div>
+                </div>
+                <span class="tag tag-info">${count} tarefa(s)</span>
               </div>
-              <div class="ata-card-meta">
-                ✍️ Autor: <strong>${escapeHtml(ata.author || 'Equipe')}</strong>
-              </div>
-              ${participantsHtml}
-              <div class="ata-card-tags">
-                ${meetingDateHtml}
-                <span class="ata-tag ${escapeHtml(cat)}">${escapeHtml(catLabel)}</span>
-                <span class="ata-tag count">${count} tarefa(s)</span>
-              </div>
-            `;
-            card.addEventListener('click', () => openAtaDetail(ata));
-            ataHistory.appendChild(card);
-          });
-        }
-
-        async function loadHistory() {
-          ataHistoryEmpty.textContent = 'Carregando histórico…';
-          ataHistoryEmpty.style.display = 'block';
-          try {
-            const [atas, tasksAll] = await Promise.all([fetchAtas(), fetchTasks()]);
-            allAtas = atas || [];
-            allTasksCache = tasksAll || [];
-            renderHistory();
-          } catch (err) {
-            console.error(err);
-            ataHistoryEmpty.textContent = 'Não foi possível carregar o histórico.';
-            ataHistoryEmpty.style.display = 'block';
-          }
-        }
-
-        // Listeners dos filtros
-        historySearch.addEventListener('input', renderHistory);
-        historyPeriod.addEventListener('change', () => {
-          historyCustomRange.style.display = historyPeriod.value === 'custom' ? 'flex' : 'none';
-          renderHistory();
-        });
-        historyCategory.addEventListener('change', renderHistory);
-        historySort.addEventListener('change', renderHistory);
-        historyFrom.addEventListener('change', renderHistory);
-        historyTo.addEventListener('change', renderHistory);
-
-        // ---------- Modal de detalhes da ATA ----------
-        const ataDetailModal = document.getElementById('ata-detail-modal');
-        const ataDetailTitle = document.getElementById('ata-detail-title');
-        const ataDetailMeta = document.getElementById('ata-detail-meta');
-        const ataDetailInfo = document.getElementById('ata-detail-info');
-        const ataDetailNotesWrap = document.getElementById('ata-detail-notes-wrap');
-        const ataDetailNotes = document.getElementById('ata-detail-notes');
-        const ataDetailTasksEl = document.getElementById('ata-detail-tasks');
-        const ataDetailTaskCount = document.getElementById('ata-detail-task-count');
-        const ataDetailClose = document.getElementById('ata-detail-close');
-        const ataDetailCloseBtn = document.getElementById('ata-detail-close-btn');
-        const ataDetailPrint = document.getElementById('ata-detail-print');
-        const ataDetailCopy = document.getElementById('ata-detail-copy');
-        let currentAtaDetail = null;
-        let currentAtaTasks = [];
-
-        function openAtaDetail(ata) {
-          currentAtaDetail = ata;
-          currentAtaTasks = [];
-
-          ataDetailTitle.textContent = ata.title || 'ATA';
-          const meetingDateBR = fmtMeetingDate(ata.meeting_date);
-          ataDetailMeta.textContent = `Registrada em ${ata.created_at || '—'}${meetingDateBR ? ' · Reunião em ' + meetingDateBR : ''}`;
-
-          const cat = ata.default_category || 'institucional';
-          const catLabel = CATEGORY_LABEL[cat] || cat;
-
-          ataDetailInfo.innerHTML = `
-            <div class="ata-detail-info-grid">
-              <div class="ata-detail-info-item"><strong>Autor</strong>${escapeHtml(ata.author || 'Equipe')}</div>
-              <div class="ata-detail-info-item"><strong>Data da reunião</strong>${escapeHtml(meetingDateBR || '—')}</div>
-              <div class="ata-detail-info-item" style="grid-column: 1 / -1;"><strong>Participantes</strong>${escapeHtml(ata.participants || '—')}</div>
-              <div class="ata-detail-info-item"><strong>Categoria padrão</strong><span class="ata-tag ${escapeHtml(cat)}">${escapeHtml(catLabel)}</span></div>
-              <div class="ata-detail-info-item"><strong>Total de tarefas</strong>${ata.task_count || (Array.isArray(ata.task_ids) ? ata.task_ids.length : 0)}</div>
+              ${a.notes?`<div class="text-sm text-secondary" style="margin-top:6px">${escapeHtml(a.notes)}</div>`:''}
             </div>
           `;
+        }).join('');
+        setSync('ok','Sincronizado');
+      }
 
-          if (ata.notes) {
-            ataDetailNotesWrap.style.display = '';
-            ataDetailNotes.textContent = ata.notes;
-          } else {
-            ataDetailNotesWrap.style.display = 'none';
-            ataDetailNotes.textContent = '';
-          }
+      async function saveAta(){
+        const title = (titleI.value||'').trim();
+        const date  = (dateI.value||'').trim();
+        const author= (authorI.value||'').trim();
+        const parts = (partsI.value||'').trim();
+        const notes = (notesI.value||'').trim();
+        const cat   = catI.value;
+        const lines = parseLines();
+        if(!title) return alert('Título obrigatório.');
+        if(!date)  return alert('Data obrigatória.');
+        if(!author) return alert('Autor obrigatório.');
 
-          // Carrega as tarefas vinculadas
-          const taskIds = Array.isArray(ata.task_ids) ? ata.task_ids : [];
-          const taskTitleAta = ata.title || '';
-          ataDetailTasksEl.innerHTML = '<div class="empty-history">Carregando tarefas…</div>';
-          ataDetailTaskCount.textContent = `(${taskIds.length})`;
-
-          // Busca as tarefas atualizadas
-          (async () => {
-            try {
-              const tasksAll = await fetchTasks();
-              allTasksCache = tasksAll;
-              // Vincula por task_ids ou por source_ata
-              let related = tasksAll.filter((t) => taskIds.includes(t.id));
-              if (!related.length && taskTitleAta) {
-                related = tasksAll.filter((t) => (t.source_ata || '') === taskTitleAta);
-              }
-              related.sort((a, b) => (a.task_number || 0) - (b.task_number || 0));
-              currentAtaTasks = related;
-              renderDetailTasks(related);
-            } catch (err) {
-              console.error(err);
-              ataDetailTasksEl.innerHTML = '<div class="empty-history">Não foi possível carregar as tarefas vinculadas.</div>';
-            }
-          })();
-
-          ataDetailModal.classList.add('open');
-        }
-
-        function renderDetailTasks(tasks) {
-          if (!tasks.length) {
-            ataDetailTasksEl.innerHTML = '<div class="empty-history">Nenhuma tarefa vinculada encontrada.</div>';
-            return;
-          }
-          ataDetailTasksEl.innerHTML = tasks.map((t) => {
-            const cat = t.category || 'institucional';
-            const catLabel = CATEGORY_LABEL[cat] || cat;
-            const status = t.status === 'concluida' ? 'concluida' : 'pendente';
-            const statusLabel = status === 'concluida' ? 'Concluída' : 'Pendente';
-            return `
-              <div class="ata-detail-task ${status}">
-                <span class="task-num">#${t.task_number || '—'}</span>
-                <span class="task-title">${escapeHtml(t.title || '')}</span>
-                <span class="ata-tag ${escapeHtml(cat)} task-cat">${escapeHtml(catLabel)}</span>
-                <span class="task-status ${status}">${statusLabel}</span>
-              </div>
-            `;
-          }).join('');
-        }
-
-        function closeAtaDetail() {
-          ataDetailModal.classList.remove('open');
-          currentAtaDetail = null;
-          currentAtaTasks = [];
-        }
-
-        ataDetailClose.addEventListener('click', closeAtaDetail);
-        ataDetailCloseBtn.addEventListener('click', closeAtaDetail);
-        ataDetailModal.addEventListener('click', (e) => {
-          if (e.target === ataDetailModal) closeAtaDetail();
-        });
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' && ataDetailModal.classList.contains('open')) closeAtaDetail();
-        });
-
-        ataDetailPrint.addEventListener('click', () => {
-          window.print();
-        });
-        ataDetailCopy.addEventListener('click', async () => {
-          if (!currentAtaDetail) return;
-          const ata = currentAtaDetail;
-          const meetingDateBR = fmtMeetingDate(ata.meeting_date);
-          const cat = ata.default_category || 'institucional';
-          const catLabel = CATEGORY_LABEL[cat] || cat;
-          const lines = [];
-          lines.push(`📑 ATA: ${ata.title || 'Sem título'}`);
-          if (meetingDateBR) lines.push(`📅 Data da reunião: ${meetingDateBR}`);
-          lines.push(`✍️ Autor: ${ata.author || 'Equipe'}`);
-          if (ata.participants) lines.push(`👥 Participantes: ${ata.participants}`);
-          lines.push(`🏷️ Categoria padrão: ${catLabel}`);
-          if (ata.notes) {
-            lines.push('');
-            lines.push('📝 Observações:');
-            lines.push(ata.notes);
-          }
-          if (currentAtaTasks.length) {
-            lines.push('');
-            lines.push(`✅ Tarefas geradas (${currentAtaTasks.length}):`);
-            currentAtaTasks.forEach((t) => {
-              const status = t.status === 'concluida' ? '✓' : '○';
-              const tCatLabel = CATEGORY_LABEL[t.category] || t.category || '';
-              lines.push(`  ${status} #${t.task_number || ''} — ${t.title || ''} [${tCatLabel}]`);
-            });
-          }
-          lines.push('');
-          lines.push(`Registrada em ${ata.created_at || ''}`);
-          const text = lines.join('\n');
-          try {
-            await navigator.clipboard.writeText(text);
-            ataDetailCopy.textContent = '✅ Copiado!';
-            setTimeout(() => { ataDetailCopy.textContent = '📋 Copiar resumo'; }, 1800);
-          } catch (e) {
-            // Fallback antigo
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
-            try { document.execCommand('copy'); } catch (err) {}
-            ta.remove();
-            ataDetailCopy.textContent = '✅ Copiado!';
-            setTimeout(() => { ataDetailCopy.textContent = '📋 Copiar resumo'; }, 1800);
-          }
-        });
-
-        // ---------- Sair ----------
-        logoutBtn.addEventListener('click', () => {
-          try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
-          window.location.replace('login.html');
-        });
-
-        // ---------- Bootstrap ----------
-        // Lembra autor da última criação local
+        saveBtn.disabled = true;
+        setSync('syncing','Salvando ATA…');
         try {
-          const savedAuthor = sessionStorage.getItem('taoca-last-author') || '';
-          ataAuthor.value = savedAuthor;
-        } catch (e) {}
-        ataAuthor.addEventListener('change', () => {
-          try { sessionStorage.setItem('taoca-last-author', (ataAuthor.value || '').trim()); } catch (e) {}
-        });
+          // 1. cria ATA
+          const ataPayload = { title, meeting_date: date, author, participants: parts, notes, tasks_count: lines.length, tasks_titles: lines };
+          const ataRes = await fetch(`tables/${ATAS_TABLE}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(ataPayload) });
+          if(!ataRes.ok) throw new Error('Falha ao salvar ATA');
 
-        addItem({});
-        updateCounter();
-        loadHistory();
-      })();
-    </script>
+          // 2. cria tarefas em sequência
+          let n = await nextTaskNumber();
+          for (const line of lines) {
+            const tPayload = { task_number: n++, category: cat, title: line, description: `Originada da ATA: ${title} (${date})`, status:'pendente', completed_by:'', completed_at:'', completed_at_iso:'', due_date:'', created_by: author };
+            await fetch(`tables/${TASKS_TABLE}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(tPayload) });
+          }
 
-    <!-- Módulo de notificações compartilhadas -->
-    <script src="js/notifications.js"></script>
-    <script>
-      (function () {
-        if (!window.TaocaNotif) return;
-        const host = document.getElementById('hero-actions-top');
-        if (!host) return;
-        const logoutBtn = document.getElementById('logout-btn');
-        const slot = document.createElement('div');
-        slot.style.display = 'inline-flex';
-        if (logoutBtn) host.insertBefore(slot, logoutBtn);
-        else host.appendChild(slot);
-        window.TaocaNotif.mount(slot);
-      })();
-    </script>
-  </body>
+          if(window.TaocaNotif){
+            window.TaocaNotif.log({ event_type:'ata_created', icon:'📑', actor:author, title:`${author} criou ATA: ${title}`, details:`${lines.length} tarefa(s) gerada(s)`, task_id:'', task_number:0 });
+          }
+          alert(`ATA salva e ${lines.length} tarefa(s) criada(s)! 🍄`);
+          // limpa
+          titleI.value=''; partsI.value=''; notesI.value=''; tasksI.value=''; updateCount();
+          renderHistory();
+          setSync('ok','Sincronizado');
+        } catch(err){ console.error(err); setSync('error','Falha'); alert('Erro ao salvar ATA. Tente novamente.'); }
+        finally { saveBtn.disabled = false; }
+      }
+
+      saveBtn.addEventListener('click', saveAta);
+      clearBtn.addEventListener('click', () => {
+        if(!confirm('Limpar formulário?')) return;
+        titleI.value=''; partsI.value=''; notesI.value=''; tasksI.value=''; updateCount();
+      });
+
+      renderHistory();
+      setInterval(renderHistory, POLL_MS);
+    })();
+  </script>
+
+  <script src="js/notifications.js"></script>
+  <script src="js/taoca-ai.js"></script>
+</body>
 </html>
