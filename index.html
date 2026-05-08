@@ -3,671 +3,480 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Taoca OS — Home Executiva</title>
+  <title>Taoca — Home</title>
   <link rel="stylesheet" href="css/taoca-design-system.css" />
   <link rel="stylesheet" href="css/notifications.css" />
   <link rel="icon" href="assets/taoca-logo.png" />
   <style>
-    /* ----- Hero da Home ----- */
-    .home-hero {
-      background:
-        radial-gradient(circle at 20% 0%, rgba(74,120,86,0.15) 0%, transparent 55%),
-        radial-gradient(circle at 90% 100%, rgba(199,123,92,0.10) 0%, transparent 55%),
-        linear-gradient(135deg, #FFFFFF 0%, var(--taoca-cream-100) 100%);
-      border: 1px solid var(--border-soft);
-      border-radius: var(--radius-2xl);
-      padding: 32px 36px;
-      margin-bottom: 28px;
-      position: relative;
-      overflow: hidden;
+    /* ===== Home — clean & sóbrio ===== */
+    .home-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      margin-bottom: 22px;
     }
-    .home-hero::after {
-      content: '';
-      position: absolute;
-      right: -40px;
-      bottom: -40px;
-      width: 220px;
-      height: 220px;
-      background: url('assets/taoca-logo.png') no-repeat center/contain;
-      opacity: 0.06;
-      pointer-events: none;
-    }
-    .home-hero .eyebrow {
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 8px;
-    }
-    .home-hero h1 {
-      font-family: var(--font-serif);
-      font-size: 2.2rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      color: var(--brand-strong);
-      margin-bottom: 10px;
-      line-height: 1.15;
-    }
-    .home-hero .lead {
-      font-size: 1rem;
-      color: var(--text-secondary);
-      max-width: 720px;
-      line-height: 1.6;
-    }
-    .home-hero .hero-actions {
-      margin-top: 22px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+    @media (max-width: 980px) { .home-grid { grid-template-columns: 1fr; } }
 
-    /* ----- IA Briefing ----- */
-    .ia-briefing {
-      background: linear-gradient(135deg, var(--taoca-green-900), var(--taoca-green-700));
-      color: #FFF;
-      border-radius: var(--radius-2xl);
-      padding: 26px 28px;
-      margin-bottom: 28px;
-      display: flex;
-      align-items: flex-start;
-      gap: 18px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
-    }
-    .ia-briefing::before {
-      content: '';
-      position: absolute;
-      top: -60px; right: -60px;
-      width: 240px; height: 240px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(199,123,92,0.4), transparent 70%);
-      pointer-events: none;
-    }
-    .ia-briefing .ia-avatar {
-      width: 52px; height: 52px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.16);
-      display: grid; place-items: center;
-      font-size: 1.5rem;
-      flex-shrink: 0;
-      border: 2px solid rgba(255,255,255,0.25);
-    }
-    .ia-briefing .ia-content { flex: 1; min-width: 0; position: relative; }
-    .ia-briefing .ia-label {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.7);
-      margin-bottom: 6px;
-    }
-    .ia-briefing .ia-text {
-      font-family: var(--font-serif);
-      font-size: 1.15rem;
-      line-height: 1.5;
-      font-weight: 500;
-    }
-    .ia-briefing .ia-actions {
-      margin-top: 14px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .ia-briefing .ia-chip {
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.22);
-      color: #FFF;
-      font-size: 0.82rem;
-      font-weight: 600;
-      padding: 7px 14px;
-      border-radius: 999px;
-      cursor: pointer;
-      font-family: inherit;
-      transition: background var(--t-fast);
-    }
-    .ia-briefing .ia-chip:hover { background: rgba(255,255,255,0.28); }
-
-    /* ----- Module Cards (atalhos) ----- */
-    .module-grid {
+    /* KPIs simples e tipográficos */
+    .kpi-row {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 18px;
+      gap: 14px;
+      margin-bottom: 22px;
     }
-    @media (max-width: 1100px) { .module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 600px)  { .module-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 980px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 520px) { .kpi-row { grid-template-columns: 1fr 1fr; } }
 
-    .module-card {
-      background: var(--bg-surface);
+    .kpi {
+      background: #FFF;
       border: 1px solid var(--border-soft);
-      border-radius: var(--radius-xl);
-      padding: 22px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      cursor: pointer;
-      text-decoration: none;
-      color: inherit;
-      transition: transform var(--t-base), box-shadow var(--t-base), border-color var(--t-base);
-      position: relative;
-      overflow: hidden;
-    }
-    .module-card:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-md);
-      border-color: var(--taoca-green-300);
-    }
-    .module-card .m-icon {
-      width: 48px; height: 48px;
       border-radius: 14px;
-      background: var(--taoca-green-50);
-      color: var(--brand);
-      display: grid; place-items: center;
-      font-size: 1.4rem;
-      margin-bottom: 6px;
+      padding: 18px 20px;
     }
-    .module-card.m-clay .m-icon { background: var(--taoca-clay-100); color: #8B4A30; }
-    .module-card.m-gold .m-icon { background: var(--taoca-gold-100); color: #7A5A2A; }
-    .module-card.m-info .m-icon { background: var(--info-bg); color: var(--info); }
-    .module-card .m-title {
+    .kpi-name {
+      font-size: 0.74rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .kpi-num {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-top: 6px;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .kpi-sub {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+    .kpi-sub.up { color: var(--success); }
+    .kpi-sub.down { color: var(--danger); }
+
+    /* Painel — card neutro */
+    .panel {
+      background: #FFF;
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      padding: 22px;
+    }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+    .panel-title {
       font-family: var(--font-serif);
       font-size: 1.1rem;
       font-weight: 600;
       color: var(--text-primary);
+      margin: 0;
+      letter-spacing: -0.01em;
     }
-    .module-card .m-desc {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      line-height: 1.5;
+    .panel-link {
+      font-size: 0.84rem;
+      color: var(--brand);
+      text-decoration: none;
+      font-weight: 600;
     }
-    .module-card .m-stat {
-      margin-top: 10px;
-      font-size: 0.8rem;
-      color: var(--text-secondary);
+    .panel-link:hover { text-decoration: underline; }
+
+    /* Lista de tarefas recentes */
+    .task-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
+    .task-row {
       display: flex;
       align-items: center;
-      gap: 6px;
-    }
-    .module-card .m-stat strong { color: var(--text-primary); font-size: 1rem; }
-
-    /* ----- Activity feed ----- */
-    .activity-feed {
-      list-style: none;
-      margin: 0; padding: 0;
-    }
-    .activity-feed li {
-      display: flex;
       gap: 12px;
       padding: 12px 0;
-      border-bottom: 1px solid var(--border-soft);
+      border-top: 1px solid var(--border-soft);
     }
-    .activity-feed li:last-child { border-bottom: 0; }
-    .activity-feed .a-icon {
-      width: 36px; height: 36px;
+    .task-row:first-child { border-top: 0; padding-top: 4px; }
+    .task-dot {
+      width: 8px; height: 8px;
       border-radius: 50%;
-      background: var(--taoca-green-50);
-      display: grid; place-items: center;
+      background: var(--text-muted);
       flex-shrink: 0;
-      font-size: 1rem;
     }
-    .activity-feed .a-text { flex: 1; min-width: 0; }
-    .activity-feed .a-title { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
-    .activity-feed .a-meta { font-size: 0.78rem; color: var(--text-muted); }
-
-    /* ----- Mini chart ----- */
-    .mini-spark {
-      display: flex;
-      align-items: flex-end;
-      gap: 4px;
-      height: 50px;
-      margin-top: 8px;
-    }
-    .mini-spark .bar {
+    .task-dot.todo  { background: #C77B5C; }
+    .task-dot.doing { background: #B8935A; }
+    .task-dot.done  { background: #4A7856; }
+    .task-text {
       flex: 1;
-      background: linear-gradient(180deg, var(--taoca-green-500), var(--taoca-green-700));
-      border-radius: 3px 3px 0 0;
-      min-height: 3px;
-      transition: height 0.4s ease;
+      min-width: 0;
+      font-size: 0.92rem;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .task-meta {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      white-space: nowrap;
     }
 
-    /* Quick links row */
-    .quick-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin-bottom: 28px;
+    .empty-state {
+      padding: 22px 4px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
     }
-    @media (max-width: 720px) { .quick-row { grid-template-columns: 1fr; } }
-    .quick-row .q-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-soft);
-      border-radius: var(--radius-lg);
-      padding: 16px 18px;
+
+    /* Distribuição por status — barra */
+    .status-bar {
+      display: flex;
+      height: 8px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: var(--taoca-coal-100);
+      margin-bottom: 14px;
+    }
+    .status-bar > span { display: block; height: 100%; }
+    .status-legend { display: flex; flex-direction: column; gap: 8px; }
+    .legend-row {
       display: flex;
       align-items: center;
-      gap: 14px;
+      justify-content: space-between;
+      font-size: 0.86rem;
     }
-    .quick-row .q-icon {
-      width: 40px; height: 40px;
+    .legend-row .lbl { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); }
+    .legend-row .lbl::before {
+      content: '';
+      width: 10px; height: 10px; border-radius: 3px;
+      background: var(--clr, var(--text-muted));
+    }
+    .legend-row .num {
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* Atividade do mês — sparkline em SVG */
+    .spark-wrap {
+      background: var(--taoca-cream-50);
       border-radius: 12px;
-      display: grid; place-items: center;
-      font-size: 1.1rem;
+      padding: 14px 16px;
+      border: 1px solid var(--border-soft);
     }
-    .quick-row .q-text { flex: 1; }
-    .quick-row .q-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 700; }
-    .quick-row .q-value { font-family: var(--font-serif); font-size: 1.3rem; font-weight: 600; color: var(--text-primary); }
+    .spark-svg { width: 100%; height: 56px; display: block; }
+
+    /* Acessos rápidos — versão sóbria, em texto */
+    .quick {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 6px;
+    }
+    @media (max-width: 980px) { .quick { grid-template-columns: repeat(2, 1fr); } }
+    .quick a {
+      display: block;
+      padding: 14px 16px;
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text-primary);
+      background: #FFF;
+      transition: border-color var(--t-fast), background var(--t-fast), transform var(--t-fast);
+    }
+    .quick a:hover {
+      border-color: var(--taoca-green-300);
+      background: var(--taoca-green-50);
+      transform: translateY(-1px);
+    }
+    .quick a .q-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+    }
+    .quick a .q-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
   </style>
 </head>
 <body>
-  <!-- O conteúdo abaixo é o "main" — o shell envolve com sidebar+topbar -->
 
-  <!-- Hero da Home -->
-  <section class="home-hero">
-    <div class="eyebrow">🍄 Taoca OS · Home Executiva</div>
-    <h1 id="greeting">Bem-vindo de volta</h1>
-    <p class="lead">
-      Seu centro de comando para cultivar com clareza. Aqui você acompanha tarefas, produção, clientes,
-      finanças e estratégia — tudo orientado por dados e pela <strong>Taoca IA</strong>.
-    </p>
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="tarefas.html">📋 Quadro de tarefas</a>
-      <a class="btn btn-secondary" href="dashboard.html">📊 Painel gerencial</a>
-      <button class="btn btn-ghost" id="open-ia-btn" type="button">🤖 Falar com a Taoca IA</button>
+  <!-- ===== KPIs principais ===== -->
+  <section class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-name">Tarefas ativas</div>
+      <div class="kpi-num" id="kpi-active">—</div>
+      <div class="kpi-sub" id="kpi-active-sub">a fazer + em progresso</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-name">Concluídas no mês</div>
+      <div class="kpi-num" id="kpi-month">—</div>
+      <div class="kpi-sub" id="kpi-month-sub">comparado ao mês anterior</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-name">Atrasadas</div>
+      <div class="kpi-num" id="kpi-late">—</div>
+      <div class="kpi-sub" id="kpi-late-sub">com prazo vencido</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-name">Conclusão</div>
+      <div class="kpi-num" id="kpi-rate">—</div>
+      <div class="kpi-sub" id="kpi-rate-sub">do total registrado</div>
     </div>
   </section>
 
-  <!-- IA Briefing -->
-  <section class="ia-briefing">
-    <div class="ia-avatar">🤖</div>
-    <div class="ia-content">
-      <div class="ia-label">Briefing inteligente</div>
-      <div class="ia-text" id="ia-briefing-text">Analisando os dados da sua operação…</div>
-      <div class="ia-actions">
-        <button class="ia-chip" data-q="O que devo fazer hoje?">📌 O que fazer hoje?</button>
-        <button class="ia-chip" data-q="Resumo do mês">📈 Resumo do mês</button>
-        <button class="ia-chip" data-q="Há tarefas atrasadas?">⚠️ Atrasadas</button>
-        <button class="ia-chip" data-q="Como está a produção?">🍄 Produção</button>
+  <!-- ===== Painéis principais ===== -->
+  <div class="home-grid">
+    <!-- Atividade recente -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Atividade recente</h2>
+        <a class="panel-link" href="tarefas.html">Ver tudo</a>
       </div>
-    </div>
-  </section>
-
-  <!-- KPIs principais -->
-  <section class="section-head">
-    <div class="title-block">
-      <div class="eyebrow">Indicadores chave</div>
-      <h2 class="h-title">Visão executiva de hoje</h2>
-      <p class="h-sub">Métricas vivas atualizadas em tempo real conforme a equipe registra atividades.</p>
-    </div>
-    <span class="sync-pill"><span class="sync-dot" id="sync-dot"></span><span id="sync-text">Sincronizado</span></span>
-  </section>
-
-  <div class="grid grid-4 mb-6">
-    <div class="kpi-card kpi-emerald">
-      <span class="kpi-label">📊 Produtividade</span>
-      <span class="kpi-value" id="kpi-productivity">0%</span>
-      <span class="kpi-trend" id="kpi-productivity-trend">— sem variação</span>
-    </div>
-    <div class="kpi-card kpi-clay">
-      <span class="kpi-label">✅ Concluídas no mês</span>
-      <span class="kpi-value" id="kpi-month-done">0</span>
-      <span class="text-sm text-secondary" id="kpi-month-done-sub">de 0 totais no período</span>
-    </div>
-    <div class="kpi-card kpi-gold">
-      <span class="kpi-label">⏳ Em andamento</span>
-      <span class="kpi-value" id="kpi-pending">0</span>
-      <span class="text-sm text-secondary" id="kpi-pending-sub">tarefas no quadro</span>
-    </div>
-    <div class="kpi-card">
-      <span class="kpi-label">⚠️ Atrasadas</span>
-      <span class="kpi-value" id="kpi-late" style="color:var(--accent)">0</span>
-      <span class="text-sm text-secondary" id="kpi-late-sub">precisam de atenção</span>
-    </div>
-  </div>
-
-  <!-- Quick row -->
-  <div class="quick-row">
-    <div class="q-card">
-      <div class="q-icon" style="background:var(--taoca-green-50);color:var(--brand);">🍄</div>
-      <div class="q-text">
-        <div class="q-label">Lotes ativos</div>
-        <div class="q-value" id="q-lotes">—</div>
-      </div>
-    </div>
-    <div class="q-card">
-      <div class="q-icon" style="background:var(--taoca-clay-100);color:#8B4A30;">👥</div>
-      <div class="q-text">
-        <div class="q-label">Clientes ativos</div>
-        <div class="q-value" id="q-clientes">—</div>
-      </div>
-    </div>
-    <div class="q-card">
-      <div class="q-icon" style="background:var(--taoca-gold-100);color:#7A5A2A;">📑</div>
-      <div class="q-text">
-        <div class="q-label">ATAs registradas</div>
-        <div class="q-value" id="q-atas">—</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Módulos do sistema -->
-  <section class="section-head">
-    <div class="title-block">
-      <div class="eyebrow">Módulos do Taoca OS</div>
-      <h2 class="h-title">Áreas de gestão</h2>
-      <p class="h-sub">Acesse rapidamente cada núcleo da operação.</p>
-    </div>
-  </section>
-
-  <div class="module-grid mb-6">
-    <a class="module-card" href="tarefas.html">
-      <div class="m-icon">✅</div>
-      <div class="m-title">Tarefas</div>
-      <div class="m-desc">Quadro Kanban da equipe, prazos, categorias e progresso em tempo real.</div>
-      <div class="m-stat"><strong id="m-tasks">0</strong> tarefas no quadro</div>
-    </a>
-    <a class="module-card m-info" href="dashboard.html">
-      <div class="m-icon">📊</div>
-      <div class="m-title">Painel Gerencial</div>
-      <div class="m-desc">Indicadores de performance, ranking, evolução e distribuição.</div>
-      <div class="m-stat"><strong id="m-perf">0%</strong> de progresso geral</div>
-    </a>
-    <a class="module-card" href="atas.html">
-      <div class="m-icon">📑</div>
-      <div class="m-title">ATAs</div>
-      <div class="m-desc">Registre reuniões e gere tarefas em lote a partir de decisões.</div>
-      <div class="m-stat"><strong id="m-atas">0</strong> atas registradas</div>
-    </a>
-    <a class="module-card m-clay" href="producao.html">
-      <div class="m-icon">🍄</div>
-      <div class="m-title">Produção</div>
-      <div class="m-desc">Lotes de cultivo, inoculação, frutificação, colheita e rendimento.</div>
-      <div class="m-stat"><strong id="m-lotes">0</strong> lotes ativos</div>
-    </a>
-    <a class="module-card m-clay" href="clientes.html">
-      <div class="m-icon">👥</div>
-      <div class="m-title">Clientes &amp; CRM</div>
-      <div class="m-desc">Pipeline, histórico, segmentação e oportunidades de relacionamento.</div>
-      <div class="m-stat"><strong id="m-clientes">0</strong> clientes cadastrados</div>
-    </a>
-    <a class="module-card m-gold" href="financeiro.html">
-      <div class="m-icon">💰</div>
-      <div class="m-title">Financeiro</div>
-      <div class="m-desc">Fluxo de caixa, contas a pagar/receber, margem por produto.</div>
-      <div class="m-stat"><strong id="m-fin">—</strong> visão financeira</div>
-    </a>
-    <a class="module-card m-info" href="estrategia.html">
-      <div class="m-icon">🎯</div>
-      <div class="m-title">Estratégia &amp; OKRs</div>
-      <div class="m-desc">Plano de negócios vivo, objetivos trimestrais e cenários.</div>
-      <div class="m-stat"><strong id="m-okr">—</strong> OKRs em curso</div>
-    </a>
-    <a class="module-card m-gold" href="#" id="open-ia-card">
-      <div class="m-icon">🤖</div>
-      <div class="m-title">Taoca IA</div>
-      <div class="m-desc">Sua copiloto. Análises, insights e geração de conteúdo sob demanda.</div>
-      <div class="m-stat"><strong>Disponível 24/7</strong></div>
-    </a>
-  </div>
-
-  <!-- Atividade recente + spark -->
-  <section class="grid grid-2 mb-6">
-    <div class="card card-pad">
-      <div class="section-head" style="margin-bottom:8px">
-        <div class="title-block">
-          <h3 class="h-title" style="font-size:1.15rem">Atividade recente</h3>
-          <p class="h-sub">Últimas conclusões e movimentos da equipe.</p>
-        </div>
-      </div>
-      <ul class="activity-feed" id="activity-feed">
-        <li><div class="a-icon">⏳</div><div class="a-text"><div class="a-title">Carregando atividades…</div><div class="a-meta">Aguarde um momento</div></div></li>
+      <ul class="task-list" id="task-list">
+        <li class="empty-state">Carregando…</li>
       </ul>
-    </div>
+    </section>
 
-    <div class="card card-pad">
-      <div class="section-head" style="margin-bottom:8px">
-        <div class="title-block">
-          <h3 class="h-title" style="font-size:1.15rem">Pulso da equipe</h3>
-          <p class="h-sub">Tarefas concluídas nos últimos 14 dias.</p>
-        </div>
+    <!-- Distribuição por status -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Status</h2>
+        <a class="panel-link" href="dashboard.html">Painel</a>
       </div>
-      <div class="mini-spark" id="mini-spark"></div>
-      <div class="flex justify-between mt-3 text-xs text-muted">
-        <span>14 dias atrás</span>
-        <span>Hoje</span>
-      </div>
-      <div class="mt-4 text-sm">
-        <strong id="spark-total">0</strong> conclusões neste período · 
-        <span class="text-secondary">média de <strong id="spark-avg">0</strong>/dia</span>
-      </div>
+      <div class="status-bar" id="status-bar"></div>
+      <div class="status-legend" id="status-legend"></div>
+    </section>
+  </div>
+
+  <!-- ===== Atividade dos últimos 14 dias ===== -->
+  <section class="panel" style="margin-bottom: 22px;">
+    <div class="panel-head">
+      <h2 class="panel-title">Conclusões — últimos 14 dias</h2>
+      <span class="text-secondary text-sm" id="spark-summary"></span>
+    </div>
+    <div class="spark-wrap">
+      <svg class="spark-svg" id="spark" viewBox="0 0 600 60" preserveAspectRatio="none"></svg>
     </div>
   </section>
 
-  <!-- Cita ção / rodapé orgânico -->
-  <div class="card card-pad" style="background:linear-gradient(135deg, var(--taoca-cream-50), #FFF); text-align:center; border-style:dashed;">
-    <div class="text-xs uppercase font-bold" style="color:var(--accent); letter-spacing:0.18em; margin-bottom:8px;">Filosofia Taoca</div>
-    <p style="font-family:var(--font-serif); font-size:1.2rem; font-style:italic; color:var(--brand-strong); margin:0;">
-      "Cultivar cogumelos é cultivar tempo, paciência e cuidado.<br>
-      A Taoca OS está aqui para que cada decisão seja feita com a mesma serenidade."
-    </p>
-    <p class="text-secondary text-sm mt-3" style="margin:12px 0 0;">Natureza · Qualidade · Afeto</p>
-  </div>
+  <!-- ===== Acessos rápidos ===== -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">Módulos</h2>
+    </div>
+    <div class="quick">
+      <a href="tarefas.html"><div class="q-name">Tarefas</div><div class="q-desc">Quadro operacional</div></a>
+      <a href="atas.html"><div class="q-name">ATAs</div><div class="q-desc">Reuniões e decisões</div></a>
+      <a href="dashboard.html"><div class="q-name">Painel</div><div class="q-desc">Métricas e gráficos</div></a>
+      <a href="producao.html"><div class="q-name">Produção</div><div class="q-desc">Cultivo e lotes</div></a>
+      <a href="clientes.html"><div class="q-name">Clientes</div><div class="q-desc">Relacionamento</div></a>
+      <a href="financeiro.html"><div class="q-name">Financeiro</div><div class="q-desc">Caixa e margens</div></a>
+      <a href="estrategia.html"><div class="q-name">Estratégia</div><div class="q-desc">Metas e OKRs</div></a>
+    </div>
+  </section>
 
-  <!-- Scripts -->
+  <!-- ===== Scripts ===== -->
   <script src="js/taoca-shell.js"></script>
   <script src="js/notifications.js"></script>
   <script src="js/taoca-ai.js"></script>
   <script>
-    (function () {
-      // Monta o shell (sidebar + topbar)
-      TaocaShell.mount({
-        active: 'home',
-        breadcrumb: 'Taoca OS',
-        title: 'Home Executiva',
-      });
+  (function () {
+    const user = (window.TaocaShell && TaocaShell.getCurrentUser()) || 'Equipe';
+    const hour = new Date().getHours();
+    const period = hour < 5 ? 'Boa noite' : hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
 
-      // ---- Saudação dinâmica ----
-      const user = TaocaShell.getCurrentUser();
-      const h = new Date().getHours();
-      const periodo = h < 12 ? 'Bom dia' : (h < 18 ? 'Boa tarde' : 'Boa noite');
-      const greetEl = document.getElementById('greeting');
-      if (greetEl) greetEl.textContent = `${periodo}, ${user || 'cultivador(a)'} 🌿`;
+    TaocaShell.mount({
+      active: 'home',
+      title: `${period}, ${user}`,
+      subtitle: new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }),
+    });
 
-      // ---- Sync indicator ----
-      const syncDot = document.getElementById('sync-dot');
-      const syncText = document.getElementById('sync-text');
-      function setSync(state, msg) {
-        syncDot.classList.remove('syncing','error');
-        if (state === 'syncing') syncDot.classList.add('syncing');
-        if (state === 'error')   syncDot.classList.add('error');
-        syncText.textContent = msg || (state==='syncing'?'Sincronizando…':state==='error'?'Falha':'Sincronizado');
+    // ---------- helpers ----------
+    const $ = (id) => document.getElementById(id);
+    const fmtPct = (v) => isFinite(v) ? `${Math.round(v)}%` : '—';
+    function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+    function endOfMonth(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999); }
+    function isSameMonth(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth(); }
+    function parseDate(v) {
+      if (!v) return null;
+      const d = new Date(v);
+      return isNaN(d.getTime()) ? null : d;
+    }
+    function timeAgo(date) {
+      if (!date) return '';
+      const diff = (Date.now() - date.getTime()) / 1000;
+      if (diff < 60) return 'agora';
+      if (diff < 3600) return `há ${Math.floor(diff / 60)} min`;
+      if (diff < 86400) return `há ${Math.floor(diff / 3600)}h`;
+      const days = Math.floor(diff / 86400);
+      if (days < 7) return `há ${days}d`;
+      return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    }
+    function statusKey(t) {
+      const s = (t.status || '').toLowerCase();
+      if (s.includes('conclu') || s === 'done' || s === 'completed') return 'done';
+      if (s.includes('progr') || s.includes('andamento') || s === 'doing' || s === 'in_progress') return 'doing';
+      return 'todo';
+    }
+    function statusLabel(k) {
+      return k === 'done' ? 'Concluído' : k === 'doing' ? 'Em progresso' : 'A fazer';
+    }
+
+    // ---------- carregar dados ----------
+    async function loadTasks() {
+      try {
+        const r = await fetch('tables/tasks?limit=500&sort=task_number');
+        if (!r.ok) throw new Error('http ' + r.status);
+        const json = await r.json();
+        return Array.isArray(json) ? json : (json.data || json.items || []);
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function render(tasks) {
+      const now = new Date();
+      const thisMonth = startOfMonth(now);
+      const prevMonth = startOfMonth(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+      const prevMonthEnd = endOfMonth(prevMonth);
+
+      let active = 0, done = 0, doing = 0, todo = 0, late = 0;
+      let doneThisMonth = 0, donePrevMonth = 0;
+      const byDay = {}; // últimos 14 dias
+
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(now); d.setDate(d.getDate() - i);
+        d.setHours(0,0,0,0);
+        byDay[d.toISOString().slice(0,10)] = 0;
       }
 
-      // ---- Helpers ----
-      function startOfDay(d){const x=new Date(d);x.setHours(0,0,0,0);return x;}
-      function startOfMonth(d){const x=startOfDay(d);x.setDate(1);return x;}
-      function parseCompleted(t){
-        if(t.completed_at_iso){const d=new Date(t.completed_at_iso); if(!isNaN(d)) return d;}
-        if(t.completed_at){const m=String(t.completed_at).match(/(\d{2})\/(\d{2})\/(\d{4})[ ,]+(\d{2}):(\d{2})/); if(m) return new Date(+m[3],+m[2]-1,+m[1],+m[4],+m[5]);}
-        return null;
-      }
+      tasks.forEach((t) => {
+        const k = statusKey(t);
+        if (k === 'done') done++;
+        else if (k === 'doing') { doing++; active++; }
+        else { todo++; active++; }
 
-      async function fetchJson(url) {
-        try { const r = await fetch(url); if (!r.ok) return null; return await r.json(); } catch(e) { return null; }
-      }
+        const due = parseDate(t.due_date || t.dueDate);
+        if (k !== 'done' && due && due < now) late++;
 
-      // ---- Render Briefing IA ----
-      function buildBriefing(tasks) {
-        const today = startOfDay(new Date());
-        const monthStart = startOfMonth(new Date());
-        const total = tasks.length;
-        const done = tasks.filter(t => t.status === 'concluida').length;
-        const pending = total - done;
-        const monthDone = tasks.filter(t => { if (t.status!=='concluida') return false; const d=parseCompleted(t); return d&&d>=monthStart;}).length;
-        const late = tasks.filter(t => {
-          if (t.status==='concluida' || !t.due_date) return false;
-          const m = String(t.due_date).match(/^(\d{4})-(\d{2})-(\d{2})/);
-          if(!m) return false;
-          return new Date(+m[1],+m[2]-1,+m[3]) < today;
-        }).length;
-
-        let msg;
-        if (total === 0) {
-          msg = `Sua operação está pronta para começar! Crie sua primeira tarefa em <strong>Tarefas</strong> ou cadastre uma ATA. 🌱`;
-        } else if (late > 0) {
-          msg = `Você tem <strong>${late}</strong> tarefa(s) atrasada(s) e <strong>${pending}</strong> em andamento. Sugiro abrir o quadro e priorizar essas pendências. 📌`;
-        } else if (monthDone > 0) {
-          msg = `Excelente! Você concluiu <strong>${monthDone}</strong> tarefa(s) este mês. Há <strong>${pending}</strong> pendente(s) — mantenha o ritmo. 🚀`;
-        } else {
-          msg = `Você tem <strong>${pending}</strong> tarefa(s) em andamento. Que tal começar pela mais antiga? Posso te ajudar a priorizar. 💪`;
+        const completed = parseDate(t.completed_at || t.completedAt || t.updated_at || t.updatedAt);
+        if (k === 'done' && completed) {
+          if (isSameMonth(completed, now)) doneThisMonth++;
+          else if (completed >= prevMonth && completed <= prevMonthEnd) donePrevMonth++;
+          const key = new Date(completed.getFullYear(), completed.getMonth(), completed.getDate()).toISOString().slice(0,10);
+          if (key in byDay) byDay[key]++;
         }
-        document.getElementById('ia-briefing-text').innerHTML = msg;
-      }
-
-      // ---- KPIs ----
-      function renderKpis(tasks) {
-        const today = startOfDay(new Date());
-        const monthStart = startOfMonth(new Date());
-        const total = tasks.length;
-        const done = tasks.filter(t => t.status === 'concluida').length;
-        const pending = total - done;
-        const pct = total ? Math.round((done/total)*100) : 0;
-        const monthDone = tasks.filter(t => { if (t.status!=='concluida') return false; const d=parseCompleted(t); return d&&d>=monthStart;}).length;
-        const monthTotal = tasks.filter(t => {
-          // criadas neste mês? sem campo created_at, usamos tudo no quadro como base do mês
-          return true;
-        }).length;
-        const late = tasks.filter(t => {
-          if (t.status==='concluida' || !t.due_date) return false;
-          const m = String(t.due_date).match(/^(\d{4})-(\d{2})-(\d{2})/);
-          if(!m) return false;
-          return new Date(+m[1],+m[2]-1,+m[3]) < today;
-        }).length;
-
-        document.getElementById('kpi-productivity').textContent = pct + '%';
-        const trend = document.getElementById('kpi-productivity-trend');
-        if (pct >= 70) { trend.textContent='↑ ótimo ritmo'; trend.className='kpi-trend'; }
-        else if (pct >= 40) { trend.textContent='→ ritmo estável'; trend.className='kpi-trend flat'; }
-        else { trend.textContent='↓ pode melhorar'; trend.className='kpi-trend down'; }
-
-        document.getElementById('kpi-month-done').textContent = monthDone;
-        document.getElementById('kpi-month-done-sub').textContent = `de ${monthTotal} totais no quadro`;
-        document.getElementById('kpi-pending').textContent = pending;
-        document.getElementById('kpi-pending-sub').textContent = pending === 1 ? 'tarefa em andamento' : 'tarefas em andamento';
-        document.getElementById('kpi-late').textContent = late;
-        document.getElementById('kpi-late-sub').textContent = late === 0 ? 'nada urgente 🎉' : (late === 1 ? 'precisa de atenção' : 'precisam de atenção');
-
-        // module cards
-        document.getElementById('m-tasks').textContent = total;
-        document.getElementById('m-perf').textContent = pct + '%';
-      }
-
-      // ---- Activity feed ----
-      function renderActivity(tasks) {
-        const feed = document.getElementById('activity-feed');
-        const recents = tasks
-          .filter(t => t.status === 'concluida')
-          .map(t => ({ t, d: parseCompleted(t) }))
-          .filter(x => x.d)
-          .sort((a,b) => b.d - a.d)
-          .slice(0, 6);
-
-        if (!recents.length) {
-          feed.innerHTML = `<li><div class="a-icon">🌱</div><div class="a-text"><div class="a-title">Nenhuma atividade ainda</div><div class="a-meta">Conclua a primeira tarefa para começar a história da Taoca</div></div></li>`;
-          return;
-        }
-        feed.innerHTML = recents.map(({t,d}) => `
-          <li>
-            <div class="a-icon">✅</div>
-            <div class="a-text">
-              <div class="a-title">${escapeHtml(t.title || 'Tarefa')}</div>
-              <div class="a-meta">${escapeHtml(t.completed_by||'Equipe')} · ${d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})} ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
-            </div>
-          </li>
-        `).join('');
-      }
-
-      // ---- Spark ----
-      function renderSpark(tasks) {
-        const days = 14;
-        const buckets = [];
-        const now = new Date();
-        for (let i = days-1; i >= 0; i--) {
-          const d = startOfDay(new Date(now));
-          d.setDate(d.getDate() - i);
-          buckets.push({ key: d.toISOString().slice(0,10), count: 0 });
-        }
-        tasks.forEach(t => {
-          if (t.status !== 'concluida') return;
-          const d = parseCompleted(t);
-          if (!d) return;
-          const key = startOfDay(d).toISOString().slice(0,10);
-          const b = buckets.find(x => x.key === key);
-          if (b) b.count++;
-        });
-        const max = Math.max(1, ...buckets.map(b => b.count));
-        const sp = document.getElementById('mini-spark');
-        sp.innerHTML = buckets.map(b => `<div class="bar" style="height:${(b.count/max)*100}%" title="${b.key}: ${b.count}"></div>`).join('');
-        const total = buckets.reduce((s,b)=>s+b.count,0);
-        document.getElementById('spark-total').textContent = total;
-        document.getElementById('spark-avg').textContent = (total/days).toFixed(1);
-      }
-
-      function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-
-      // ---- Atalhos ----
-      document.getElementById('open-ia-btn').addEventListener('click', () => {
-        if (window.TaocaAI) window.TaocaAI.open();
-      });
-      document.getElementById('open-ia-card').addEventListener('click', (e) => {
-        e.preventDefault();
-        if (window.TaocaAI) window.TaocaAI.open();
-      });
-      document.querySelectorAll('.ia-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-          const q = chip.getAttribute('data-q');
-          if (window.TaocaAI) {
-            window.TaocaAI.open();
-            setTimeout(() => window.TaocaAI.sendUser(q), 250);
-          }
-        });
       });
 
-      // ---- Bootstrap ----
-      async function refresh() {
-        setSync('syncing','Sincronizando…');
-        const j = await fetchJson('tables/tasks?limit=500');
-        const tasks = j ? (j.data || []).filter(r => !r.deleted) : [];
+      const total = tasks.length || 1;
+      const rate = (done / total) * 100;
 
-        buildBriefing(tasks);
-        renderKpis(tasks);
-        renderActivity(tasks);
-        renderSpark(tasks);
+      // KPIs
+      $('kpi-active').textContent = active;
+      $('kpi-active-sub').textContent = `${todo} a fazer · ${doing} em progresso`;
 
-        // Outros módulos (best-effort)
-        const [atas, lotes, clientes] = await Promise.all([
-          fetchJson('tables/atas?limit=500'),
-          fetchJson('tables/lots?limit=500'),
-          fetchJson('tables/customers?limit=500'),
-        ]);
-        const atasN = atas ? (atas.data||[]).filter(r=>!r.deleted).length : 0;
-        const lotesAll = lotes ? (lotes.data||[]).filter(r=>!r.deleted) : [];
-        const lotesAtivos = lotesAll.filter(l => l.status !== 'colhido' && l.status !== 'descartado').length;
-        const cliN = clientes ? (clientes.data||[]).filter(r=>!r.deleted).length : 0;
+      $('kpi-month').textContent = doneThisMonth;
+      const diff = doneThisMonth - donePrevMonth;
+      const subM = $('kpi-month-sub');
+      if (donePrevMonth === 0 && doneThisMonth === 0) subM.textContent = 'sem dados anteriores';
+      else if (diff > 0) { subM.textContent = `+${diff} vs. mês anterior`; subM.className = 'kpi-sub up'; }
+      else if (diff < 0) { subM.textContent = `${diff} vs. mês anterior`; subM.className = 'kpi-sub down'; }
+      else subM.textContent = `igual ao mês anterior`;
 
-        document.getElementById('m-atas').textContent = atasN;
-        document.getElementById('m-lotes').textContent = lotesAtivos;
-        document.getElementById('m-clientes').textContent = cliN;
-        document.getElementById('q-lotes').textContent = lotesAtivos > 0 ? lotesAtivos : 'Nenhum';
-        document.getElementById('q-clientes').textContent = cliN > 0 ? cliN : 'Nenhum';
-        document.getElementById('q-atas').textContent = atasN;
+      $('kpi-late').textContent = late;
+      $('kpi-late-sub').textContent = late === 0 ? 'tudo no prazo' : (late === 1 ? 'tarefa com prazo vencido' : 'tarefas com prazo vencido');
+      if (late > 0) $('kpi-late-sub').className = 'kpi-sub down';
 
-        setSync('ok','Sincronizado');
+      $('kpi-rate').textContent = tasks.length ? fmtPct(rate) : '—';
+      $('kpi-rate-sub').textContent = `${done} de ${tasks.length} concluídas`;
+
+      // Atividade recente
+      const recent = tasks
+        .slice()
+        .sort((a, b) => {
+          const da = parseDate(a.completed_at || a.updated_at || a.created_at) || new Date(0);
+          const db = parseDate(b.completed_at || b.updated_at || b.created_at) || new Date(0);
+          return db - da;
+        })
+        .slice(0, 7);
+
+      const list = $('task-list');
+      if (!recent.length) {
+        list.innerHTML = '<li class="empty-state">Nenhuma tarefa registrada ainda.</li>';
+      } else {
+        list.innerHTML = recent.map((t) => {
+          const k = statusKey(t);
+          const when = parseDate(t.completed_at || t.updated_at || t.created_at);
+          const title = (t.title || t.name || 'Sem título').toString();
+          return `<li class="task-row">
+            <span class="task-dot ${k}" title="${statusLabel(k)}"></span>
+            <span class="task-text">${escapeHtml(title)}</span>
+            <span class="task-meta">${timeAgo(when)}</span>
+          </li>`;
+        }).join('');
       }
 
-      refresh();
-      setInterval(refresh, 15000);
-    })();
+      // Distribuição por status
+      const sb = $('status-bar');
+      const pTodo = todo / total * 100;
+      const pDoing = doing / total * 100;
+      const pDone = done / total * 100;
+      sb.innerHTML = `
+        <span style="width:${pTodo}%; background:#C77B5C"></span>
+        <span style="width:${pDoing}%; background:#B8935A"></span>
+        <span style="width:${pDone}%; background:#4A7856"></span>
+      `;
+      $('status-legend').innerHTML = `
+        <div class="legend-row" style="--clr:#C77B5C"><span class="lbl">A fazer</span><span class="num">${todo}</span></div>
+        <div class="legend-row" style="--clr:#B8935A"><span class="lbl">Em progresso</span><span class="num">${doing}</span></div>
+        <div class="legend-row" style="--clr:#4A7856"><span class="lbl">Concluído</span><span class="num">${done}</span></div>
+      `;
+
+      // Sparkline
+      drawSpark(byDay);
+    }
+
+    function drawSpark(byDay) {
+      const keys = Object.keys(byDay).sort();
+      const values = keys.map(k => byDay[k]);
+      const max = Math.max(1, ...values);
+      const sum = values.reduce((a,b) => a+b, 0);
+      const w = 600, h = 60, pad = 4;
+      const step = (w - pad*2) / Math.max(1, values.length - 1);
+
+      const points = values.map((v, i) => {
+        const x = pad + i * step;
+        const y = h - pad - (v / max) * (h - pad*2);
+        return [x, y];
+      });
+      const path = points.map((p, i) => (i === 0 ? `M${p[0]},${p[1]}` : `L${p[0]},${p[1]}`)).join(' ');
+      const area = path + ` L${points[points.length-1][0]},${h} L${points[0][0]},${h} Z`;
+
+      $('spark').innerHTML = `
+        <defs>
+          <linearGradient id="sparkfill" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#4A7856" stop-opacity="0.22"/>
+            <stop offset="100%" stop-color="#4A7856" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="${area}" fill="url(#sparkfill)" />
+        <path d="${path}" fill="none" stroke="#2F5D3A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        ${points.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="1.6" fill="#2F5D3A"/>`).join('')}
+      `;
+      $('spark-summary').textContent = sum === 0 ? 'sem conclusões no período' : `${sum} ${sum === 1 ? 'conclusão' : 'conclusões'} · média ${(sum/14).toFixed(1)}/dia`;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    // ---------- inicializar ----------
+    loadTasks().then(render);
+    setInterval(() => loadTasks().then(render), 30000);
+  })();
   </script>
 </body>
 </html>
