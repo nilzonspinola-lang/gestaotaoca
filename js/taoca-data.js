@@ -5,7 +5,7 @@
    ============================================================ */
 (function () {
   const PREFIX = 'taoca:';
-  const SCHEMAS = ['products', 'customers', 'cost_centers', 'sales', 'expenses', 'production'];
+  const SCHEMAS = ['products', 'customers', 'cost_centers', 'sales', 'expenses', 'production', 'tasks'];
 
   function key(table) { return PREFIX + table; }
 
@@ -119,6 +119,23 @@
         { name: 'Distribuidora Exemplo (excluir)', segment: 'Distribuidoras', contact: '', doc: '', payment_terms: '30 dias', notes: 'Cliente de exemplo — pode editar/excluir' },
       ];
       seedCli.forEach(c => create('customers', c));
+    }
+
+    // ----- Tarefas — seed das 10 tarefas iniciais -----
+    if (readAll('tasks').length === 0) {
+      const seedTasks = [
+        { task_number: 1,  category: 'juridico',     title: 'Elaborar contrato de compra e venda da Fazenda Monteiro & Spínola', description: 'Redigir e revisar o contrato principal com cláusulas, condições e validações necessárias.', status: 'concluida', completed_by: 'Nilzon e Marco',  completed_at: '29/04/2026 16:34', completed_at_iso: '2026-04-29T16:34:00', due_date: '', created_by: 'Nilzon' },
+        { task_number: 2,  category: 'institucional', title: 'Informar a Cláudio o capital social da empresa TAOCA',           description: 'Consolidar o valor aprovado e comunicar formalmente a informação societária.',          status: 'concluida', completed_by: 'Marco',           completed_at: '30/04/2026 10:39', completed_at_iso: '2026-04-30T10:39:00', due_date: '', created_by: 'Nilzon' },
+        { task_number: 3,  category: 'institucional', title: 'Alinhar com Feijó o endereço em Mata de São João',                description: 'Confirmar o endereço fiscal correto para abertura do CNPJ sem retrabalho.',              status: 'pendente',  completed_by: '',                 completed_at: '',                 completed_at_iso: '',                  due_date: '2026-05-01', created_by: 'Nilzon' },
+        { task_number: 4,  category: 'institucional', title: 'Definir CNAE',                                                      description: 'Escolher o enquadramento mais adequado às atividades principais e secundárias.',         status: 'concluida', completed_by: 'Marco e Nilzon',   completed_at: '30/04/2026 10:39', completed_at_iso: '2026-04-30T10:39:00', due_date: '', created_by: 'Nilzon' },
+        { task_number: 5,  category: 'juridico',     title: 'Finalizar Contrato Meridiano em nome de Marco e Nilzon',           description: 'Fechar a formalização final do contrato com os nomes corretos e pendências ajustadas.',  status: 'concluida', completed_by: 'Nilzon',          completed_at: '30/04/2026 14:16', completed_at_iso: '2026-04-30T14:16:00', due_date: '', created_by: 'Nilzon' },
+        { task_number: 6,  category: 'consultoria',  title: 'Listar perguntas para consultoria Carlos ABF',                      description: 'Organizar dúvidas prioritárias para aproveitar melhor a reunião de consultoria.',         status: 'concluida', completed_by: 'Marco e Nilzon',   completed_at: '29/04/2026 16:47', completed_at_iso: '2026-04-29T16:47:00', due_date: '', created_by: 'Nilzon' },
+        { task_number: 7,  category: 'outras',       title: 'Agendar VAP na Fazenda Monteiro & Spínola',                         description: 'Definir contato, data e alinhamento prático da visita na fazenda.',                       status: 'pendente',  completed_by: '',                 completed_at: '',                 completed_at_iso: '',                  due_date: '2026-05-13', created_by: 'Nilzon' },
+        { task_number: 8,  category: 'fiscal',       title: 'Finalizar declaração do IR',                                        description: 'Reunir documentos, revisar dados e concluir o envio da declaração.',                      status: 'pendente',  completed_by: '',                 completed_at: '',                 completed_at_iso: '',                  due_date: '2026-05-07', created_by: 'Nilzon' },
+        { task_number: 9,  category: 'institucional', title: 'Fazer reserva de Hotel',                                            description: 'Naturatech',                                                                              status: 'concluida', completed_by: 'Marco',           completed_at: '30/04/2026 14:27', completed_at_iso: '2026-04-30T14:27:00', due_date: '', created_by: 'Nilzon' },
+        { task_number: 10, category: 'fiscal',       title: 'Emitir Nota Fiscal em nome de Adriano Feijó',                       description: '',                                                                                        status: 'concluida', completed_by: 'Nilzon',          completed_at: '30/04/2026 11:38', completed_at_iso: '2026-04-30T11:38:00', due_date: '', created_by: 'Nilzon' },
+      ];
+      seedTasks.forEach(t => create('tasks', t));
     }
   }
 
