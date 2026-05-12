@@ -5,7 +5,7 @@
    ============================================================ */
 (function () {
   const PREFIX = 'taoca:';
-  const SCHEMAS = ['products', 'customers', 'cost_centers', 'sales', 'expenses', 'production', 'tasks'];
+  const SCHEMAS = ['products', 'customers', 'cost_centers', 'sales', 'expenses', 'production', 'tasks', 'users'];
 
   function key(table) { return PREFIX + table; }
 
@@ -20,6 +20,40 @@
   }
   function uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  // ----- Auth helpers -----
+  // Hash leve (não é segurança real — apenas evita senha em texto puro no localStorage).
+  // Quando migrarmos para Supabase, substituiremos por bcrypt server-side.
+  function hashPassword(pwd) {
+    const SALT = 'taoca-v1::';
+    const s = SALT + String(pwd || '');
+    let h1 = 0x811c9dc5 | 0, h2 = 0xdeadbeef | 0;
+    for (let i = 0; i < s.length; i++) {
+      const c = s.charCodeAt(i);
+      h1 = Math.imul(h1 ^ c, 0x01000193);
+      h2 = Math.imul(h2 ^ c, 0x85ebca6b);
+    }
+    const hex = (n) => ('00000000' + (n >>> 0).toString(16)).slice(-8);
+    return 'h1::' + hex(h1) + hex(h2);
+  }
+  function verifyPassword(pwd, hash) {
+    return hashPassword(pwd) === String(hash || '');
+  }
+  function findUserByUsername(username) {
+    const u = String(username || '').trim().toLowerCase();
+    if (!u) return null;
+    return readAll('users').find(r => String(r.username || '').toLowerCase() === u) || null;
+  }
+  function authenticate(username, password) {
+    const user = findUserByUsername(username);
+    if (!user) return { ok: false, error: 'invalid' };
+    if (user.active === false) return { ok: false, error: 'inactive' };
+    if (!verifyPassword(password, user.password)) return { ok: false, error: 'invalid' };
+    return {
+      ok: true,
+      user: { id: user.id, username: user.username, name: user.name, role: user.role || 'user' },
+    };
   }
 
   function list(table, filterFn) {
@@ -121,6 +155,15 @@
       seedCli.forEach(c => create('customers', c));
     }
 
+    // ----- Usuários — seed dos sócios como administradores -----
+    if (readAll('users').length === 0) {
+      const seedUsers = [
+        { id: 'u-nilzon', username: 'nilzon', name: 'Nílzon',  password: hashPassword('taoca@2025'), role: 'admin', active: true },
+        { id: 'u-marco',  username: 'marco',  name: 'Marco',   password: hashPassword('taoca@2025'), role: 'admin', active: true },
+      ];
+      seedUsers.forEach(u => create('users', Object.assign({ created_at: new Date().toISOString() }, u)));
+    }
+
     // ----- Tarefas — seed das 10 tarefas iniciais -----
     if (readAll('tasks').length === 0) {
       const seedTasks = [
@@ -176,6 +219,8 @@
     list, get, create, update, remove, clearAll, seedIfEmpty,
     SEGMENTS, SEGMENT_LABEL,
     fmtBRL, fmtNum, fmtKg, fmtPct, parseISO, monthKey, startOfMonth, endOfMonth,
+    // Auth
+    hashPassword, verifyPassword, authenticate, findUserByUsername,
   };
 
   // Auto-seed na primeira carga

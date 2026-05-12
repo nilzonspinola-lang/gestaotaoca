@@ -96,6 +96,9 @@
     .pill.seg-Supermercados { background:#FBE8DD; color:#8a4a31; }
     .pill.seg-Restaurantes  { background:#F5EBD7; color:#7a5a2a; }
     .pill.seg-Distribuidoras{ background:#E5EAF2; color:#3b4a6a; }
+    .pill.role-admin        { background:#E8F0EE; color:#2F5D3A; }
+    .pill.role-user         { background:#F0F2F6; color:#475569; }
+    .pill.inactive          { background:#FEE2E2; color:#991B1B; }
 
     .icon-btn-mini {
       background: transparent;
@@ -191,6 +194,7 @@
     <button class="tab active" data-tab="produtos">Produtos / SKUs</button>
     <button class="tab" data-tab="clientes">Clientes</button>
     <button class="tab" data-tab="centros">Centros de custo</button>
+    <button class="tab" data-tab="usuarios" id="tab-btn-usuarios" style="display:none">Usuários</button>
   </div>
 
   <!-- ============= PRODUTOS ============= -->
@@ -268,6 +272,31 @@
     </div>
   </section>
 
+  <!-- ============= USUÁRIOS ============= -->
+  <section class="tab-panel" id="tab-usuarios">
+    <div class="panel">
+      <div class="row-toolbar">
+        <div>
+          <h2>Usuários do sistema</h2>
+          <div class="hint">Quem pode acessar o Taoca. Administradores podem gerenciar outros usuários; Operadores apenas usam o sistema.</div>
+        </div>
+        <button class="btn btn-primary" id="btn-new-user">+ Novo usuário</button>
+      </div>
+      <table class="tbl" id="tbl-users">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Usuário (login)</th>
+            <th>Papel</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
   <!-- ============= MODAL ============= -->
   <div class="modal" id="modal" aria-hidden="true">
     <div class="modal-card" role="dialog" aria-modal="true">
@@ -292,13 +321,21 @@
     TaocaShell.mount({
       active: 'cadastros',
       title: 'Cadastros',
-      subtitle: 'Produtos, clientes e centros de custo',
+      subtitle: 'Produtos, clientes, centros de custo e usuários',
     });
 
     const $ = (s, ctx) => (ctx || document).querySelector(s);
     const $$ = (s, ctx) => Array.from((ctx || document).querySelectorAll(s));
     const D = window.TaocaData;
     const escape = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const IS_ADMIN = TaocaShell.isAdmin && TaocaShell.isAdmin();
+    const MY_USER_ID = TaocaShell.getCurrentUserId && TaocaShell.getCurrentUserId();
+
+    // Mostra aba "Usuários" apenas para administradores
+    if (IS_ADMIN) {
+      const tabBtn = document.getElementById('tab-btn-usuarios');
+      if (tabBtn) tabBtn.style.display = '';
+    }
 
     // ---------- TABS ----------
     $$('.tab').forEach(btn => {
@@ -357,6 +394,38 @@
           </td>
         </tr>
       `).join('');
+    }
+
+    // ============ RENDER USUÁRIOS ============
+    function renderUsers() {
+      if (!IS_ADMIN) return; // só admin vê
+      const arr = D.list('users').sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+      const tbody = $('#tbl-users tbody');
+      if (!tbody) return;
+      if (!arr.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Nenhum usuário cadastrado.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = arr.map(u => {
+        const isMe = u.id === MY_USER_ID;
+        const role = u.role === 'admin' ? 'admin' : 'user';
+        const roleLabel = role === 'admin' ? 'Administrador' : 'Operador';
+        const statusPill = u.active === false
+          ? '<span class="pill inactive">Inativo</span>'
+          : '<span class="pill">Ativo</span>';
+        return `
+          <tr data-id="${u.id}">
+            <td><strong>${escape(u.name)}</strong>${isMe ? ' <span class="pill role-user" style="font-size:0.68rem">você</span>' : ''}</td>
+            <td><code>${escape(u.username)}</code></td>
+            <td><span class="pill role-${role}">${roleLabel}</span></td>
+            <td>${statusPill}</td>
+            <td class="actions">
+              <button class="icon-btn-mini" data-act="edit-user" title="Editar">${ICON_EDIT}</button>
+              ${isMe ? '' : `<button class="icon-btn-mini danger" data-act="del-user" title="Excluir">${ICON_DEL}</button>`}
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     // ============ RENDER CENTROS ============
@@ -507,10 +576,72 @@
       if (window.TaocaNotify) TaocaNotify.success(id ? 'Centro atualizado' : 'Centro criado');
     }
 
+    // ============ FORM USUÁRIO ============
+    function formUser(u) {
+      u = u || {};
+      const isNew = !u.id;
+      const isMe = u.id === MY_USER_ID;
+      return `
+        <div class="form-grid">
+          <div class="field span-2"><label>Nome completo *</label><input id="f-name" value="${escape(u.name)}" placeholder="Ex: João da Silva" /></div>
+          <div class="field"><label>Usuário (login) *</label><input id="f-username" value="${escape(u.username)}" placeholder="joao" ${u.id ? 'readonly title="Login não pode ser alterado"' : ''} /></div>
+          <div class="field"><label>Papel *</label>
+            <select id="f-role" ${isMe ? 'disabled title="Você não pode alterar seu próprio papel"' : ''}>
+              <option value="admin" ${u.role==='admin'?'selected':''}>Administrador</option>
+              <option value="user"  ${u.role==='user' ?'selected':''}>Operador</option>
+            </select>
+          </div>
+          <div class="field span-2"><label>${isNew ? 'Senha *' : 'Nova senha'} <span class="text-muted text-xs">${isNew ? 'mínimo 6 caracteres' : '(deixe em branco para manter a atual)'}</span></label><input id="f-password" type="password" placeholder="${isNew ? 'Defina uma senha' : '••••••••'}" autocomplete="new-password" /></div>
+          ${isMe ? '' : `<div class="field span-2"><label><input type="checkbox" id="f-active" ${u.active === false ? '' : 'checked'} /> Usuário ativo (pode fazer login)</label></div>`}
+        </div>
+        ${isMe ? '<p class="text-xs text-muted" style="margin-top:10px">Você está editando seu próprio usuário. Por segurança, não é possível alterar o próprio papel nem desativar a si mesmo.</p>' : ''}
+      `;
+    }
+    function saveUser(id) {
+      const name = $('#f-name').value.trim();
+      const username = $('#f-username').value.trim().toLowerCase();
+      const role = $('#f-role').value;
+      const password = $('#f-password').value;
+      const activeEl = $('#f-active');
+      if (!name || !username) { alert('Nome e login são obrigatórios.'); return; }
+      if (!/^[a-z0-9._-]{2,32}$/.test(username)) { alert('Login deve ter 2-32 caracteres: letras minúsculas, números, ponto, hífen ou _.'); return; }
+      // Senha obrigatória apenas na criação
+      if (!id && (!password || password.length < 6)) { alert('Defina uma senha com pelo menos 6 caracteres.'); return; }
+      if (password && password.length < 6) { alert('A nova senha deve ter pelo menos 6 caracteres.'); return; }
+      // Username único
+      const existing = D.findUserByUsername(username);
+      if (existing && existing.id !== id) { alert('Já existe um usuário com esse login.'); return; }
+
+      const obj = { name, username, role };
+      if (id) {
+        // Não permitir auto-rebaixar admin nem auto-desativar
+        const isMe = id === MY_USER_ID;
+        if (isMe) {
+          obj.role = 'admin';
+          obj.active = true;
+        } else if (activeEl) {
+          obj.active = activeEl.checked;
+        }
+        if (password) obj.password = D.hashPassword(password);
+        D.update('users', id, obj);
+      } else {
+        obj.active = activeEl ? activeEl.checked : true;
+        obj.password = D.hashPassword(password);
+        D.create('users', obj);
+      }
+      closeModal(); renderUsers();
+      if (window.TaocaNotify) TaocaNotify.success(id ? 'Usuário atualizado' : 'Usuário criado');
+    }
+
     // ============ Botões "Novo" ============
     $('#btn-new-product').addEventListener('click', () => openModal('Novo produto', formProduct(), () => saveProduct()));
     $('#btn-new-customer').addEventListener('click', () => openModal('Novo cliente', formCustomer(), () => saveCustomer()));
     $('#btn-new-cc').addEventListener('click', () => openModal('Novo centro de custo', formCC(), () => saveCC()));
+    const btnNewUser = $('#btn-new-user');
+    if (btnNewUser) btnNewUser.addEventListener('click', () => {
+      if (!IS_ADMIN) return;
+      openModal('Novo usuário', formUser(), () => saveUser());
+    });
 
     // ============ Delegação de eventos para Editar / Excluir ============
     document.addEventListener('click', (e) => {
@@ -535,11 +666,30 @@
         openModal('Editar centro de custo', formCC(c), () => saveCC(id));
       } else if (act === 'del-cc') {
         if (confirm('Excluir este centro de custo?')) { D.remove('cost_centers', id); renderCenters(); }
+      } else if (act === 'edit-user') {
+        if (!IS_ADMIN) return;
+        const u = D.get('users', id);
+        openModal('Editar usuário', formUser(u), () => saveUser(id));
+      } else if (act === 'del-user') {
+        if (!IS_ADMIN) return;
+        if (id === MY_USER_ID) { alert('Você não pode excluir seu próprio usuário.'); return; }
+        const u = D.get('users', id);
+        if (!u) return;
+        // Não permitir remover o último administrador ativo
+        const admins = D.list('users').filter(x => x.role === 'admin' && x.active !== false);
+        if (u.role === 'admin' && admins.length <= 1) {
+          alert('Não é possível excluir o último administrador ativo.');
+          return;
+        }
+        if (confirm(`Excluir o usuário "${u.name}"? Esta ação não pode ser desfeita.`)) {
+          D.remove('users', id); renderUsers();
+          if (window.TaocaNotify) TaocaNotify.success('Usuário excluído');
+        }
       }
     });
 
     // ============ Init ============
-    renderProducts(); renderCustomers(); renderCenters();
+    renderProducts(); renderCustomers(); renderCenters(); renderUsers();
   })();
   </script>
 </body>

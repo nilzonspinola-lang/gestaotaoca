@@ -242,10 +242,13 @@
     </p>
   </div>
 
+  <script src="js/taoca-data.js"></script>
   <script>
     (function () {
       const SESSION_KEY = 'taoca-auth-ok';
       const USER_KEY = 'taoca-user';
+      const USER_ID_KEY = 'taoca-user-id';
+      const USER_ROLE_KEY = 'taoca-user-role';
 
       try {
         if (sessionStorage.getItem(SESSION_KEY) === '1') {
@@ -253,12 +256,6 @@
           return;
         }
       } catch (e) {}
-
-      const USERS = {
-        'nilzon': { pass: 'taoca@2025', name: 'Nílzon' },
-        'marco':  { pass: 'taoca@2025', name: 'Marco' },
-        'admin':  { pass: 'taoca@2025', name: 'Admin' },
-      };
 
       const form = document.getElementById('login-form');
       const userInput = document.getElementById('username');
@@ -293,20 +290,30 @@
 
         setLoading(true);
         setTimeout(() => {
-          const rec = USERS[user];
-          if (rec && rec.pass === pass) {
+          if (!window.TaocaData || typeof TaocaData.authenticate !== 'function') {
+            setLoading(false);
+            return showError('Sistema indisponível. Recarregue a página.');
+          }
+          const result = TaocaData.authenticate(user, pass);
+          if (result.ok) {
             try {
               sessionStorage.setItem(SESSION_KEY, '1');
-              sessionStorage.setItem(USER_KEY, rec.name);
+              sessionStorage.setItem(USER_KEY, result.user.name);
+              sessionStorage.setItem(USER_ID_KEY, result.user.id);
+              sessionStorage.setItem(USER_ROLE_KEY, result.user.role);
             } catch (err) {}
             window.location.replace('index.html');
           } else {
             setLoading(false);
-            showError('Usuário ou senha incorretos.');
+            if (result.error === 'inactive') {
+              showError('Usuário desativado. Fale com um administrador.');
+            } else {
+              showError('Usuário ou senha incorretos.');
+            }
             passInput.value = '';
             passInput.focus();
           }
-        }, 600);
+        }, 400);
       });
 
       userInput.focus();

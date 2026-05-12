@@ -5,10 +5,19 @@
 (function () {
   const SESSION_KEY = 'taoca-auth-ok';
   const USER_KEY = 'taoca-user';
+  const USER_ID_KEY = 'taoca-user-id';
+  const USER_ROLE_KEY = 'taoca-user-role';
 
   function getCurrentUser() {
     try { return sessionStorage.getItem(USER_KEY) || 'Equipe'; } catch (e) { return 'Equipe'; }
   }
+  function getCurrentUserId() {
+    try { return sessionStorage.getItem(USER_ID_KEY) || ''; } catch (e) { return ''; }
+  }
+  function getCurrentRole() {
+    try { return sessionStorage.getItem(USER_ROLE_KEY) || 'user'; } catch (e) { return 'user'; }
+  }
+  function isAdmin() { return getCurrentRole() === 'admin'; }
 
   function ensureAuth() {
     try {
@@ -170,6 +179,8 @@
       try {
         sessionStorage.removeItem(SESSION_KEY);
         sessionStorage.removeItem(USER_KEY);
+        sessionStorage.removeItem(USER_ID_KEY);
+        sessionStorage.removeItem(USER_ROLE_KEY);
       } catch (e) {}
       window.location.replace('login.html');
     });
@@ -185,5 +196,5 @@
     return content;
   }
 
-  window.TaocaShell = { mount, ensureAuth, getCurrentUser, NAV };
+  window.TaocaShell = { mount, ensureAuth, getCurrentUser, getCurrentUserId, getCurrentRole, isAdmin, NAV };
 })();
