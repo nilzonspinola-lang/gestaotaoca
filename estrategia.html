@@ -3,315 +3,604 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Estratégia — Taoca OS</title>
+  <title>Estratégico — Taoca</title>
   <link rel="stylesheet" href="css/taoca-design-system.css" />
   <link rel="stylesheet" href="css/notifications.css" />
   <link rel="icon" href="assets/taoca-logo.png" />
   <style>
-    .okr-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-soft);
-      border-radius: var(--radius-xl);
-      padding: 22px;
-      margin-bottom: 16px;
+    /* Period selector */
+    .period-bar {
+      background: #FFF; border: 1px solid var(--border-soft);
+      border-radius: 12px; padding: 12px 16px;
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      margin-bottom: 22px;
     }
-    .okr-card .obj {
-      font-family: var(--font-serif);
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: var(--brand-strong);
-      margin-bottom: 12px;
-    }
-    .kr-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: center;
-      padding: 10px 0;
-      border-top: 1px dashed var(--border-soft);
-    }
-    .kr-row:first-of-type { border-top: 0; }
-    .kr-text { font-size: 0.92rem; }
-    .kr-progress { display: flex; align-items: center; gap: 10px; min-width: 200px; }
-    .kr-progress .progress-track { flex: 1; }
-    .kr-pct { min-width: 44px; text-align: right; font-weight: 700; font-size: 0.85rem; color: var(--brand); }
+    .period-bar .lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: var(--text-muted); }
+    .period-bar select { padding: 7px 12px; border: 1px solid var(--border-default); border-radius: 8px; font: inherit; background: #FFF; }
+    .period-bar .summary { margin-left: auto; font-size: 0.85rem; color: var(--text-secondary); }
 
-    .pillar {
-      background: var(--bg-surface);
-      border-left: 4px solid var(--brand);
-      border-radius: var(--radius-md);
+    /* KPI grid */
+    .kpi-grid {
+      display: grid; gap: 14px; margin-bottom: 22px;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+    }
+    @media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 540px)  { .kpi-grid { grid-template-columns: 1fr; } }
+    .kpi {
+      background: #FFF; border: 1px solid var(--border-soft);
+      border-radius: 14px; padding: 16px 18px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .kpi .lbl { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: var(--text-muted); }
+    .kpi .val { font-family: var(--font-serif); font-size: 1.55rem; font-weight: 700; color: var(--text-primary); line-height: 1.1; margin-top: 2px; }
+    .kpi .val.muted { color: var(--text-muted); font-weight: 500; }
+    .kpi .val.good  { color: #2F5D3A; }
+    .kpi .val.bad   { color: #B91C1C; }
+    .kpi .sub { font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px; }
+    .kpi.highlight { border-left: 3px solid var(--accent); }
+
+    /* Panels */
+    .panel {
+      background: #FFF; border: 1px solid var(--border-soft);
+      border-radius: 14px; padding: 20px; margin-bottom: 18px;
+    }
+    .panel h2 {
+      font-family: var(--font-serif);
+      font-size: 1.1rem; font-weight: 600;
+      margin: 0 0 4px;
+    }
+    .panel .hint { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* Segment matrix */
+    .seg-row {
+      display: grid; grid-template-columns: 130px 1fr 80px 80px;
+      gap: 10px; align-items: center; padding: 8px 0;
+      border-bottom: 1px dashed var(--border-soft);
+      font-size: 0.88rem;
+    }
+    .seg-row:last-child { border-bottom: 0; }
+    .seg-row .name { font-weight: 600; }
+    .seg-row .bar-bg { height: 8px; background: var(--taoca-cream-100); border-radius: 999px; overflow: hidden; }
+    .seg-row .bar-fill { height: 100%; border-radius: 999px; }
+    .seg-row .num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+    .seg-row .num.pct { color: var(--text-secondary); }
+
+    .seg-Hoteis         { color:#2F5D3A; }
+    .seg-Supermercados  { color:#8a4a31; }
+    .seg-Restaurantes   { color:#7a5a2a; }
+    .seg-Distribuidoras { color:#3b4a6a; }
+    .bar-Hoteis         { background: linear-gradient(90deg, #4A7856, #2F5D3A); }
+    .bar-Supermercados  { background: linear-gradient(90deg, #E0A488, #C77B5C); }
+    .bar-Restaurantes   { background: linear-gradient(90deg, #D4B47C, #B8935A); }
+    .bar-Distribuidoras { background: linear-gradient(90deg, #6177A0, #3b4a6a); }
+
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 999px;
+      font-size: 0.7rem; font-weight: 700;
+    }
+    .badge.green { background:#E8F0EE; color:#2F5D3A; }
+    .badge.amber { background:#FDF0DE; color:#8a6a2a; }
+    .badge.red   { background:#FEE2E2; color:#991B1B; }
+    .badge.grey  { background:#F0F2F6; color:#475569; }
+
+    /* Empty state */
+    .empty-block {
+      text-align: center; padding: 28px;
+      color: var(--text-muted); font-size: 0.9rem;
+      background: var(--taoca-cream-50);
+      border-radius: 10px;
+    }
+
+    /* Quadrante "melhor segmento" */
+    .quadrant {
+      position: relative;
+      height: 240px;
+      background: #FAFBFA;
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      margin-top: 8px;
+    }
+    .quadrant::before, .quadrant::after {
+      content: '';
+      position: absolute; background: var(--border-soft);
+    }
+    .quadrant::before { left: 50%; top: 0; bottom: 0; width: 1px; }
+    .quadrant::after  { top: 50%; left: 0; right: 0; height: 1px; }
+    .quad-axis {
+      position: absolute; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .quad-x-low  { left: 8px; top: 50%; transform: translateY(-50%); }
+    .quad-x-high { right: 8px; top: 50%; transform: translateY(-50%); }
+    .quad-y-high { top: 6px; left: 50%; transform: translateX(-50%); }
+    .quad-y-low  { bottom: 6px; left: 50%; transform: translateX(-50%); }
+    .quad-dot {
+      position: absolute; width: 18px; height: 18px; border-radius: 50%;
+      transform: translate(-50%, 50%);
+      display: grid; place-items: center; color:#fff; font-size:0.6rem; font-weight:700;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .quad-label { position: absolute; transform: translate(-50%, calc(50% + 14px)); font-size: 0.7rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; }
+
+    /* Insight callout */
+    .insight {
       padding: 14px 16px;
-      margin-bottom: 10px;
+      background: linear-gradient(135deg, var(--taoca-cream-50), #FFF);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      margin-bottom: 18px;
     }
-    .pillar.clay { border-left-color: var(--accent); }
-    .pillar.gold { border-left-color: var(--premium); }
-    .pillar h4 { font-family: var(--font-serif); font-size: 1rem; margin: 0 0 4px; }
-    .pillar p  { font-size: 0.88rem; color: var(--text-secondary); margin: 0; line-height: 1.55; }
-
-    .swot-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    @media (max-width: 720px) { .swot-grid { grid-template-columns: 1fr; } }
-    .swot-cell {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-soft);
-      border-radius: var(--radius-md);
-      padding: 14px;
-    }
-    .swot-cell h5 {
-      font-family: var(--font-serif);
-      font-size: 0.95rem;
-      margin: 0 0 6px;
-    }
-    .swot-cell.s { border-top: 4px solid var(--success); }
-    .swot-cell.w { border-top: 4px solid var(--danger); }
-    .swot-cell.o { border-top: 4px solid var(--info); }
-    .swot-cell.t { border-top: 4px solid var(--warning); }
-    .swot-cell ul { margin: 0; padding-left: 18px; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; }
+    .insight strong { color: var(--brand-strong); }
   </style>
 </head>
 <body>
 
-  <div class="card card-pad mb-6" style="background: linear-gradient(135deg, var(--taoca-green-900) 0%, var(--info) 100%); color: #FFF; border:0; position:relative; overflow:hidden;">
-    <div style="position:absolute; right:-20px; top:-20px; font-size:8rem; opacity:0.1; line-height:1;">🎯</div>
-    <div class="text-xs uppercase font-bold" style="letter-spacing:0.18em; color:rgba(255,255,255,0.78);">Visão Executiva · Estratégia</div>
-    <h2 style="font-family:var(--font-serif); font-size:1.7rem; color:#FFF; margin-top:4px;">Plano de negócios vivo</h2>
-    <p style="color:rgba(255,255,255,0.82); margin-top:6px; max-width:700px;">
-      Visão, missão, OKRs trimestrais e SWOT — todos conectados aos dados reais da operação. Estratégia que respira.
-    </p>
+  <!-- Período -->
+  <div class="period-bar">
+    <span class="lbl">Período</span>
+    <select id="period">
+      <option value="m">Este mês</option>
+      <option value="m-1">Mês anterior</option>
+      <option value="3m" selected>Últimos 3 meses</option>
+      <option value="6m">Últimos 6 meses</option>
+      <option value="12m">Últimos 12 meses</option>
+      <option value="all">Tudo</option>
+    </select>
+    <span class="summary" id="period-summary">—</span>
   </div>
 
-  <!-- Pilares -->
-  <div class="grid grid-3 mb-6">
-    <div class="pillar">
-      <h4>🌱 Visão</h4>
-      <p>Ser referência nacional em cogumelos cultivados com natureza, qualidade e afeto — levando bem-estar à mesa de cada cliente.</p>
+  <!-- KPIs gerais -->
+  <div class="kpi-grid">
+    <div class="kpi highlight">
+      <div class="lbl">Faturamento</div>
+      <div class="val" id="kpi-revenue">—</div>
+      <div class="sub" id="kpi-revenue-sub">no período</div>
     </div>
-    <div class="pillar clay">
-      <h4>🍄 Missão</h4>
-      <p>Cultivar cogumelos frescos e saudáveis com técnicas sustentáveis, fortalecendo relações de confiança com clientes, parceiros e a terra.</p>
+    <div class="kpi">
+      <div class="lbl">Resultado (lucro)</div>
+      <div class="val" id="kpi-profit">—</div>
+      <div class="sub" id="kpi-profit-sub">margem —</div>
     </div>
-    <div class="pillar gold">
-      <h4>💎 Valores</h4>
-      <p>Cuidado · Transparência · Sustentabilidade · Excelência · Comunidade · Inovação serena.</p>
+    <div class="kpi">
+      <div class="lbl">Clientes ativos</div>
+      <div class="val" id="kpi-customers">—</div>
+      <div class="sub" id="kpi-customers-sub">— compraram no período</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">CAC (custo de aquisição)</div>
+      <div class="val" id="kpi-cac">—</div>
+      <div class="sub">marketing ÷ novos clientes</div>
+    </div>
+
+    <div class="kpi">
+      <div class="lbl">Ticket médio</div>
+      <div class="val" id="kpi-ticket">—</div>
+      <div class="sub" id="kpi-ticket-sub">por venda</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">Preço médio /kg</div>
+      <div class="val" id="kpi-price-kg">—</div>
+      <div class="sub" id="kpi-price-kg-sub">geral</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">Custo /kg de produção</div>
+      <div class="val" id="kpi-cost-kg">—</div>
+      <div class="sub" id="kpi-cost-kg-sub">custo total ÷ produção</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">Embalagem % do custo</div>
+      <div class="val" id="kpi-pack-pct">—</div>
+      <div class="sub" id="kpi-pack-pct-sub">peso da embalagem no total</div>
     </div>
   </div>
 
-  <!-- OKRs -->
-  <div class="section-head">
-    <div class="title-block">
-      <div class="eyebrow">OKRs · Trimestre atual</div>
-      <h2 class="h-title">Objetivos &amp; Resultados-chave</h2>
-      <p class="h-sub">Foco trimestral mensurável, ligado à operação real.</p>
-    </div>
-    <button class="btn btn-primary" id="new-okr-btn" type="button">➕ Novo OKR</button>
-  </div>
+  <div class="insight" id="insight-box" style="display:none"></div>
 
-  <div id="okr-wrap">
-    <!-- Exemplo padrão (renderiza se não houver dados) -->
-  </div>
+  <!-- Painéis lado a lado: Segmentos e Quadrante -->
+  <div class="two-col">
+    <div class="panel">
+      <h2>Margem por segmento</h2>
+      <p class="hint">Quem traz mais lucro real (receita − custo proporcional). Não é só faturamento bruto.</p>
+      <div id="segments-list"></div>
+    </div>
 
-  <!-- SWOT -->
-  <div class="section-head mt-6">
-    <div class="title-block">
-      <div class="eyebrow">Análise estratégica</div>
-      <h2 class="h-title">SWOT da Taoca</h2>
-      <p class="h-sub">Forças, fraquezas, oportunidades e ameaças.</p>
-    </div>
-  </div>
-
-  <section class="swot-grid mb-6">
-    <div class="swot-cell s">
-      <h5>💪 Forças (Strengths)</h5>
-      <ul>
-        <li>Identidade de marca acolhedora (natureza, qualidade, afeto)</li>
-        <li>Conhecimento técnico de cultivo</li>
-        <li>Cogumelos cada vez mais valorizados na gastronomia</li>
-        <li>Operação enxuta e ágil para decisões rápidas</li>
-      </ul>
-    </div>
-    <div class="swot-cell w">
-      <h5>🌧️ Fraquezas (Weaknesses)</h5>
-      <ul>
-        <li>Capacidade limitada de produção em escala</li>
-        <li>Dependência de poucos pontos de venda</li>
-        <li>Marca ainda em construção de visibilidade</li>
-        <li>Logística de produto perecível</li>
-      </ul>
-    </div>
-    <div class="swot-cell o">
-      <h5>🌟 Oportunidades (Opportunities)</h5>
-      <ul>
-        <li>Expansão para mercados premium e gourmet</li>
-        <li>E-commerce e venda direta ao consumidor</li>
-        <li>Cogumelos funcionais (Reishi, Hericium) em alta</li>
-        <li>Conteúdo educativo + redes sociais</li>
-      </ul>
-    </div>
-    <div class="swot-cell t">
-      <h5>⚠️ Ameaças (Threats)</h5>
-      <ul>
-        <li>Concorrência industrial com preços agressivos</li>
-        <li>Sazonalidade da demanda</li>
-        <li>Variações no custo do substrato</li>
-        <li>Riscos sanitários (contaminação de lotes)</li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- Modal Novo OKR -->
-  <div class="tc-modal-backdrop" id="okr-modal" role="dialog" aria-modal="true">
-    <div class="tc-modal-card lg">
-      <h3 class="tc-modal-title">🎯 Novo OKR</h3>
-      <p class="tc-modal-subtitle">Defina um objetivo e até 4 resultados-chave mensuráveis.</p>
-      <div class="field"><label>Objetivo *</label><input type="text" id="okr-obj" class="input" placeholder="Ex.: Triplicar a receita do trimestre" /></div>
-      <div class="field"><label>Trimestre</label>
-        <select id="okr-quarter" class="select">
-          <option value="Q1">Q1 — Jan/Fev/Mar</option>
-          <option value="Q2">Q2 — Abr/Mai/Jun</option>
-          <option value="Q3">Q3 — Jul/Ago/Set</option>
-          <option value="Q4">Q4 — Out/Nov/Dez</option>
-        </select>
-      </div>
-      <div class="field"><label>KR 1</label><input type="text" id="okr-kr1" class="input" placeholder="Ex.: Atingir R$ 30.000 em vendas" /></div>
-      <div class="field"><label>KR 2</label><input type="text" id="okr-kr2" class="input" placeholder="Ex.: Conquistar 10 novos clientes" /></div>
-      <div class="field"><label>KR 3</label><input type="text" id="okr-kr3" class="input" /></div>
-      <div class="field"><label>KR 4</label><input type="text" id="okr-kr4" class="input" /></div>
-      <div class="tc-modal-actions">
-        <button class="btn btn-ghost" type="button" id="okr-cancel">Cancelar</button>
-        <button class="btn btn-primary" type="button" id="okr-save">Criar OKR</button>
+    <div class="panel">
+      <h2>Matriz Faturamento × Margem</h2>
+      <p class="hint">Quadrante superior direito = segmento mais estratégico (alto faturamento + alta margem).</p>
+      <div class="quadrant" id="quadrant">
+        <span class="quad-axis quad-x-low">← Faturamento</span>
+        <span class="quad-axis quad-x-high">Faturamento →</span>
+        <span class="quad-axis quad-y-high">Margem ↑</span>
+        <span class="quad-axis quad-y-low">Margem ↓</span>
       </div>
     </div>
   </div>
 
+  <!-- Salas de produção -->
+  <div class="panel">
+    <h2>Receita por sala de produção</h2>
+    <p class="hint">Qual sala gera mais retorno. Calculado com base na colheita real × preço médio /kg.</p>
+    <div id="rooms-revenue"></div>
+  </div>
+
+  <!-- Indicadores secundários -->
+  <div class="two-col">
+    <div class="panel">
+      <h2>Clientes e recorrência</h2>
+      <div id="customers-stats"></div>
+    </div>
+    <div class="panel">
+      <h2>Composição do custo</h2>
+      <p class="hint">Onde o dinheiro está saindo.</p>
+      <div id="cost-composition"></div>
+    </div>
+  </div>
+
+  <script src="js/taoca-data.js"></script>
   <script src="js/taoca-shell.js"></script>
-  <script>TaocaShell.mount({ active: 'estrategia', breadcrumb: 'Visão Executiva · Estratégia', title: 'Estratégia & OKRs' });</script>
-
-  <script>
-    (function () {
-      const TABLE='okrs', POLL_MS=15000;
-      const wrap = document.getElementById('okr-wrap');
-
-      function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-
-      async function fetchOkrs(){
-        try { const r = await fetch(`tables/${TABLE}?limit=200`); if(!r.ok) return []; const j = await r.json(); return (j.data||[]).filter(x=>!x.deleted); }
-        catch(e){ return []; }
-      }
-      async function createOkr(p){
-        const r = await fetch(`tables/${TABLE}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p) });
-        if(!r.ok) throw new Error('Falha'); return await r.json();
-      }
-      async function patchOkr(id,p){
-        const r = await fetch(`tables/${TABLE}/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(p) });
-        if(!r.ok) throw new Error('Falha'); return await r.json();
-      }
-
-      function getDefaultExample(){
-        return [{
-          id: 'demo',
-          objective: '🎯 Triplicar a presença da Taoca no varejo regional',
-          quarter: 'Q' + Math.ceil((new Date().getMonth()+1)/3),
-          krs: [
-            { text: 'Conquistar 10 novos pontos de venda', pct: 30 },
-            { text: 'Atingir R$ 30.000/mês em receita recorrente', pct: 20 },
-            { text: 'Lançar 2 novas variedades (Hericium e Reishi)', pct: 50 },
-            { text: 'Alcançar 1.000 seguidores no Instagram', pct: 40 },
-          ],
-          demo: true,
-        }];
-      }
-
-      function renderKrs(okr) {
-        const krs = Array.isArray(okr.krs) ? okr.krs : [];
-        if(!krs.length) return '<p class="text-muted text-sm">Sem KRs cadastrados</p>';
-        return krs.map((k, i) => `
-          <div class="kr-row">
-            <div class="kr-text"><strong>KR${i+1}.</strong> ${escapeHtml(k.text||'')}</div>
-            <div class="kr-progress">
-              <div class="progress-track"><div class="progress-fill" style="width:${k.pct||0}%"></div></div>
-              <span class="kr-pct">${k.pct||0}%</span>
-              ${!okr.demo?`<button class="btn btn-ghost btn-sm" data-okr-id="${okr.id}" data-kr-idx="${i}" data-action="kr-update">Atualizar</button>`:''}
-            </div>
-          </div>
-        `).join('');
-      }
-
-      function calcOkrPct(okr){
-        const krs = Array.isArray(okr.krs) ? okr.krs : [];
-        if(!krs.length) return 0;
-        return Math.round(krs.reduce((s,k) => s + (Number(k.pct)||0), 0) / krs.length);
-      }
-
-      function render(list){
-        const items = list.length ? list : getDefaultExample();
-        wrap.innerHTML = items.map(o => {
-          const overall = calcOkrPct(o);
-          return `
-            <div class="okr-card">
-              <div class="flex justify-between items-center mb-3" style="flex-wrap:wrap; gap:8px;">
-                <div class="obj">${escapeHtml(o.objective || '—')}</div>
-                <span class="tag ${overall>=70?'tag-success':overall>=30?'tag-info':'tag-clay'}">${overall}% · ${escapeHtml(o.quarter||'')}</span>
-              </div>
-              ${renderKrs(o)}
-              ${o.demo?'<p class="text-muted text-xs mt-2"><em>Exemplo demonstrativo — crie o seu OKR pelo botão acima.</em></p>':''}
-            </div>
-          `;
-        }).join('');
-
-        // Bind update buttons
-        wrap.querySelectorAll('[data-action="kr-update"]').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const id = btn.dataset.okrId;
-            const idx = Number(btn.dataset.krIdx);
-            const okr = list.find(o => o.id === id);
-            if(!okr) return;
-            const krs = okr.krs || [];
-            const kr = krs[idx] || { text:'', pct:0 };
-            const v = prompt(`Progresso (%) para "${kr.text}"`, kr.pct||0);
-            if(v===null) return;
-            const newPct = Math.max(0, Math.min(100, Number(v)||0));
-            krs[idx] = { ...kr, pct: newPct };
-            try { await patchOkr(id, { krs }); refresh(); }
-            catch(e){ alert('Falha ao salvar.'); }
-          });
-        });
-      }
-
-      async function refresh(){ const list = await fetchOkrs(); render(list); }
-      refresh();
-      setInterval(refresh, POLL_MS);
-
-      // Modal
-      const modal = document.getElementById('okr-modal');
-      document.getElementById('new-okr-btn').addEventListener('click', () => {
-        ['okr-obj','okr-kr1','okr-kr2','okr-kr3','okr-kr4'].forEach(id => document.getElementById(id).value='');
-        const m = new Date().getMonth()+1;
-        document.getElementById('okr-quarter').value = 'Q' + Math.ceil(m/3);
-        modal.classList.add('open');
-      });
-      document.getElementById('okr-cancel').addEventListener('click', () => modal.classList.remove('open'));
-      modal.addEventListener('click', (e) => { if(e.target===modal) modal.classList.remove('open'); });
-
-      document.getElementById('okr-save').addEventListener('click', async () => {
-        const obj = document.getElementById('okr-obj').value.trim();
-        if(!obj) return alert('Objetivo obrigatório.');
-        const krs = ['okr-kr1','okr-kr2','okr-kr3','okr-kr4']
-          .map(id => document.getElementById(id).value.trim())
-          .filter(Boolean)
-          .map(text => ({ text, pct: 0 }));
-        const payload = {
-          objective: obj,
-          quarter: document.getElementById('okr-quarter').value,
-          krs,
-          year: new Date().getFullYear(),
-          created_by: (window.TaocaShell && TaocaShell.getCurrentUser&&TaocaShell.getCurrentUser()) || 'Equipe',
-        };
-        try { await createOkr(payload); modal.classList.remove('open'); refresh(); }
-        catch(e){ alert('Falha ao salvar.'); }
-      });
-    })();
-  </script>
-
   <script src="js/notifications.js"></script>
   <script src="js/taoca-ai.js"></script>
+  <script>
+  (function () {
+    TaocaShell.mount({
+      active: 'estrategia',
+      title: 'Estratégico',
+      subtitle: 'Indicadores gerais da empresa',
+    });
+
+    const $ = (s, ctx) => (ctx || document).querySelector(s);
+    const D = window.TaocaData;
+    const escape = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    // ============ Período ============
+    function getPeriodRange(code) {
+      const now = new Date();
+      let from = null, to = new Date(now);
+      if (code === 'm') {
+        from = D.startOfMonth(now);
+        to = D.endOfMonth(now);
+      } else if (code === 'm-1') {
+        const prev = new Date(now.getFullYear(), now.getMonth()-1, 15);
+        from = D.startOfMonth(prev);
+        to = D.endOfMonth(prev);
+      } else if (code === '3m') {
+        from = new Date(now); from.setMonth(from.getMonth() - 3); from.setHours(0,0,0,0);
+      } else if (code === '6m') {
+        from = new Date(now); from.setMonth(from.getMonth() - 6); from.setHours(0,0,0,0);
+      } else if (code === '12m') {
+        from = new Date(now); from.setFullYear(from.getFullYear() - 1); from.setHours(0,0,0,0);
+      } else {
+        from = new Date(2000, 0, 1);
+      }
+      return { from, to };
+    }
+    function inRange(iso, range) {
+      if (!iso) return false;
+      const d = D.parseISO(iso);
+      if (!d) return false;
+      return d >= range.from && d <= range.to;
+    }
+    function fmtRange(range) {
+      const f = range.from.toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+      const t = range.to.toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+      return `${f} → ${t}`;
+    }
+    function monthsBetween(from, to) {
+      return Math.max(1, (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth()) + 1);
+    }
+
+    // ============ Cálculo principal ============
+    function computeMetrics(range) {
+      const sales = D.list('sales').filter(s => inRange(s.date, range));
+      const expenses = D.list('expenses').filter(e => inRange(e.date, range));
+      const customers = D.list('customers');
+      const cycles = D.list('production_cycles').filter(c => c.status === 'colhido' && inRange(c.harvested_at, range));
+      const products = D.list('products');
+      const centers = D.list('cost_centers');
+
+      // Receita
+      const revenue = sales.reduce((a,s) => a + (Number(s.total)||0), 0);
+      const kgSold = sales.reduce((a,s) => a + (Number(s.kg)||0), 0);
+      const ticket = sales.length ? revenue / sales.length : 0;
+      const pricePerKg = kgSold > 0 ? revenue / kgSold : 0;
+
+      // Despesas / custos
+      const totalCost = expenses.reduce((a,e) => a + (Number(e.value)||0), 0);
+
+      // Encontrar centros relevantes
+      const centerById = {};
+      centers.forEach(c => { centerById[c.id] = c; });
+      function sumByCenterPattern(re) {
+        return expenses.reduce((acc, e) => {
+          const c = centerById[e.cost_center_id];
+          if (!c) return acc;
+          if (re.test(c.name)) return acc + (Number(e.value)||0);
+          return acc;
+        }, 0);
+      }
+      const packagingCost = sumByCenterPattern(/embal/i);
+      const marketingCost = sumByCenterPattern(/marketing|divulg/i);
+      const transportCost = sumByCenterPattern(/transport|frete/i);
+
+      // Lucro / margem
+      const profit = revenue - totalCost;
+      const margin = revenue > 0 ? profit / revenue : 0;
+
+      // Produção
+      const kgHarvested = cycles.reduce((a,c) => a + (Number(c.kg_harvested)||0), 0);
+      const cbsGenerated = cycles.reduce((a,c) => a + D.cycleCBS(c), 0);
+      const costPerKg = kgHarvested > 0 ? totalCost / kgHarvested : 0;
+
+      // Embalagem como % do custo
+      const packPct = totalCost > 0 ? packagingCost / totalCost : 0;
+
+      // Clientes ativos no período
+      const activeCustIds = new Set(sales.map(s => s.customer_id).filter(Boolean));
+      const activeCustomers = activeCustIds.size;
+      // Novos clientes do período (created_at dentro do range)
+      const newCustomers = customers.filter(c => inRange(c.created_at, range)).length;
+      // Recorrência: clientes que compraram >1 vez
+      const purchaseCount = {};
+      sales.forEach(s => { if (s.customer_id) purchaseCount[s.customer_id] = (purchaseCount[s.customer_id]||0) + 1; });
+      const recurring = Object.values(purchaseCount).filter(n => n > 1).length;
+
+      // CAC = marketing / novos clientes
+      const cac = newCustomers > 0 ? marketingCost / newCustomers : 0;
+
+      // Por segmento — receita + margem aproximada
+      const bySegment = {};
+      D.SEGMENTS.forEach(seg => { bySegment[seg] = { revenue: 0, kg: 0, count: 0, customers: new Set() }; });
+      const custById = {};
+      customers.forEach(c => { custById[c.id] = c; });
+      sales.forEach(s => {
+        const c = custById[s.customer_id];
+        const seg = (c && c.segment) || null;
+        if (seg && bySegment[seg]) {
+          bySegment[seg].revenue += Number(s.total)||0;
+          bySegment[seg].kg += Number(s.kg)||0;
+          bySegment[seg].count++;
+          if (s.customer_id) bySegment[seg].customers.add(s.customer_id);
+        }
+      });
+      // Margem aproximada por segmento: aloca custo total proporcionalmente à receita do segmento
+      Object.keys(bySegment).forEach(seg => {
+        const r = bySegment[seg].revenue;
+        const allocatedCost = revenue > 0 ? totalCost * (r / revenue) : 0;
+        bySegment[seg].cost = allocatedCost;
+        bySegment[seg].profit = r - allocatedCost;
+        bySegment[seg].margin = r > 0 ? bySegment[seg].profit / r : 0;
+        bySegment[seg].customers = bySegment[seg].customers.size;
+      });
+
+      // Por sala
+      const rooms = D.list('rooms');
+      const byRoom = rooms.map(r => {
+        const roomCycles = cycles.filter(c => c.room_id === r.id);
+        const kg = roomCycles.reduce((a,c) => a + (Number(c.kg_harvested)||0), 0);
+        const cbs = roomCycles.reduce((a,c) => a + D.cycleCBS(c), 0);
+        const estRevenue = kg * pricePerKg;
+        return { room: r, kg, cbs, estRevenue, cycles: roomCycles.length };
+      });
+
+      // Composição por centro de custo
+      const byCenter = {};
+      expenses.forEach(e => {
+        const cid = e.cost_center_id || 'other';
+        if (!byCenter[cid]) byCenter[cid] = { name: centerById[cid]?.name || 'Sem centro', type: centerById[cid]?.type || 'variavel', value: 0 };
+        byCenter[cid].value += Number(e.value)||0;
+      });
+      const composition = Object.values(byCenter).sort((a,b) => b.value - a.value);
+
+      return {
+        revenue, totalCost, profit, margin,
+        sales, kgSold, ticket, pricePerKg, costPerKg,
+        kgHarvested, cbsGenerated,
+        packagingCost, marketingCost, transportCost, packPct,
+        activeCustomers, newCustomers, recurring, cac,
+        bySegment, byRoom, composition,
+        salesCount: sales.length,
+        cyclesCount: cycles.length,
+      };
+    }
+
+    // ============ Renderização ============
+    function renderKPIs(m) {
+      $('#kpi-revenue').textContent = m.revenue > 0 ? D.fmtBRL(m.revenue) : '—';
+      $('#kpi-revenue-sub').textContent = `${m.salesCount} venda${m.salesCount!==1?'s':''} · ${D.fmtKg(m.kgSold)}`;
+
+      const profitEl = $('#kpi-profit');
+      profitEl.textContent = m.revenue > 0 ? D.fmtBRL(m.profit) : '—';
+      profitEl.className = 'val ' + (m.revenue > 0 ? (m.profit >= 0 ? 'good' : 'bad') : 'muted');
+      $('#kpi-profit-sub').textContent = m.revenue > 0 ? `margem ${D.fmtPct(m.margin)}` : 'sem vendas no período';
+
+      $('#kpi-customers').textContent = m.activeCustomers || '—';
+      $('#kpi-customers-sub').textContent = `${m.recurring} recorrente${m.recurring!==1?'s':''} · ${m.newCustomers} novo${m.newCustomers!==1?'s':''}`;
+
+      $('#kpi-cac').textContent = m.cac > 0 ? D.fmtBRL(m.cac) : '—';
+
+      $('#kpi-ticket').textContent = m.ticket > 0 ? D.fmtBRL(m.ticket) : '—';
+      $('#kpi-ticket-sub').textContent = m.salesCount > 0 ? `em ${m.salesCount} venda${m.salesCount!==1?'s':''}` : 'sem vendas';
+
+      $('#kpi-price-kg').textContent = m.pricePerKg > 0 ? D.fmtBRL(m.pricePerKg) : '—';
+
+      $('#kpi-cost-kg').textContent = m.costPerKg > 0 ? D.fmtBRL(m.costPerKg) : '—';
+      $('#kpi-cost-kg-sub').textContent = m.kgHarvested > 0 ? `${D.fmtKg(m.kgHarvested)} colhido` : 'sem colheita no período';
+
+      $('#kpi-pack-pct').textContent = m.packagingCost > 0 ? D.fmtPct(m.packPct) : '—';
+      $('#kpi-pack-pct-sub').textContent = m.packagingCost > 0 ? `${D.fmtBRL(m.packagingCost)} de embalagem` : 'sem despesa lançada';
+    }
+
+    function renderSegments(m) {
+      const segs = Object.entries(m.bySegment)
+        .filter(([_, v]) => v.revenue > 0 || v.count > 0)
+        .sort((a,b) => b[1].revenue - a[1].revenue);
+      const container = $('#segments-list');
+      if (!segs.length) {
+        container.innerHTML = '<div class="empty-block">Nenhuma venda no período. Lance vendas para ver a análise por segmento.</div>';
+        return;
+      }
+      const maxRev = Math.max(...segs.map(([_, v]) => v.revenue));
+      container.innerHTML = segs.map(([seg, v]) => {
+        const pct = maxRev > 0 ? (v.revenue / maxRev) * 100 : 0;
+        const marginColor = v.margin >= 0.3 ? 'green' : (v.margin >= 0 ? 'amber' : 'red');
+        return `
+          <div class="seg-row">
+            <div class="name seg-${seg}">${escape(D.SEGMENT_LABEL[seg] || seg)}</div>
+            <div class="bar-bg"><div class="bar-fill bar-${seg}" style="width:${pct}%"></div></div>
+            <div class="num">${D.fmtBRL(v.revenue)}</div>
+            <div class="num pct"><span class="badge ${marginColor}">${D.fmtPct(v.margin)}</span></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderQuadrant(m) {
+      const q = $('#quadrant');
+      // Limpa dots antigos
+      q.querySelectorAll('.quad-dot, .quad-label').forEach(el => el.remove());
+      const segs = Object.entries(m.bySegment).filter(([_, v]) => v.revenue > 0);
+      if (!segs.length) return;
+      const maxRev = Math.max(...segs.map(([_, v]) => v.revenue));
+      const margins = segs.map(([_, v]) => v.margin);
+      const minMargin = Math.min(0, ...margins);
+      const maxMargin = Math.max(0.5, ...margins);
+      const colors = { Hoteis:'#2F5D3A', Supermercados:'#C77B5C', Restaurantes:'#B8935A', Distribuidoras:'#3b4a6a' };
+      segs.forEach(([seg, v]) => {
+        const xPct = maxRev > 0 ? 8 + (v.revenue / maxRev) * 84 : 50;
+        const yPct = maxMargin > minMargin ? 92 - ((v.margin - minMargin) / (maxMargin - minMargin)) * 84 : 50;
+        const dot = document.createElement('div');
+        dot.className = 'quad-dot';
+        dot.style.cssText = `left:${xPct}%; top:${yPct}%; background:${colors[seg] || '#666'};`;
+        dot.title = `${D.SEGMENT_LABEL[seg]}: ${D.fmtBRL(v.revenue)} · margem ${D.fmtPct(v.margin)}`;
+        const label = document.createElement('div');
+        label.className = 'quad-label';
+        label.style.cssText = `left:${xPct}%; top:${yPct}%;`;
+        label.textContent = (D.SEGMENT_LABEL[seg] || seg).slice(0, 10);
+        q.appendChild(dot);
+        q.appendChild(label);
+      });
+    }
+
+    function renderRooms(m) {
+      const container = $('#rooms-revenue');
+      if (!m.byRoom.length) {
+        container.innerHTML = '<div class="empty-block">Nenhuma sala cadastrada.</div>';
+        return;
+      }
+      const totalKg = m.byRoom.reduce((a,r) => a + r.kg, 0);
+      if (totalKg === 0) {
+        container.innerHTML = '<div class="empty-block">Nenhuma colheita registrada no período. Registre colheitas em <strong>Produção</strong>.</div>';
+        return;
+      }
+      container.innerHTML = m.byRoom.map(r => {
+        const pct = totalKg > 0 ? (r.kg / totalKg) * 100 : 0;
+        return `
+          <div class="seg-row">
+            <div class="name">${escape(r.room.name)}<div class="text-xs text-muted" style="font-weight:400">${escape(r.room.mushroom_type)}</div></div>
+            <div class="bar-bg"><div class="bar-fill bar-Hoteis" style="width:${pct}%"></div></div>
+            <div class="num">${D.fmtKg(r.kg)}<div class="text-xs text-muted" style="font-weight:400">${r.cycles} ciclo${r.cycles!==1?'s':''}</div></div>
+            <div class="num pct">${D.fmtBRL(r.estRevenue)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderCustomersStats(m) {
+      const total = D.list('customers').length;
+      const retentionPct = m.activeCustomers > 0 ? m.recurring / m.activeCustomers : 0;
+      const html = `
+        <div class="seg-row" style="grid-template-columns:1fr auto">
+          <div>Total de clientes cadastrados</div>
+          <div class="num"><strong>${total}</strong></div>
+        </div>
+        <div class="seg-row" style="grid-template-columns:1fr auto">
+          <div>Clientes ativos no período</div>
+          <div class="num"><strong>${m.activeCustomers}</strong></div>
+        </div>
+        <div class="seg-row" style="grid-template-columns:1fr auto">
+          <div>Clientes recorrentes (>1 compra)</div>
+          <div class="num"><strong>${m.recurring}</strong> <span class="badge ${retentionPct>=0.5?'green':retentionPct>=0.25?'amber':'grey'}">${D.fmtPct(retentionPct)}</span></div>
+        </div>
+        <div class="seg-row" style="grid-template-columns:1fr auto">
+          <div>Novos clientes no período</div>
+          <div class="num"><strong>${m.newCustomers}</strong></div>
+        </div>
+        <div class="seg-row" style="grid-template-columns:1fr auto; border-bottom:0">
+          <div>CAC (Custo de Aquisição)</div>
+          <div class="num"><strong>${m.cac > 0 ? D.fmtBRL(m.cac) : '—'}</strong></div>
+        </div>
+      `;
+      $('#customers-stats').innerHTML = html;
+    }
+
+    function renderComposition(m) {
+      const container = $('#cost-composition');
+      if (!m.composition.length) {
+        container.innerHTML = '<div class="empty-block">Nenhuma despesa lançada no período.</div>';
+        return;
+      }
+      const total = m.composition.reduce((a,c) => a + c.value, 0);
+      container.innerHTML = m.composition.map(c => {
+        const pct = total > 0 ? (c.value / total) * 100 : 0;
+        return `
+          <div class="seg-row">
+            <div class="name">${escape(c.name)}<div class="text-xs text-muted" style="font-weight:400">${c.type === 'fixo' ? 'Fixo' : 'Variável'}</div></div>
+            <div class="bar-bg"><div class="bar-fill bar-Supermercados" style="width:${pct}%"></div></div>
+            <div class="num">${D.fmtBRL(c.value)}</div>
+            <div class="num pct">${pct.toFixed(1)}%</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderInsight(m) {
+      const box = $('#insight-box');
+      if (m.revenue === 0 && m.totalCost === 0) { box.style.display = 'none'; return; }
+      const insights = [];
+      // Melhor segmento
+      const bestSeg = Object.entries(m.bySegment)
+        .filter(([_, v]) => v.revenue > 0)
+        .sort((a,b) => (b[1].revenue * (b[1].margin+0.001)) - (a[1].revenue * (a[1].margin+0.001)))[0];
+      if (bestSeg) {
+        insights.push(`<strong>${D.SEGMENT_LABEL[bestSeg[0]]}</strong> é o segmento mais estratégico (${D.fmtBRL(bestSeg[1].revenue)} a ${D.fmtPct(bestSeg[1].margin)} de margem).`);
+      }
+      // Margem geral
+      if (m.revenue > 0 && m.margin < 0) {
+        insights.push(`⚠️ O resultado está negativo (margem ${D.fmtPct(m.margin)}) — receita não cobre os custos.`);
+      } else if (m.revenue > 0 && m.margin < 0.15) {
+        insights.push(`Margem geral está baixa (${D.fmtPct(m.margin)}). Foque em segmentos mais rentáveis ou redução de custos.`);
+      }
+      // Embalagem
+      if (m.packPct > 0.20) {
+        insights.push(`Embalagem representa <strong>${D.fmtPct(m.packPct)}</strong> dos custos — considere renegociar com fornecedor.`);
+      }
+      if (!insights.length) { box.style.display = 'none'; return; }
+      box.style.display = 'block';
+      box.innerHTML = insights.map(i => `<div style="margin:4px 0">${i}</div>`).join('');
+    }
+
+    // ============ Init + atualização ============
+    function refresh() {
+      const code = $('#period').value;
+      const range = getPeriodRange(code);
+      $('#period-summary').textContent = fmtRange(range);
+      const m = computeMetrics(range);
+      renderKPIs(m);
+      renderSegments(m);
+      renderQuadrant(m);
+      renderRooms(m);
+      renderCustomersStats(m);
+      renderComposition(m);
+      renderInsight(m);
+    }
+    $('#period').addEventListener('change', refresh);
+    refresh();
+  })();
+  </script>
 </body>
 </html>

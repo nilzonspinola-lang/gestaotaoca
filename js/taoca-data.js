@@ -5,7 +5,12 @@
    ============================================================ */
 (function () {
   const PREFIX = 'taoca:';
-  const SCHEMAS = ['products', 'customers', 'cost_centers', 'sales', 'expenses', 'production', 'tasks', 'users'];
+  const SCHEMAS = ['products', 'customers', 'cost_centers', 'sales', 'expenses', 'production', 'tasks', 'users', 'suppliers', 'rooms', 'production_cycles'];
+
+  // Constantes de produção
+  const CBS_RATIO = 4;         // 1 kg de cogumelo colhido → 4 kg de CBS
+  const CYCLE_DAYS = 30;       // Ciclo médio de produção (inoculação → colheita)
+  const ROOM_COUNT = 3;
 
   function key(table) { return PREFIX + table; }
 
@@ -164,6 +169,32 @@
       seedUsers.forEach(u => create('users', Object.assign({ created_at: new Date().toISOString() }, u)));
     }
 
+    // ----- Fornecedores — seed inicial (3 exemplos para edição) -----
+    if (readAll('suppliers').length === 0) {
+      const seedSup = [
+        { name: 'Fornecedor de Composto (editar)', category: 'Composto',  doc: '', contact: '', payment_terms: '30 dias', notes: 'Substrato para cultivo de cogumelos' },
+        { name: 'Fornecedor de Embalagem (editar)', category: 'Embalagem', doc: '', contact: '', payment_terms: 'À vista',  notes: 'Bandejas, sacos, etiquetas' },
+        { name: 'Concessionária de Energia (editar)', category: 'Energia', doc: '', contact: '', payment_terms: '30 dias', notes: '' },
+      ];
+      seedSup.forEach(s => create('suppliers', s));
+    }
+
+    // ----- Salas de produção — 3 salas, cada uma com 1/3 da capacidade total -----
+    if (readAll('rooms').length === 0) {
+      // Capacidade total mensal (kg) — lê do registro de produção se houver, senão usa 2250
+      const prod = readAll('production');
+      const totalCap = prod.length && prod[0].kg_cogumelo ? prod[0].kg_cogumelo : 2250;
+      const perRoom = Math.round((totalCap / ROOM_COUNT) * 100) / 100;
+      const seedRooms = [
+        { id: 'r-1', name: 'Sala 1', mushroom_type: 'Cogumelo Paris', capacity_kg_month: perRoom, product_id: 'p-par200', notes: 'Foco inicial: Cogumelo Paris', active: true },
+        { id: 'r-2', name: 'Sala 2', mushroom_type: 'Cogumelo Paris', capacity_kg_month: perRoom, product_id: 'p-par200', notes: 'Foco inicial: Cogumelo Paris', active: true },
+        { id: 'r-3', name: 'Sala 3', mushroom_type: 'Cogumelo Paris', capacity_kg_month: perRoom, product_id: 'p-par200', notes: 'Foco inicial: Cogumelo Paris', active: true },
+      ];
+      seedRooms.forEach(r => create('rooms', Object.assign({ created_at: new Date().toISOString() }, r)));
+    }
+
+    // production_cycles fica vazio no seed — usuário cria os ciclos reais.
+
     // ----- Tarefas — seed das 10 tarefas iniciais -----
     if (readAll('tasks').length === 0) {
       const seedTasks = [
@@ -215,12 +246,83 @@
     return (v * 100).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
   }
 
+  // ----- Helpers de produção -----
+  // Status de ciclo: 'planejado' (inoculado, ainda não colhido) | 'colhido' (colheita registrada) | 'descartado'
+  function cycleCBS(cycle) {
+    const harvested = Number(cycle.kg_harvested) || 0;
+    if (cycle.kg_cbs != null) return Number(cycle.kg_cbs) || 0;
+    return harvested * CBS_RATIO;
+  }
+  function avgPricePerKg() {
+    // preço médio /kg ponderado pelas vendas; se não houver venda, usa média simples dos SKUs Paris (excluindo CBS)
+    const sales = readAll('sales');
+    if (sales.length) {
+      let totRev = 0, totKg = 0;
+      sales.forEach(s => {
+        totRev += Number(s.total) || 0;
+        totKg += Number(s.kg) || 0;
+      });
+      if (totKg > 0) return totRev / totKg;
+    }
+    const products = readAll('products').filter(p => p.category === 'Fresco' && p.weight_g > 0);
+    if (!products.length) return 0;
+    const sum = products.reduce((acc, p) => acc + ((p.price || 0) / (p.weight_g / 1000)), 0);
+    return sum / products.length;
+  }
+  function expectedHarvestDate(inoculatedISO, days) {
+    const d = parseISO(inoculatedISO);
+    if (!d) return null;
+    const out = new Date(d);
+    out.setDate(out.getDate() + (Number(days) || CYCLE_DAYS));
+    return out;
+  }
+  function forecastNext30Days() {
+    // Soma kg previstos para ciclos 'planejado' cuja data prevista de colheita cai nos próximos 30 dias
+    const now = new Date();
+    const limit = new Date(); limit.setDate(limit.getDate() + 30);
+    const cycles = readAll('production_cycles').filter(c => c.status === 'planejado' || !c.status);
+    let kg = 0;
+    cycles.forEach(c => {
+      const exp = c.expected_harvest_date ? parseISO(c.expected_harvest_date) : expectedHarvestDate(c.inoculated_at, c.cycle_days);
+      if (!exp) return;
+      if (exp >= now && exp <= limit) kg += Number(c.kg_expected) || 0;
+    });
+    return { kg, value: kg * avgPricePerKg() };
+  }
+  function harvestedThisMonth() {
+    const m = monthKey(new Date());
+    let kg = 0, cbs = 0;
+    readAll('production_cycles').forEach(c => {
+      if (c.status !== 'colhido' || !c.harvested_at) return;
+      if (String(c.harvested_at).slice(0, 7) !== m) return;
+      kg += Number(c.kg_harvested) || 0;
+      cbs += cycleCBS(c);
+    });
+    return { kg, cbs };
+  }
+  function harvestedByRoom(roomId, monthISO) {
+    let kg = 0, cbs = 0, count = 0;
+    readAll('production_cycles').forEach(c => {
+      if (c.room_id !== roomId) return;
+      if (c.status !== 'colhido') return;
+      if (monthISO && String(c.harvested_at || '').slice(0, 7) !== monthISO) return;
+      kg += Number(c.kg_harvested) || 0;
+      cbs += cycleCBS(c);
+      count++;
+    });
+    return { kg, cbs, count };
+  }
+
   window.TaocaData = {
     list, get, create, update, remove, clearAll, seedIfEmpty,
     SEGMENTS, SEGMENT_LABEL,
+    CBS_RATIO, CYCLE_DAYS, ROOM_COUNT,
     fmtBRL, fmtNum, fmtKg, fmtPct, parseISO, monthKey, startOfMonth, endOfMonth,
     // Auth
     hashPassword, verifyPassword, authenticate, findUserByUsername,
+    // Produção
+    cycleCBS, avgPricePerKg, expectedHarvestDate, forecastNext30Days,
+    harvestedThisMonth, harvestedByRoom,
   };
 
   // Auto-seed na primeira carga

@@ -55,7 +55,7 @@
       items: [
         { id: 'home',       label: 'Home',       icon: ICON.home,       href: 'index.html' },
         { id: 'dashboard',  label: 'Painel',     icon: ICON.dashboard,  href: 'dashboard.html' },
-        { id: 'estrategia', label: 'Estratégia', icon: ICON.estrategia, href: 'estrategia.html' },
+        { id: 'estrategia', label: 'Estratégico', icon: ICON.estrategia, href: 'estrategia.html' },
       ],
     },
     {

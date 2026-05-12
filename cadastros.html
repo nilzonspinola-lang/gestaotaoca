@@ -99,6 +99,13 @@
     .pill.role-admin        { background:#E8F0EE; color:#2F5D3A; }
     .pill.role-user         { background:#F0F2F6; color:#475569; }
     .pill.inactive          { background:#FEE2E2; color:#991B1B; }
+    .pill.sup-Composto      { background:#F5EBD7; color:#7a5a2a; }
+    .pill.sup-Embalagem     { background:#FBE8DD; color:#8a4a31; }
+    .pill.sup-Energia       { background:#E5EAF2; color:#3b4a6a; }
+    .pill.sup-Transporte    { background:#E8F0EE; color:#2F5D3A; }
+    .pill.sup-Marketing     { background:#F0E8F2; color:#5a3b6a; }
+    .pill.sup-Servicos      { background:#FDF0DE; color:#8a6a2a; }
+    .pill.sup-Outros        { background:#F0F2F6; color:#475569; }
 
     .icon-btn-mini {
       background: transparent;
@@ -193,6 +200,7 @@
   <div class="tabs">
     <button class="tab active" data-tab="produtos">Produtos / SKUs</button>
     <button class="tab" data-tab="clientes">Clientes</button>
+    <button class="tab" data-tab="fornecedores">Fornecedores</button>
     <button class="tab" data-tab="centros">Centros de custo</button>
     <button class="tab" data-tab="usuarios" id="tab-btn-usuarios" style="display:none">Usuários</button>
   </div>
@@ -238,6 +246,31 @@
           <tr>
             <th>Cliente</th>
             <th>Segmento</th>
+            <th>Contato</th>
+            <th>Pagamento</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============= FORNECEDORES ============= -->
+  <section class="tab-panel" id="tab-fornecedores">
+    <div class="panel">
+      <div class="row-toolbar">
+        <div>
+          <h2>Fornecedores</h2>
+          <div class="hint">Quem fornece insumos para a Taoca (composto, embalagem, energia, transporte, etc.).</div>
+        </div>
+        <button class="btn btn-primary" id="btn-new-supplier">+ Novo fornecedor</button>
+      </div>
+      <table class="tbl" id="tbl-suppliers">
+        <thead>
+          <tr>
+            <th>Fornecedor</th>
+            <th>Categoria</th>
             <th>Contato</th>
             <th>Pagamento</th>
             <th></th>
@@ -428,6 +461,39 @@
       }).join('');
     }
 
+    // ============ RENDER FORNECEDORES ============
+    const SUPPLIER_CATS = ['Composto', 'Embalagem', 'Energia', 'Transporte', 'Marketing', 'Servicos', 'Outros'];
+    const SUPPLIER_CAT_LABEL = {
+      Composto: 'Composto / Substrato',
+      Embalagem: 'Embalagem',
+      Energia: 'Energia',
+      Transporte: 'Transporte',
+      Marketing: 'Marketing',
+      Servicos: 'Serviços',
+      Outros: 'Outros',
+    };
+    function renderSuppliers() {
+      const arr = D.list('suppliers').sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+      const tbody = $('#tbl-suppliers tbody');
+      if (!tbody) return;
+      if (!arr.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Nenhum fornecedor cadastrado.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = arr.map(s => `
+        <tr data-id="${s.id}">
+          <td><strong>${escape(s.name)}</strong>${s.doc ? `<div class="text-xs text-muted">${escape(s.doc)}</div>` : ''}</td>
+          <td><span class="pill sup-${escape(s.category || 'Outros')}">${escape(SUPPLIER_CAT_LABEL[s.category] || s.category || 'Outros')}</span></td>
+          <td>${escape(s.contact || '—')}</td>
+          <td>${escape(s.payment_terms || '—')}</td>
+          <td class="actions">
+            <button class="icon-btn-mini" data-act="edit-supplier" title="Editar">${ICON_EDIT}</button>
+            <button class="icon-btn-mini danger" data-act="del-supplier" title="Excluir">${ICON_DEL}</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
     // ============ RENDER CENTROS ============
     function renderCenters() {
       const arr = D.list('cost_centers');
@@ -576,6 +642,50 @@
       if (window.TaocaNotify) TaocaNotify.success(id ? 'Centro atualizado' : 'Centro criado');
     }
 
+    // ============ FORM FORNECEDOR ============
+    function formSupplier(s) {
+      s = s || {};
+      return `
+        <div class="form-grid">
+          <div class="field span-2"><label>Nome *</label><input id="f-name" value="${escape(s.name)}" placeholder="Ex: Composto Verde Ltda" /></div>
+          <div class="field"><label>Categoria *</label>
+            <select id="f-cat">
+              ${SUPPLIER_CATS.map(c => `<option value="${c}" ${s.category===c?'selected':''}>${SUPPLIER_CAT_LABEL[c]}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>CNPJ / CPF</label><input id="f-doc" value="${escape(s.doc)}" /></div>
+          <div class="field span-2"><label>Contato</label><input id="f-contact" value="${escape(s.contact)}" placeholder="Nome / telefone / email" /></div>
+          <div class="field"><label>Pagamento</label>
+            <select id="f-pay">
+              ${['À vista','7 dias','14 dias','21 dias','30 dias','45 dias','60 dias'].map(o=>`<option ${s.payment_terms===o?'selected':''}>${o}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>Cost Center vinculado <span class="text-muted text-xs">opcional</span></label>
+            <select id="f-cc">
+              <option value="">—</option>
+              ${D.list('cost_centers').map(cc => `<option value="${cc.id}" ${s.cost_center_id===cc.id?'selected':''}>${escape(cc.name)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field span-2"><label>Observações</label><textarea id="f-notes" rows="2">${escape(s.notes)}</textarea></div>
+        </div>
+      `;
+    }
+    function saveSupplier(id) {
+      const obj = {
+        name: $('#f-name').value.trim(),
+        category: $('#f-cat').value,
+        doc: $('#f-doc').value.trim(),
+        contact: $('#f-contact').value.trim(),
+        payment_terms: $('#f-pay').value,
+        cost_center_id: $('#f-cc').value || null,
+        notes: $('#f-notes').value.trim(),
+      };
+      if (!obj.name) { alert('Nome é obrigatório.'); return; }
+      if (id) D.update('suppliers', id, obj); else D.create('suppliers', obj);
+      closeModal(); renderSuppliers();
+      if (window.TaocaNotify) TaocaNotify.success(id ? 'Fornecedor atualizado' : 'Fornecedor criado');
+    }
+
     // ============ FORM USUÁRIO ============
     function formUser(u) {
       u = u || {};
@@ -636,6 +746,7 @@
     // ============ Botões "Novo" ============
     $('#btn-new-product').addEventListener('click', () => openModal('Novo produto', formProduct(), () => saveProduct()));
     $('#btn-new-customer').addEventListener('click', () => openModal('Novo cliente', formCustomer(), () => saveCustomer()));
+    $('#btn-new-supplier').addEventListener('click', () => openModal('Novo fornecedor', formSupplier(), () => saveSupplier()));
     $('#btn-new-cc').addEventListener('click', () => openModal('Novo centro de custo', formCC(), () => saveCC()));
     const btnNewUser = $('#btn-new-user');
     if (btnNewUser) btnNewUser.addEventListener('click', () => {
@@ -666,6 +777,11 @@
         openModal('Editar centro de custo', formCC(c), () => saveCC(id));
       } else if (act === 'del-cc') {
         if (confirm('Excluir este centro de custo?')) { D.remove('cost_centers', id); renderCenters(); }
+      } else if (act === 'edit-supplier') {
+        const s = D.get('suppliers', id);
+        openModal('Editar fornecedor', formSupplier(s), () => saveSupplier(id));
+      } else if (act === 'del-supplier') {
+        if (confirm('Excluir este fornecedor?')) { D.remove('suppliers', id); renderSuppliers(); }
       } else if (act === 'edit-user') {
         if (!IS_ADMIN) return;
         const u = D.get('users', id);
@@ -689,7 +805,7 @@
     });
 
     // ============ Init ============
-    renderProducts(); renderCustomers(); renderCenters(); renderUsers();
+    renderProducts(); renderCustomers(); renderSuppliers(); renderCenters(); renderUsers();
   })();
   </script>
 </body>
