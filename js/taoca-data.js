@@ -4,7 +4,7 @@
         .update(table, id, patch), .remove(table, id), .seedIfEmpty()
    ============================================================ */
 (function () {
-  const APP_VERSION = '0.7.0';
+  const APP_VERSION = '0.7.1';
   const PREFIX = 'taoca:';
   const SCHEMAS = ['products', 'customers', 'cost_centers', 'sales', 'expenses', 'production', 'tasks', 'users', 'suppliers', 'rooms', 'production_cycles'];
 
