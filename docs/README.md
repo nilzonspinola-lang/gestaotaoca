@@ -19,6 +19,7 @@
 | 08 | [Roadmap](08-roadmap.md) | Etapas futuras (Supabase, mobile, BI) |
 | 09 | **[Deploy](09-deploy.md)** | **Como publicar em gestao.taoca.com.br** ⭐ |
 | 10 | [Changelog](10-changelog.md) | Histórico de versões |
+| 11 | **[Deploy Automático](11-deploy-automatico.md)** | **GitHub Actions → HostGator** 🚀 |
 
 ---
 
