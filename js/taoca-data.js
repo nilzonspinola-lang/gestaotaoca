@@ -94,11 +94,38 @@
   }
   function clearAll() {
     SCHEMAS.forEach(t => { try { localStorage.removeItem(key(t)); } catch (e) {} });
+    // Também limpa as flags de seed, para que o próximo carregamento re-semeie do zero.
+    try {
+      Object.keys(localStorage)
+        .filter(k => k.indexOf(PREFIX + 'seed:') === 0)
+        .forEach(k => localStorage.removeItem(k));
+    } catch (e) {}
+  }
+
+  // ----- Controle de seed -----
+  // Cada bloco do seed marca uma flag "já rodei". Se o usuário apagar tudo manualmente
+  // depois, NÃO re-semeamos — respeitamos a vontade do usuário.
+  function seedKey(name) { return PREFIX + 'seed:' + name; }
+  function seedDone(name) {
+    try { return localStorage.getItem(seedKey(name)) === '1'; } catch (e) { return false; }
+  }
+  function markSeed(name) {
+    try { localStorage.setItem(seedKey(name), '1'); } catch (e) {}
+  }
+  function shouldSeed(name, table) {
+    // Só popula se: (1) ainda não rodou esse seed E (2) a tabela está vazia.
+    if (seedDone(name)) return false;
+    if (readAll(table).length > 0) {
+      // Tabela já tem dados (pode ter vindo de versão anterior) — marca como feito e não toca.
+      markSeed(name);
+      return false;
+    }
+    return true;
   }
 
   function seedIfEmpty() {
     // ----- Produtos -----
-    if (readAll('products').length === 0) {
+    if (shouldSeed('products', 'products')) {
       const products = [
         { id: 'p-par120',  sku: 'PAR-120',  name: 'Cogumelo Paris Fresco — Bandeja 120g',  category: 'Fresco',     unit: 'bandeja', weight_g: 120,  price: 5.00,  active: true },
         { id: 'p-par200',  sku: 'PAR-200',  name: 'Cogumelo Paris Fresco — Bandeja 200g',  category: 'Fresco',     unit: 'bandeja', weight_g: 200,  price: 7.00,  active: true },
@@ -107,10 +134,11 @@
         { id: 'p-cbsgr',   sku: 'CBS-GR',   name: 'CBS — Condicionador Biológico de Solo (granel)', category: 'Subproduto', unit: 'kg', weight_g: 1000, price: 2.00, unit_cost: 1.00, active: true },
       ];
       products.forEach(p => create('products', Object.assign({ created_at: new Date().toISOString() }, p)));
+      markSeed('products');
     }
 
     // ----- Centros de custo -----
-    if (readAll('cost_centers').length === 0) {
+    if (shouldSeed('cost_centers', 'cost_centers')) {
       const centers = [
         { id: 'cc-mo',    name: 'Mão de obra (ajudantes)', type: 'fixo',     description: '3 ajudantes × 2 períodos' },
         { id: 'cc-comp',  name: 'Composto / Substrato',    type: 'variavel', description: '~9.000 kg/mês a R$ 0,85/kg' },
@@ -122,10 +150,12 @@
         { id: 'cc-out',   name: 'Outros',                  type: 'variavel', description: '' },
       ];
       centers.forEach(c => create('cost_centers', Object.assign({ created_at: new Date().toISOString() }, c)));
+      markSeed('cost_centers');
     }
 
     // ----- Despesas fixas mensais (mês corrente) -----
-    if (readAll('expenses').length === 0) {
+    // ⚠️ Só popula UMA vez. Se o usuário apagar, NÃO retorna mais.
+    if (shouldSeed('expenses', 'expenses')) {
       const today = new Date();
       const m = today.toISOString().slice(0, 7); // YYYY-MM
       const day = '15';
@@ -136,10 +166,11 @@
         { cost_center_id: 'cc-energ', description: '4.000 kWh × R$ 0,85',      value: 3400.00,  recurrent: true,  date },
       ];
       seedExp.forEach(e => create('expenses', e));
+      markSeed('expenses');
     }
 
     // ----- Produção mensal base -----
-    if (readAll('production').length === 0) {
+    if (shouldSeed('production', 'production')) {
       const m = new Date().toISOString().slice(0, 7);
       create('production', {
         month: m,
@@ -147,10 +178,11 @@
         kg_cbs: 0,
         notes: 'Capacidade de referência conforme planilha de custos',
       });
+      markSeed('production');
     }
 
     // ----- Clientes — apenas se vazio, semeia 4 exemplos por segmento -----
-    if (readAll('customers').length === 0) {
+    if (shouldSeed('customers', 'customers')) {
       const seedCli = [
         { name: 'Hotel Exemplo (excluir)',         segment: 'Hoteis',         contact: '', doc: '', payment_terms: '30 dias', notes: 'Cliente de exemplo — pode editar/excluir' },
         { name: 'Supermercado Exemplo (excluir)',  segment: 'Supermercados',  contact: '', doc: '', payment_terms: '21 dias', notes: 'Cliente de exemplo — pode editar/excluir' },
@@ -158,29 +190,32 @@
         { name: 'Distribuidora Exemplo (excluir)', segment: 'Distribuidoras', contact: '', doc: '', payment_terms: '30 dias', notes: 'Cliente de exemplo — pode editar/excluir' },
       ];
       seedCli.forEach(c => create('customers', c));
+      markSeed('customers');
     }
 
     // ----- Usuários — seed dos sócios como administradores -----
-    if (readAll('users').length === 0) {
+    if (shouldSeed('users', 'users')) {
       const seedUsers = [
         { id: 'u-nilzon', username: 'nilzon', name: 'Nílzon',  password: hashPassword('taoca@2025'), role: 'admin', active: true },
         { id: 'u-marco',  username: 'marco',  name: 'Marco',   password: hashPassword('taoca@2025'), role: 'admin', active: true },
       ];
       seedUsers.forEach(u => create('users', Object.assign({ created_at: new Date().toISOString() }, u)));
+      markSeed('users');
     }
 
     // ----- Fornecedores — seed inicial (3 exemplos para edição) -----
-    if (readAll('suppliers').length === 0) {
+    if (shouldSeed('suppliers', 'suppliers')) {
       const seedSup = [
         { name: 'Fornecedor de Composto (editar)', category: 'Composto',  doc: '', contact: '', payment_terms: '30 dias', notes: 'Substrato para cultivo de cogumelos' },
         { name: 'Fornecedor de Embalagem (editar)', category: 'Embalagem', doc: '', contact: '', payment_terms: 'À vista',  notes: 'Bandejas, sacos, etiquetas' },
         { name: 'Concessionária de Energia (editar)', category: 'Energia', doc: '', contact: '', payment_terms: '30 dias', notes: '' },
       ];
       seedSup.forEach(s => create('suppliers', s));
+      markSeed('suppliers');
     }
 
     // ----- Salas de produção — 3 salas, cada uma com 1/3 da capacidade total -----
-    if (readAll('rooms').length === 0) {
+    if (shouldSeed('rooms', 'rooms')) {
       // Capacidade total mensal (kg) — lê do registro de produção se houver, senão usa 2250
       const prod = readAll('production');
       const totalCap = prod.length && prod[0].kg_cogumelo ? prod[0].kg_cogumelo : 2250;
@@ -191,12 +226,13 @@
         { id: 'r-3', name: 'Sala 3', mushroom_type: 'Cogumelo Paris', capacity_kg_month: perRoom, product_id: 'p-par200', notes: 'Foco inicial: Cogumelo Paris', active: true },
       ];
       seedRooms.forEach(r => create('rooms', Object.assign({ created_at: new Date().toISOString() }, r)));
+      markSeed('rooms');
     }
 
     // production_cycles fica vazio no seed — usuário cria os ciclos reais.
 
     // ----- Tarefas — seed das 10 tarefas iniciais -----
-    if (readAll('tasks').length === 0) {
+    if (shouldSeed('tasks', 'tasks')) {
       const seedTasks = [
         { task_number: 1,  category: 'juridico',     title: 'Elaborar contrato de compra e venda da Fazenda Monteiro & Spínola', description: 'Redigir e revisar o contrato principal com cláusulas, condições e validações necessárias.', status: 'concluida', completed_by: 'Nilzon e Marco',  completed_at: '29/04/2026 16:34', completed_at_iso: '2026-04-29T16:34:00', due_date: '', created_by: 'Nilzon' },
         { task_number: 2,  category: 'institucional', title: 'Informar a Cláudio o capital social da empresa TAOCA',           description: 'Consolidar o valor aprovado e comunicar formalmente a informação societária.',          status: 'concluida', completed_by: 'Marco',           completed_at: '30/04/2026 10:39', completed_at_iso: '2026-04-30T10:39:00', due_date: '', created_by: 'Nilzon' },
@@ -210,6 +246,7 @@
         { task_number: 10, category: 'fiscal',       title: 'Emitir Nota Fiscal em nome de Adriano Feijó',                       description: '',                                                                                        status: 'concluida', completed_by: 'Nilzon',          completed_at: '30/04/2026 11:38', completed_at_iso: '2026-04-30T11:38:00', due_date: '', created_by: 'Nilzon' },
       ];
       seedTasks.forEach(t => create('tasks', t));
+      markSeed('tasks');
     }
   }
 
