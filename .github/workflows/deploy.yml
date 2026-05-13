@@ -1,0 +1,74 @@
+name: Deploy para HostGator (gestao.taoca.com.br)
+
+# Quando rodar:
+on:
+  push:
+    branches:
+      - main           # toda vez que houver push na main
+  workflow_dispatch:   # permite rodar manualmente pelo botão do GitHub
+
+jobs:
+  deploy:
+    name: Deploy via FTP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar código do repositório
+        uses: actions/checkout@v4
+
+      - name: Enviar arquivos para HostGator via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          # Pasta de destino no servidor.
+          # Como a conta FTP "deploy-taoca" já tem como raiz a pasta
+          # /gestao.taoca.com.br, usamos "./" para subir para essa pasta.
+          server-dir: ./
+          local-dir: ./
+          # Protocolo: ftps (FTP com criptografia TLS — recomendado pela HostGator).
+          # Se der erro de SSL, troque para "ftp".
+          protocol: ftps
+          port: 21
+          state-name: .ftp-deploy-sync-state.json
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github
+            **/.github/**
+            **/node_modules/**
+            **/docs/**
+            **/*.zip
+            **/*.log
+            **/.DS_Store
+            **/README.md
+            **/DEPLOY-README.txt
+            **/.gitignore
+            **/.ftp-deploy-sync-state.json
+          dangerous-clean-slate: false
+          log-level: standard
+          timeout: 1800000
+
+      - name: Resumo de sucesso
+        if: success()
+        run: |
+          echo "================================================================="
+          echo "Deploy concluído com sucesso!"
+          echo "Acesse: http://gestao.taoca.com.br"
+          echo "Data: $(date '+%d/%m/%Y %H:%M:%S')"
+          echo "Commit: ${{ github.sha }}"
+          echo "================================================================="
+
+      - name: Mensagem de falha
+        if: failure()
+        run: |
+          echo "================================================================="
+          echo "Deploy falhou!"
+          echo "Verifique:"
+          echo "  1. Os 3 secrets (FTP_SERVER, FTP_USERNAME, FTP_PASSWORD) estão corretos"
+          echo "  2. A conta FTP 'deploy-taoca' tem como diretório raiz a pasta"
+          echo "     /gestao.taoca.com.br no servidor HostGator"
+          echo "  3. Se o erro for de SSL/TLS, mude 'protocol: ftps' para 'ftp'"
+          echo "================================================================="
+          exit 1
