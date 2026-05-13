@@ -4,6 +4,7 @@
         .update(table, id, patch), .remove(table, id), .seedIfEmpty()
    ============================================================ */
 (function () {
+  const APP_VERSION = '0.7.0';
   const PREFIX = 'taoca:';
   const SCHEMAS = ['products', 'customers', 'cost_centers', 'sales', 'expenses', 'production', 'tasks', 'users', 'suppliers', 'rooms', 'production_cycles'];
 
@@ -153,21 +154,11 @@
       markSeed('cost_centers');
     }
 
-    // ----- Despesas fixas mensais (mês corrente) -----
-    // ⚠️ Só popula UMA vez. Se o usuário apagar, NÃO retorna mais.
-    if (shouldSeed('expenses', 'expenses')) {
-      const today = new Date();
-      const m = today.toISOString().slice(0, 7); // YYYY-MM
-      const day = '15';
-      const date = `${m}-${day}`;
-      const seedExp = [
-        { cost_center_id: 'cc-mo',    description: '3 ajudantes × 2 períodos', value: 12941.46, recurrent: true,  date },
-        { cost_center_id: 'cc-comp',  description: '9.000 kg × R$ 0,85',       value: 7650.00,  recurrent: true,  date },
-        { cost_center_id: 'cc-energ', description: '4.000 kWh × R$ 0,85',      value: 3400.00,  recurrent: true,  date },
-      ];
-      seedExp.forEach(e => create('expenses', e));
-      markSeed('expenses');
-    }
+    // ----- Despesas -----
+    // ⚠️ NÃO há mais seed de despesas. O usuário cadastra suas próprias despesas
+    // em Financeiro → "+ Nova despesa" ou usa "Replicar fixos" do mês anterior.
+    // (Os exemplos antigos — Mão de obra, Composto, Energia — foram removidos.)
+    markSeed('expenses'); // marca como "já feito" para garantir que nunca tente popular
 
     // ----- Produção mensal base -----
     if (shouldSeed('production', 'production')) {
