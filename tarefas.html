@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tarefas — Taoca OS</title>
+  <link rel="stylesheet" href="css/taoca-design-system.css" />
+  <link rel="stylesheet" href="css/notifications.css" />
+  <link rel="icon" href="assets/taoca-logo.png" />
+  <style>
+    /* ===== Action bar (sticky) ===== */
+    .ts-actionbar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-xs);
+    }
+    .ts-stats { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+    .ts-stat { display: flex; align-items: baseline; gap: 6px; }
+    .ts-stat .n { font-family: var(--font-serif); font-size: 1.35rem; font-weight: 700; color: var(--text-primary); line-height: 1; }
+    .ts-stat .l { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 700; }
+    .ts-divider { width: 1px; height: 24px; background: var(--border-soft); }
+    .ts-progress { flex: 1; min-width: 220px; display: flex; align-items: center; gap: 10px; }
+    .ts-progress-label { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+    .ts-progress .progress-track { flex: 1; }
+    .ts-progress .pct { font-size: 0.85rem; font-weight: 700; color: var(--text-primary); min-width: 60px; text-align: right; }
+
+    /* ===== Filtros ===== */
+    .filter-bar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .fg { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .fg-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-right: 4px; }
+    .fb {
+      border: 1px solid var(--border-soft);
+      background: #FFF;
+      color: var(--text-secondary);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all var(--t-fast);
+    }
+    .fb:hover { background: var(--taoca-cream-100); }
+    .fb.active { background: var(--brand); color: #FFF; border-color: var(--brand); }
+
+    .cat-filter-wrap { position: relative; }
+    .cat-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: #FFF;
+      color: var(--text-secondary);
+      font-family: inherit;
+    }
+    .cat-trigger.active { background: var(--brand); color: #FFF; border-color: var(--brand); }
+    .cat-trigger::after { content: '▾'; font-size: 0.65rem; opacity: 0.8; }
+    .cat-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      z-index: 40;
+      min-width: 220px;
+      max-height: 360px;
+      overflow-y: auto;
+      background: #FFF;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      padding: 6px;
+      display: none;
+    }
+    .cat-menu.open { display: block; }
+    .cat-opt {
+      width: 100%;
+      text-align: left;
+      padding: 8px 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 0;
+      background: transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+    }
+    .cat-opt:hover { background: var(--taoca-cream-100); }
+    .cat-opt.selected { background: var(--taoca-green-50); color: var(--brand); }
+    .swatch { width: 10px; height: 10px; border-radius: 999px; flex: 0 0 10px; }
+    .swatch.todas { background: var(--text-muted); }
+    .swatch.institucional { background: #4338ca; }
+    .swatch.financeiro    { background: #047857; }
+    .swatch.fiscal        { background: #0f766e; }
+    .swatch.juridico      { background: #7c3aed; }
+    .swatch.comercial     { background: #be123c; }
+    .swatch.operacional   { background: #334155; }
+    .swatch.estrategico   { background: #b45309; }
+    .swatch.marketing     { background: #c026d3; }
+    .swatch.ti            { background: #0369a1; }
+    .swatch.consultoria   { background: #c2410c; }
+    .swatch.outras        { background: #64748b; }
+    .swatch.producao      { background: var(--brand); }
+    .swatch.cultivo       { background: var(--taoca-green-600); }
+
+    /* ===== Task grid ===== */
+    .task-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 18px;
+    }
+    @media (max-width: 1100px) { .task-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 720px)  { .task-grid { grid-template-columns: 1fr; } }
+
+    .task-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      padding: 18px;
+      box-shadow: var(--shadow-xs);
+      display: flex;
+      flex-direction: column;
+      min-height: 260px;
+      transition: transform var(--t-base), box-shadow var(--t-base), border-color var(--t-base);
+    }
+    .task-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .task-card.realizado { background: var(--taoca-green-50); border-color: var(--taoca-green-300); }
+    .task-card.atrasada  { border-color: #FCA5A5; box-shadow: 0 8px 20px rgba(185,28,28,0.10); }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .card-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .ctag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: filter var(--t-fast), border-color var(--t-fast);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .ctag::after { content: '▾'; font-size: 0.65rem; opacity: 0.7; }
+    .ctag:hover { filter: brightness(0.95); border-color: rgba(0,0,0,0.08); }
+    .ctag.institucional { background: #EEF2FF; color: #4F46E5; }
+    .ctag.financeiro    { background: var(--taoca-green-100); color: #047857; }
+    .ctag.fiscal        { background: #ECFEFF; color: #0F766E; }
+    .ctag.juridico      { background: #F5F3FF; color: #7C3AED; }
+    .ctag.comercial     { background: #FFE4E6; color: #BE123C; }
+    .ctag.operacional   { background: #F1F5F9; color: #334155; }
+    .ctag.estrategico   { background: #FEF3C7; color: #B45309; }
+    .ctag.marketing     { background: #FAE8FF; color: #C026D3; }
+    .ctag.ti            { background: #E0F2FE; color: #0369A1; }
+    .ctag.consultoria   { background: var(--taoca-clay-100); color: #C2410C; }
+    .ctag.outras        { background: var(--taoca-coal-100); color: #64748B; }
+    .ctag.producao      { background: var(--taoca-green-100); color: var(--brand); }
+    .ctag.cultivo       { background: var(--taoca-green-100); color: var(--taoca-green-700); }
+
+    .category-wrap { position: relative; display: inline-flex; align-items: center; }
+    .category-menu {
+      position: absolute;
+      top: calc(100% + 6px); left: 0;
+      z-index: 50;
+      min-width: 200px;
+      max-height: 320px;
+      overflow-y: auto;
+      background: #FFF;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      padding: 6px;
+      display: none;
+    }
+    .category-menu.open { display: block; }
+    .category-menu-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      padding: 6px 10px 4px;
+    }
+
+    .task-num, .task-state-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px; height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: var(--taoca-cream-100);
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .task-state-pill { min-width: auto; }
+    .task-card.realizado .task-state-pill { background: var(--taoca-green-300); color: var(--taoca-green-900); }
+    .task-card.atrasada  .task-state-pill { background: #FECACA; color: #B91C1C; }
+
+    .t-title {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0 0 8px;
+      line-height: 1.3;
+    }
+    .task-card.realizado .t-title { text-decoration: line-through; color: var(--text-secondary); }
+    .t-desc { color: var(--text-secondary); font-size: 0.92rem; line-height: 1.55; margin: 0 0 10px; }
+
+    .due-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--taoca-cream-50);
+      border-radius: var(--radius-md);
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .due-row .due-value { color: var(--text-primary); font-weight: 700; }
+    .due-row.late .due-value { color: var(--danger); }
+    .due-row.soon .due-value { color: var(--accent); }
+    .due-edit-btn {
+      background: transparent;
+      border: 1px solid var(--border-soft);
+      color: var(--text-secondary);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-family: inherit;
+    }
+    .due-edit-btn:hover { background: #FFF; }
+
+    .completion-info {
+      display: none;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background: var(--taoca-green-100);
+      color: var(--taoca-green-900);
+      font-size: 0.85rem;
+      line-height: 1.4;
+      margin-top: 6px;
+    }
+    .task-card.realizado .completion-info { display: block; }
+
+    .task-actions { margin-top: auto; padding-top: 14px; }
+    .task-actions .btn { width: 100%; }
+  </style>
+</head>
+<body>
+
+  <!-- Action bar -->
+  <div class="ts-actionbar">
+    <div class="ts-stats">
+      <div class="ts-stat"><span class="n" id="stat-total">0</span><span class="l">Total</span></div>
+      <div class="ts-divider"></div>
+      <div class="ts-stat"><span class="n" id="stat-completed" style="color:var(--success)">0</span><span class="l">Concluídas</span></div>
+      <div class="ts-divider"></div>
+      <div class="ts-stat"><span class="n" id="stat-pending" style="color:var(--accent)">0</span><span class="l">Pendentes</span></div>
+    </div>
+    <div class="ts-progress">
+      <span class="ts-progress-label">Progresso</span>
+      <div class="progress-track"><div class="progress-fill" id="progress-bar" style="width:0%"></div></div>
+      <span class="pct" id="progress-text">0%</span>
+    </div>
+    <div class="flex gap-2">
+      <button class="btn btn-primary" id="new-task-btn" type="button">➕ Nova tarefa</button>
+      <button class="btn btn-ghost" id="invite-btn" type="button">📩 Convidar</button>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <section class="filter-bar" id="filter-bar">
+    <div class="fg">
+      <span class="fg-label">Status</span>
+      <button class="fb active" type="button" data-filter-type="status" data-value="todas">Todas</button>
+      <button class="fb" type="button" data-filter-type="status" data-value="pendentes">Pendentes</button>
+      <button class="fb" type="button" data-filter-type="status" data-value="concluida">Concluídas</button>
+      <button class="fb" type="button" data-filter-type="status" data-value="atrasadas">Atrasadas</button>
+      <button class="fb" type="button" data-filter-type="status" data-value="proximas">Próximos 7 dias</button>
+    </div>
+    <div class="fg">
+      <span class="fg-label">Categoria</span>
+      <div class="cat-filter-wrap" id="cat-filter-wrap">
+        <button type="button" class="cat-trigger" id="cat-filter-trigger" aria-haspopup="true" aria-expanded="false">
+          <span class="swatch todas" id="cat-filter-swatch"></span>
+          <span id="cat-filter-label">Todas</span>
+        </button>
+        <div class="cat-menu" id="cat-filter-menu" role="menu"></div>
+      </div>
+    </div>
+    <div style="margin-left:auto"><span class="sync-pill"><span class="sync-dot" id="sync-dot"></span><span id="sync-text">Sincronizado</span></span></div>
+  </section>
+
+  <!-- Grid -->
+  <section class="task-grid" id="task-grid">
+    <div class="loading-state" id="loading-state">Carregando tarefas da equipe…</div>
+    <div id="empty-state" class="empty-state hidden">
+      <div class="em-icon">🌱</div>
+      <div class="em-title">Nada por aqui ainda</div>
+      <div>Comece criando sua primeira tarefa.</div>
+    </div>
+  </section>
+
+  <!-- Modal de prazo -->
+  <div class="tc-modal-backdrop" id="due-modal" role="dialog" aria-modal="true">
+    <div class="tc-modal-card">
+      <h3 class="tc-modal-title">Definir prazo</h3>
+      <p class="tc-modal-subtitle">Escolha a data limite para esta tarefa.</p>
+      <div class="tag tag-info mb-3" id="due-modal-task" style="font-size:0.85rem; padding:8px 12px;">—</div>
+
+      <div class="field">
+        <label for="due-modal-date">Data do prazo</label>
+        <input type="date" id="due-modal-date" class="input" />
+      </div>
+
+      <div class="flex gap-2" style="flex-wrap:wrap" id="due-modal-quick">
+        <button type="button" class="btn btn-ghost btn-sm" data-quick="today">Hoje</button>
+        <button type="button" class="btn btn-ghost btn-sm" data-quick="tomorrow">Amanhã</button>
+        <button type="button" class="btn btn-ghost btn-sm" data-quick="3d">+3 dias</button>
+        <button type="button" class="btn btn-ghost btn-sm" data-quick="7d">+7 dias</button>
+        <button type="button" class="btn btn-ghost btn-sm" data-quick="15d">+15 dias</button>
+        <button type="button" class="btn btn-ghost btn-sm" data-quick="30d">+30 dias</button>
+      </div>
+
+      <div class="tc-modal-actions">
+        <button class="btn btn-danger" type="button" id="due-modal-clear">Remover prazo</button>
+        <button class="btn btn-ghost" type="button" id="due-modal-cancel">Cancelar</button>
+        <button class="btn btn-primary" type="button" id="due-modal-save">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Nova Tarefa -->
+  <div class="tc-modal-backdrop" id="new-task-modal" role="dialog" aria-modal="true">
+    <div class="tc-modal-card lg">
+      <h3 class="tc-modal-title">➕ Nova tarefa</h3>
+      <p class="tc-modal-subtitle">Crie um novo card no quadro da equipe.</p>
+
+      <div class="field">
+        <label for="new-task-title">Título *</label>
+        <input type="text" id="new-task-title" class="input" placeholder="Ex.: Inocular novo lote de Shimeji" maxlength="200" />
+      </div>
+      <div class="field">
+        <label for="new-task-desc">Descrição</label>
+        <textarea id="new-task-desc" class="textarea" placeholder="Detalhes, contexto e observações" maxlength="800"></textarea>
+      </div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label for="new-task-category">Categoria</label>
+          <select id="new-task-category" class="select">
+            <option value="producao">🍄 Produção</option>
+            <option value="cultivo">🌱 Cultivo</option>
+            <option value="institucional">Institucional</option>
+            <option value="financeiro">Financeiro</option>
+            <option value="fiscal">Fiscal</option>
+            <option value="juridico">Jurídico</option>
+            <option value="comercial">Comercial</option>
+            <option value="operacional">Operacional</option>
+            <option value="estrategico">Estratégico</option>
+            <option value="marketing">Marketing</option>
+            <option value="ti">TI</option>
+            <option value="consultoria">Consultoria</option>
+            <option value="outras">Outras</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="new-task-due">Prazo (opcional)</label>
+          <input type="date" id="new-task-due" class="input" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="new-task-author">Quem está criando? (opcional)</label>
+        <input type="text" id="new-task-author" class="input" placeholder="Seu nome" maxlength="80" />
+      </div>
+
+      <div class="tc-modal-actions">
+        <button class="btn btn-ghost" type="button" id="new-task-cancel">Cancelar</button>
+        <button class="btn btn-primary" type="button" id="new-task-save">Criar tarefa</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/taoca-data.js"></script>
+  <script src="js/taoca-shell.js"></script>
+  <script>
+    TaocaShell.mount({ active: 'tarefas', breadcrumb: 'Operação · Tarefas', title: 'Quadro de Tarefas' });
+  </script>
+
+  <!-- Lógica do quadro (mantém comportamento original) -->
+  <script>
+    (function () {
+      const TABLE = 'tasks';
+      const POLL_MS = 8000;
+      const CATEGORY_LABEL = {
+        producao: 'Produção',
+        cultivo: 'Cultivo',
+        institucional: 'Institucional',
+        financeiro: 'Financeiro',
+        fiscal: 'Fiscal',
+        juridico: 'Jurídico',
+        comercial: 'Comercial',
+        operacional: 'Operacional',
+        estrategico: 'Estratégico',
+        marketing: 'Marketing',
+        ti: 'TI',
+        consultoria: 'Consultoria',
+        outras: 'Outras',
+      };
+      const LEGACY_CATEGORY_MAP = { empresarial: 'institucional', fazenda: 'producao' };
+
+      let currentStatus = 'todas';
+      let currentCategory = 'todas';
+      let tasks = [];
+
+      const grid = document.getElementById('task-grid');
+      const emptyState = document.getElementById('empty-state');
+      const loadingState = document.getElementById('loading-state');
+      const filterBar = document.getElementById('filter-bar');
+      const inviteBtn = document.getElementById('invite-btn');
+      const statTotal = document.getElementById('stat-total');
+      const statCompleted = document.getElementById('stat-completed');
+      const statPending = document.getElementById('stat-pending');
+      const progressText = document.getElementById('progress-text');
+      const progressBar = document.getElementById('progress-bar');
+      const syncDot = document.getElementById('sync-dot');
+      const syncText = document.getElementById('sync-text');
+
+      function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+      function formatNowBR(){return new Date().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});}
+      function nowIso(){return new Date().toISOString();}
+      function startOfDay(d){const x=new Date(d);x.setHours(0,0,0,0);return x;}
+      function diffDays(a,b){return Math.round((startOfDay(a)-startOfDay(b))/86400000);}
+      function parseDueDate(t){if(!t.due_date) return null; const m=String(t.due_date).match(/^(\d{4})-(\d{2})-(\d{2})/); if(!m) return null; return new Date(+m[1],+m[2]-1,+m[3]);}
+      function formatDateBR(d){return d?d.toLocaleDateString('pt-BR'):'';}
+      function setSync(state, message){
+        syncDot.classList.remove('syncing','error');
+        if(state==='syncing') syncDot.classList.add('syncing');
+        if(state==='error') syncDot.classList.add('error');
+        syncText.textContent = message || (state==='syncing'?'Sincronizando…':state==='error'?'Falha':'Sincronizado');
+      }
+
+      async function fetchTasks(){
+        let data = (window.TaocaData ? TaocaData.list('tasks') : []).filter(x=>!x.deleted);
+        data.sort((a,b)=>(a.task_number||0)-(b.task_number||0));
+        return data;
+      }
+      async function patchTask(id, payload){
+        if(!window.TaocaData) throw new Error('TaocaData indisponível');
+        const updated = TaocaData.update('tasks', id, payload);
+        if(!updated) throw new Error('Tarefa não encontrada');
+        return updated;
+      }
+      async function createTask(payload){
+        if(!window.TaocaData) throw new Error('TaocaData indisponível');
+        return TaocaData.create('tasks', payload);
+      }
+      function nextTaskNumber(){return tasks.length?Math.max(...tasks.map(t=>Number(t.task_number)||0))+1:1;}
+
+      function buildCard(task){
+        const article = document.createElement('article');
+        const isDone = task.status === 'concluida';
+        const due = parseDueDate(task);
+        const today = startOfDay(new Date());
+        const isLate = !isDone && due && due < today;
+        const isSoon = !isDone && due && diffDays(due, today) >= 0 && diffDays(due, today) <= 7;
+
+        article.className = 'task-card' + (isDone?' realizado':'') + (isLate?' atrasada':'');
+        article.dataset.id = task.id;
+        article.dataset.category = task.category;
+        article.dataset.status = task.status;
+
+        const tagClass = task.category || '';
+        const tagLabel = CATEGORY_LABEL[task.category] || task.category || '—';
+        const stateLabel = isDone?'Concluída':(isLate?'Atrasada':'Pendente');
+        const btnLabel = isDone?'Reabrir tarefa':'Concluir';
+        const completionHtml = isDone
+          ? `✓ Concluído por <strong>${escapeHtml(task.completed_by||'Equipe')}</strong> · ${escapeHtml(task.completed_at||'')}` : '';
+
+        let dueHtml = '';
+        if(!isDone){
+          const dueClass = isLate?'late':(isSoon?'soon':'');
+          const dueText = due
+            ? `${formatDateBR(due)}${isLate?' (atrasada)':(isSoon?` (em ${diffDays(due,today)}d)`:'')}`
+            : 'Sem prazo';
+          dueHtml = `
+            <div class="due-row ${dueClass}">
+              <span>📌 Prazo:</span>
+              <span class="due-value">${escapeHtml(dueText)}</span>
+              <button class="due-edit-btn" type="button" data-action="edit-due">${due?'Alterar':'Definir'}</button>
+            </div>`;
+        }
+
+        const categoryOptionsHtml = Object.keys(CATEGORY_LABEL).map(key => `
+          <button type="button" class="cat-opt ${key===task.category?'selected':''}" data-category-value="${escapeHtml(key)}">
+            <span class="swatch ${escapeHtml(key)}"></span><span>${escapeHtml(CATEGORY_LABEL[key])}</span>
+          </button>`).join('');
+
+        article.innerHTML = `
+          <div class="card-head">
+            <div class="card-meta">
+              <span class="category-wrap">
+                <button type="button" class="ctag ${escapeHtml(tagClass)}" data-action="open-category-menu">${escapeHtml(tagLabel)}</button>
+                <div class="category-menu" data-role="category-menu">
+                  <div class="category-menu-title">Alterar categoria</div>
+                  ${categoryOptionsHtml}
+                </div>
+              </span>
+              <span class="task-num">#${escapeHtml(task.task_number)}</span>
+            </div>
+            <span class="task-state-pill">${escapeHtml(stateLabel)}</span>
+          </div>
+          <h3 class="t-title">${escapeHtml(task.title)}</h3>
+          <p class="t-desc">${escapeHtml(task.description)}</p>
+          ${dueHtml}
+          <div class="completion-info">${completionHtml}</div>
+          <div class="task-actions">
+            <button class="btn ${isDone?'btn-secondary':'btn-primary'} toggle-btn" type="button">${escapeHtml(btnLabel)}</button>
+          </div>`;
+
+        article.querySelector('.toggle-btn').addEventListener('click', (e) => onToggle(task, e.currentTarget));
+        const due_btn = article.querySelector('[data-action="edit-due"]');
+        if(due_btn) due_btn.addEventListener('click', () => onEditDue(task));
+
+        const catTrigger = article.querySelector('[data-action="open-category-menu"]');
+        const catMenu = article.querySelector('[data-role="category-menu"]');
+        if(catTrigger && catMenu){
+          catTrigger.addEventListener('click', (ev) => { ev.stopPropagation(); closeAllCategoryMenus(catMenu); catMenu.classList.toggle('open'); });
+          Array.from(catMenu.querySelectorAll('.cat-opt')).forEach(opt => {
+            opt.addEventListener('click', (ev) => {
+              ev.stopPropagation();
+              const value = opt.getAttribute('data-category-value');
+              catMenu.classList.remove('open');
+              if(value && value !== task.category) onEditCategory(task, value);
+            });
+          });
+        }
+        return article;
+      }
+
+      function closeAllCategoryMenus(except){
+        document.querySelectorAll('.category-menu.open').forEach(el => { if(el !== except) el.classList.remove('open'); });
+      }
+      document.addEventListener('click', () => closeAllCategoryMenus(null));
+
+      function renderGrid(){
+        Array.from(grid.querySelectorAll('.task-card')).forEach(el => el.remove());
+        const today = startOfDay(new Date());
+        let visibleCount = 0;
+        tasks.forEach(task => {
+          const card = buildCard(task);
+          const isDone = task.status === 'concluida';
+          const due = parseDueDate(task);
+          const isLate = !isDone && due && due < today;
+          const isSoon = !isDone && due && diffDays(due,today)>=0 && diffDays(due,today)<=7;
+          const matchStatus =
+            currentStatus==='todas' ||
+            (currentStatus==='pendentes' && task.status==='pendente') ||
+            (currentStatus==='concluida' && task.status==='concluida') ||
+            (currentStatus==='atrasadas' && isLate) ||
+            (currentStatus==='proximas' && isSoon);
+          const matchCategory = currentCategory==='todas' || currentCategory===task.category;
+          const show = matchStatus && matchCategory;
+          card.style.display = show?'flex':'none';
+          if(show) visibleCount++;
+          grid.insertBefore(card, emptyState);
+        });
+        loadingState.style.display = 'none';
+        emptyState.classList.toggle('hidden', !(tasks.length>0 && visibleCount===0));
+      }
+
+      function updateMetrics(){
+        const total = tasks.length;
+        const completed = tasks.filter(t => t.status==='concluida').length;
+        const pending = total - completed;
+        const percent = total ? Math.round((completed/total)*100) : 0;
+        statTotal.textContent = total;
+        statCompleted.textContent = completed;
+        statPending.textContent = pending;
+        progressText.textContent = `${percent}%`;
+        progressBar.style.width = `${percent}%`;
+      }
+      function updateAll(){ updateMetrics(); renderGrid(); }
+
+      // Filtros
+      const catFilterTrigger = document.getElementById('cat-filter-trigger');
+      const catFilterMenu = document.getElementById('cat-filter-menu');
+      const catFilterLabel = document.getElementById('cat-filter-label');
+      const catFilterSwatch = document.getElementById('cat-filter-swatch');
+
+      function buildCatFilterMenu(){
+        const opts = [['todas','Todas']].concat(Object.keys(CATEGORY_LABEL).map(k => [k, CATEGORY_LABEL[k]]));
+        catFilterMenu.innerHTML = opts.map(([key,label])=>`
+          <button type="button" class="cat-opt ${key===currentCategory?'selected':''}" data-value="${key}" role="menuitem">
+            <span class="swatch ${key}"></span><span>${label}</span>
+          </button>`).join('');
+      }
+      function updateCatFilterTrigger(){
+        const label = currentCategory==='todas' ? 'Todas' : (CATEGORY_LABEL[currentCategory]||'Todas');
+        catFilterLabel.textContent = label;
+        catFilterSwatch.className = `swatch ${currentCategory}`;
+        catFilterTrigger.classList.toggle('active', currentCategory!=='todas');
+      }
+      function updateFilterButtons(){
+        Array.from(filterBar.querySelectorAll('.fb')).forEach(btn => {
+          const type = btn.dataset.filterType, value = btn.dataset.value;
+          if(type==='status') btn.classList.toggle('active', value===currentStatus);
+        });
+        updateCatFilterTrigger();
+      }
+      filterBar.addEventListener('click', (e) => {
+        const btn = e.target.closest('.fb');
+        if(!btn) return;
+        e.preventDefault(); e.stopPropagation();
+        const type = btn.getAttribute('data-filter-type'), value = btn.getAttribute('data-value');
+        if(!type||!value) return;
+        if(type==='status') currentStatus = value;
+        updateFilterButtons(); renderGrid();
+      });
+      catFilterTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = catFilterMenu.classList.toggle('open');
+        catFilterTrigger.setAttribute('aria-expanded', open?'true':'false');
+        if(open) buildCatFilterMenu();
+      });
+      catFilterMenu.addEventListener('click', (e) => {
+        const opt = e.target.closest('.cat-opt');
+        if(!opt) return;
+        e.stopPropagation();
+        currentCategory = opt.getAttribute('data-value') || 'todas';
+        catFilterMenu.classList.remove('open');
+        updateFilterButtons(); renderGrid();
+      });
+      document.addEventListener('click', (e) => {
+        if(!catFilterMenu.classList.contains('open')) return;
+        if(e.target.closest('#cat-filter-wrap')) return;
+        catFilterMenu.classList.remove('open');
+      });
+
+      // Toggle
+      async function onToggle(task, btn){
+        const isCompleted = task.status==='concluida';
+        let payload, actor='';
+        if(!isCompleted){
+          let person = prompt('Quem concluiu esta tarefa?');
+          if(person===null) return;
+          person = (person||'').trim() || 'Equipe';
+          actor = person;
+          payload = { status:'concluida', completed_by: person, completed_at: formatNowBR(), completed_at_iso: nowIso() };
+        } else {
+          payload = { status:'pendente', completed_by:'', completed_at:'', completed_at_iso:'' };
+        }
+        btn.disabled = true;
+        setSync('syncing','Salvando…');
+        try {
+          const updated = await patchTask(task.id, payload);
+          const idx = tasks.findIndex(t => t.id===task.id);
+          if(idx>=0) tasks[idx] = { ...tasks[idx], ...updated };
+          updateAll();
+          setSync('ok','Sincronizado');
+          if(window.TaocaNotif){
+            if(!isCompleted){
+              window.TaocaNotif.log({ event_type:'task_completed', icon:'✅', actor, title:`${actor} concluiu #${task.task_number||''} — ${task.title||''}`, details:`Categoria: ${CATEGORY_LABEL[task.category]||'—'}`, task_id:task.id, task_number:task.task_number||0 });
+            } else {
+              window.TaocaNotif.log({ event_type:'task_reopened', icon:'🔄', actor:'Equipe', title:`Tarefa #${task.task_number||''} foi reaberta`, details: task.title||'', task_id:task.id, task_number:task.task_number||0 });
+            }
+          }
+        } catch(err){ console.error(err); setSync('error','Erro'); alert('Falha ao salvar.'); }
+        finally { btn.disabled=false; }
+      }
+
+      // Modal de prazo
+      const dueModal = document.getElementById('due-modal');
+      const dueModalTask = document.getElementById('due-modal-task');
+      const dueModalDate = document.getElementById('due-modal-date');
+      const dueModalSave = document.getElementById('due-modal-save');
+      const dueModalCancel = document.getElementById('due-modal-cancel');
+      const dueModalClear = document.getElementById('due-modal-clear');
+      const dueModalQuick = document.getElementById('due-modal-quick');
+      let dueModalTaskRef = null;
+
+      function toIsoDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),da=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${da}`;}
+      function openDueModal(task){
+        dueModalTaskRef = task;
+        dueModalTask.textContent = task.title || 'Tarefa';
+        dueModalDate.value = task.due_date && /^\d{4}-\d{2}-\d{2}/.test(task.due_date) ? task.due_date.slice(0,10) : toIsoDate(new Date());
+        dueModal.classList.add('open');
+        setTimeout(() => { try { if(typeof dueModalDate.showPicker==='function') dueModalDate.showPicker(); else dueModalDate.focus(); } catch(e){ dueModalDate.focus(); } }, 60);
+      }
+      function closeDueModal(){ dueModal.classList.remove('open'); dueModalTaskRef = null; }
+      async function saveDueModal(value){
+        const task = dueModalTaskRef; if(!task) return;
+        if(value && !/^\d{4}-\d{2}-\d{2}$/.test(value)){ alert('Data inválida.'); return; }
+        const oldDue = task.due_date || '';
+        closeDueModal();
+        setSync('syncing','Salvando prazo…');
+        try {
+          const updated = await patchTask(task.id, { due_date: value });
+          const idx = tasks.findIndex(t => t.id===task.id);
+          if(idx>=0) tasks[idx] = { ...tasks[idx], ...updated };
+          updateAll();
+          setSync('ok','Sincronizado');
+          if(window.TaocaNotif && oldDue !== value){
+            const fmt = (s)=>{ if(!s) return 'sem prazo'; const m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})/); return m?`${m[3]}/${m[2]}/${m[1]}`:s; };
+            window.TaocaNotif.log({ event_type:'task_due_changed', icon:'📅', actor:'Equipe', title:`Prazo de #${task.task_number||''} — ${task.title||''}`, details:`${fmt(oldDue)} → ${fmt(value)}`, task_id:task.id, task_number:task.task_number||0 });
+          }
+        } catch(err){ console.error(err); setSync('error','Erro'); alert('Falha ao salvar prazo.'); }
+      }
+      dueModalSave.addEventListener('click', () => saveDueModal((dueModalDate.value||'').trim()));
+      dueModalClear.addEventListener('click', () => saveDueModal(''));
+      dueModalCancel.addEventListener('click', closeDueModal);
+      dueModal.addEventListener('click', (e) => { if(e.target===dueModal) closeDueModal(); });
+      document.addEventListener('keydown', (e) => { if(e.key==='Escape' && dueModal.classList.contains('open')) closeDueModal(); });
+      dueModalQuick.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-quick]'); if(!btn) return;
+        const quick = btn.getAttribute('data-quick'); const d = new Date(); d.setHours(0,0,0,0);
+        if(quick==='tomorrow') d.setDate(d.getDate()+1);
+        else if(quick==='3d') d.setDate(d.getDate()+3);
+        else if(quick==='7d') d.setDate(d.getDate()+7);
+        else if(quick==='15d') d.setDate(d.getDate()+15);
+        else if(quick==='30d') d.setDate(d.getDate()+30);
+        dueModalDate.value = toIsoDate(d);
+      });
+      function onEditDue(task){ openDueModal(task); }
+
+      async function onEditCategory(task, newCategory){
+        if(!CATEGORY_LABEL[newCategory]){ alert('Categoria inválida.'); return; }
+        if(newCategory===task.category) return;
+        const oldCategory = task.category;
+        setSync('syncing','Salvando categoria…');
+        try {
+          const updated = await patchTask(task.id, { category: newCategory });
+          const idx = tasks.findIndex(t => t.id===task.id);
+          if(idx>=0) tasks[idx] = { ...tasks[idx], ...updated };
+          if(currentCategory!=='todas' && currentCategory!==newCategory){ currentCategory='todas'; updateFilterButtons(); }
+          updateAll();
+          setSync('ok','Sincronizado');
+          if(window.TaocaNotif){
+            const oldLabel = CATEGORY_LABEL[oldCategory]||oldCategory||'—';
+            const newLabel = CATEGORY_LABEL[newCategory]||newCategory;
+            window.TaocaNotif.log({ event_type:'task_category_changed', icon:'🏷️', actor:'Equipe', title:`Categoria de #${task.task_number||''} alterada`, details:`${oldLabel} → ${newLabel}`, task_id:task.id, task_number:task.task_number||0 });
+          }
+        } catch(err){ console.error(err); setSync('error','Erro'); alert('Falha ao alterar categoria.'); }
+      }
+
+      // Modal Nova Tarefa
+      const newTaskModal = document.getElementById('new-task-modal');
+      const newTaskBtn = document.getElementById('new-task-btn');
+      const newTaskTitle = document.getElementById('new-task-title');
+      const newTaskDesc = document.getElementById('new-task-desc');
+      const newTaskCategory = document.getElementById('new-task-category');
+      const newTaskDue = document.getElementById('new-task-due');
+      const newTaskAuthor = document.getElementById('new-task-author');
+      const newTaskSave = document.getElementById('new-task-save');
+      const newTaskCancel = document.getElementById('new-task-cancel');
+
+      function openNewTaskModal(){
+        newTaskTitle.value=''; newTaskDesc.value=''; newTaskCategory.value='producao'; newTaskDue.value='';
+        try { newTaskAuthor.value = sessionStorage.getItem('taoca-last-author') || (TaocaShell.getCurrentUser&&TaocaShell.getCurrentUser()) || ''; } catch(e){ newTaskAuthor.value=''; }
+        newTaskModal.classList.add('open');
+        setTimeout(() => newTaskTitle.focus(), 60);
+      }
+      function closeNewTaskModal(){ newTaskModal.classList.remove('open'); }
+      newTaskBtn.addEventListener('click', openNewTaskModal);
+      newTaskCancel.addEventListener('click', closeNewTaskModal);
+      newTaskModal.addEventListener('click', (e) => { if(e.target===newTaskModal) closeNewTaskModal(); });
+      document.addEventListener('keydown', (e) => { if(e.key==='Escape' && newTaskModal.classList.contains('open')) closeNewTaskModal(); });
+      newTaskSave.addEventListener('click', async () => {
+        const title=(newTaskTitle.value||'').trim(); const description=(newTaskDesc.value||'').trim();
+        const category=newTaskCategory.value; const due=(newTaskDue.value||'').trim(); const author=(newTaskAuthor.value||'').trim();
+        if(!title){ alert('Título obrigatório.'); newTaskTitle.focus(); return; }
+        if(!CATEGORY_LABEL[category]){ alert('Categoria inválida.'); return; }
+        if(due && !/^\d{4}-\d{2}-\d{2}$/.test(due)){ alert('Data inválida.'); return; }
+        newTaskSave.disabled = true;
+        setSync('syncing','Criando tarefa…');
+        try {
+          try { sessionStorage.setItem('taoca-last-author', author); } catch(e){}
+          const payload = { task_number: nextTaskNumber(), category, title, description, status:'pendente', completed_by:'', completed_at:'', completed_at_iso:'', due_date: due, created_by: author };
+          const created = await createTask(payload);
+          tasks.push(created); tasks.sort((a,b)=>(a.task_number||0)-(b.task_number||0));
+          updateAll(); setSync('ok','Sincronizado'); closeNewTaskModal();
+          if(window.TaocaNotif){
+            const actor = author || 'Equipe';
+            window.TaocaNotif.log({ event_type:'task_created', icon:'➕', actor, title:`${actor} criou #${created.task_number||''} — ${title}`, details:`Categoria: ${CATEGORY_LABEL[category]||category}${due?' · Prazo: '+due.split('-').reverse().join('/'):''}`, task_id:created.id, task_number:created.task_number||0 });
+          }
+        } catch(err){ console.error(err); setSync('error','Erro'); alert('Falha ao criar tarefa.'); }
+        finally { newTaskSave.disabled=false; }
+      });
+
+      // Convidar
+      inviteBtn.addEventListener('click', async () => {
+        const inviteText = 'Olá! Acompanhe comigo o quadro de tarefas da Taoca. 🍄\n\nAcesse o link, use a senha da equipe e atualize as etapas concluídas.';
+        const fullMessage = `${inviteText}\n\nLink: ${window.location.origin}\nSenha da equipe: TAOCA2026`;
+        if(navigator.share){
+          try { await navigator.share({ title:'Taoca OS', text: inviteText, url: window.location.origin }); return; }
+          catch(error){}
+        }
+        try { await navigator.clipboard.writeText(fullMessage); alert('Convite copiado!'); }
+        catch(error){ alert(fullMessage); }
+      });
+
+      // Migração legacy
+      const MIGRATION_KEY = 'taoca-cat-migrated-v1';
+      async function migrateLegacy(){
+        try { if(localStorage.getItem(MIGRATION_KEY)==='1') return; } catch(e){}
+        try {
+          const all = await fetchTasks();
+          const toMig = all.filter(t => LEGACY_CATEGORY_MAP[t.category]);
+          if(toMig.length===0){ try { localStorage.setItem(MIGRATION_KEY,'1'); } catch(e){} return; }
+          setSync('syncing',`Atualizando categorias (${toMig.length})…`);
+          for(const t of toMig){ try { await patchTask(t.id, { category: LEGACY_CATEGORY_MAP[t.category] }); } catch(e){ console.error(e); } }
+          try { localStorage.setItem(MIGRATION_KEY,'1'); } catch(e){}
+        } catch(e){ console.error(e); }
+      }
+
+      async function refresh(initial){
+        if(!initial) setSync('syncing','Sincronizando…');
+        try {
+          tasks = await fetchTasks();
+          tasks.forEach(t => { if(LEGACY_CATEGORY_MAP[t.category]) t.category = LEGACY_CATEGORY_MAP[t.category]; });
+          updateAll(); setSync('ok','Sincronizado');
+        } catch(err){ console.error(err); setSync('error','Falha'); if(initial) loadingState.textContent='Não foi possível carregar.'; }
+      }
+
+      updateFilterButtons();
+      (async () => {
+        await migrateLegacy();
+        refresh(true);
+        // Polling desativado: dados ficam em localStorage (sem backend).
+        // Re-renderiza quando a aba volta a ficar visível, garantindo atualização entre páginas.
+        document.addEventListener('visibilitychange', () => { if(!document.hidden) refresh(false); });
+        window.addEventListener('storage', () => refresh(false));
+      })();
+    })();
+  </script>
+
+  <script src="js/notifications.js"></script>
+  <script src="js/taoca-ai.js"></script>
+</body>
+</html>

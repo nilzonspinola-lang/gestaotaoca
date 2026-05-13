@@ -1,1797 +1,481 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quadro de Tarefas - Nílzon e Marco</title>
-    <link rel="stylesheet" href="css/notifications.css" />
-    <style>
-      * { box-sizing: border-box; }
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taoca — Home</title>
+  <link rel="stylesheet" href="css/taoca-design-system.css" />
+  <link rel="stylesheet" href="css/notifications.css" />
+  <link rel="icon" href="assets/taoca-logo.png" />
+  <style>
+    /* ===== KPIs ===== */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    @media (max-width: 980px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+    .kpi {
+      background: #FFF;
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      padding: 18px 20px;
+    }
+    .kpi-name { font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+    .kpi-num  { font-family: var(--font-serif); font-size: 1.75rem; font-weight: 600; color: var(--text-primary); margin-top: 6px; line-height: 1.05; letter-spacing: -0.02em; }
+    .kpi-num.pos { color: var(--success); }
+    .kpi-num.neg { color: var(--danger); }
+    .kpi-sub  { font-size: 0.82rem; color: var(--text-secondary); margin-top: 6px; }
 
-      body {
-        margin: 0;
-        background: #f3f6fb;
-        color: #1f2a44;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      }
+    /* ===== Painéis ===== */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 22px; }
+    @media (max-width: 980px) { .grid-2 { grid-template-columns: 1fr; } }
+    .panel {
+      background: #FFF;
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      padding: 22px;
+    }
+    .panel-head {
+      display: flex; justify-content: space-between; align-items: baseline;
+      gap: 10px; margin-bottom: 14px;
+    }
+    .panel-title { font-family: var(--font-serif); font-size: 1.05rem; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+    .panel-link  { font-size: 0.84rem; color: var(--brand); text-decoration: none; font-weight: 600; }
+    .panel-link:hover { text-decoration: underline; }
+    .panel-sub   { font-size: 0.82rem; color: var(--text-muted); }
 
-      .page { min-height: 100vh; }
+    /* Mix por segmento */
+    .h-bar { display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: var(--taoca-coal-100); margin-bottom: 14px; }
+    .h-bar > span { display: block; height: 100%; }
+    .seg-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border-soft); font-size: 0.9rem; }
+    .seg-row:first-child { border-top: 0; }
+    .seg-color { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .seg-name { flex: 1; color: var(--text-secondary); }
+    .seg-val { font-variant-numeric: tabular-nums; font-weight: 600; }
 
-      .hero {
-        background: linear-gradient(135deg, #204ccf 0%, #3b82f6 100%);
-        color: #ffffff;
-        padding: 18px 24px;
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
-      }
+    /* Tabelas */
+    table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    table.tbl th, table.tbl td { text-align: left; padding: 9px 4px; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+    table.tbl th { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+    table.tbl td.num, table.tbl th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
-      .hero-inner,
-      .content-inner,
-      .action-bar-inner {
-        max-width: 1200px;
-        margin: 0 auto;
-      }
+    /* Sparkline */
+    .spark-wrap {
+      background: var(--taoca-cream-50);
+      border-radius: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--border-soft);
+    }
+    .spark-svg { width: 100%; height: 56px; display: block; }
 
-      .hero-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-        flex-wrap: wrap;
-      }
+    /* Acessos rápidos */
+    .quick {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 6px;
+    }
+    @media (max-width: 980px) { .quick { grid-template-columns: repeat(2, 1fr); } }
+    .quick a {
+      display: block;
+      padding: 14px 16px;
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text-primary);
+      background: #FFF;
+      transition: border-color var(--t-fast), background var(--t-fast), transform var(--t-fast);
+    }
+    .quick a:hover { border-color: var(--taoca-green-300); background: var(--taoca-green-50); transform: translateY(-1px); }
+    .quick a .q-name { font-weight: 600; font-size: 0.95rem; color: var(--text-primary); }
+    .quick a .q-desc { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
 
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-      }
+    .empty-state { padding: 22px 4px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
 
-      .brand-icon {
-        display: grid;
-        place-items: center;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.22);
-      }
+    /* CTA quando não há dados */
+    .cta-empty {
+      background: linear-gradient(135deg, var(--taoca-cream-50), #FFF);
+      border: 1px dashed var(--border-default);
+      border-radius: 14px;
+      padding: 22px;
+      text-align: center;
+      color: var(--text-secondary);
+      margin-bottom: 22px;
+    }
+    .cta-empty strong { color: var(--text-primary); font-weight: 600; }
+    .cta-empty .actions { margin-top: 14px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
 
-      h1 {
-        margin: 0 0 2px;
-        font-size: 1.55rem;
-        line-height: 1.15;
-        font-weight: 700;
-      }
+  <!-- CTA opcional (aparece só se não há vendas) -->
+  <div id="cta-empty" style="display:none;"></div>
 
-      h2 {
-        margin: 0;
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: rgba(255, 255, 255, 0.82);
-      }
-
-      .brand-icon {
-        width: 44px;
-        height: 44px;
-        font-size: 20px;
-      }
-
-      .hero-actions-top {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      .nav-btn,
-      .logout-btn {
-        padding: 9px 16px;
-        font-size: 0.9rem;
-        border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.32);
-        background: rgba(255, 255, 255, 0.14);
-        color: #ffffff;
-        cursor: pointer;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .nav-btn:hover,
-      .logout-btn:hover { background: rgba(255, 255, 255, 0.24); }
-
-      .logout-btn {
-        background: rgba(255, 255, 255, 0.06);
-      }
-
-      /* ----- Action Bar (sticky, sob o cabeçalho) ----- */
-      .action-bar {
-        position: sticky;
-        top: 0;
-        z-index: 30;
-        background: #ffffff;
-        border-bottom: 1px solid #e2e8f0;
-        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
-      }
-      .action-bar-inner {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        padding: 12px 24px;
-        flex-wrap: wrap;
-      }
-
-      .stats-mini {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        flex-shrink: 0;
-      }
-      .stat-mini {
-        display: flex;
-        align-items: baseline;
-        gap: 6px;
-      }
-      .stat-mini .stat-number {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1e293b;
-        line-height: 1;
-      }
-      .stat-mini .stat-label {
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: #64748b;
-        font-weight: 600;
-      }
-      .stat-divider {
-        width: 1px;
-        height: 22px;
-        background: #e2e8f0;
-      }
-
-      .progress-block {
-        flex: 1;
-        min-width: 220px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .progress-block-label {
-        font-size: 0.78rem;
-        font-weight: 600;
-        color: #64748b;
-        white-space: nowrap;
-      }
-      .progress-track {
-        flex: 1;
-        height: 8px;
-        background: #e2e8f0;
-        border-radius: 999px;
-        overflow: hidden;
-      }
-      .progress-fill {
-        width: 0%;
-        height: 100%;
-        background: linear-gradient(90deg, #22c55e, #34d399);
-        border-radius: 999px;
-        transition: width 0.25s ease;
-      }
-      .progress-percent {
-        font-size: 0.82rem;
-        font-weight: 700;
-        color: #1e293b;
-        white-space: nowrap;
-        min-width: 78px;
-        text-align: right;
-      }
-
-      .action-buttons {
-        display: flex;
-        gap: 8px;
-        flex-shrink: 0;
-      }
-      .action-btn-primary,
-      .action-btn-ghost {
-        padding: 9px 14px;
-        font-size: 0.85rem;
-        border-radius: 999px;
-        font-weight: 600;
-        cursor: pointer;
-        font-family: inherit;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .action-btn-primary {
-        background: linear-gradient(135deg, #2563eb, #3b82f6);
-        color: #ffffff;
-        border: 0;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22);
-      }
-      .action-btn-primary:hover { filter: brightness(0.96); }
-      .action-btn-ghost {
-        background: #ffffff;
-        color: #2563eb;
-        border: 1px solid #cfddf6;
-      }
-      .action-btn-ghost:hover { background: #f1f5f9; }
-
-      .content-inner { padding: 20px 24px 36px; }
-
-      .filter-bar {
-        margin-bottom: 18px;
-        display: flex;
-        gap: 14px;
-        align-items: center;
-        flex-wrap: wrap;
-        padding: 12px 14px;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
-      }
-      .filter-group {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-      .filter-group-label {
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: #94a3b8;
-        margin-right: 4px;
-      }
-      .filter-divider {
-        width: 1px;
-        height: 24px;
-        background: #e2e8f0;
-      }
-
-      /* Dropdown de categoria nos filtros */
-      .cat-filter-wrap {
-        position: relative;
-      }
-      .cat-filter-trigger {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 9px 14px;
-        font-size: 0.88rem;
-        font-weight: 600;
-        font-family: inherit;
-        cursor: pointer;
-        border-radius: 999px;
-        border: 1px solid #dbe4f0;
-        background: #ffffff;
-        color: #64748b;
-      }
-      .cat-filter-trigger:hover { background: #f8fafc; }
-      .cat-filter-trigger.active {
-        background: #2563eb;
-        color: #ffffff;
-        border-color: #2563eb;
-      }
-      .cat-filter-trigger::after {
-        content: '▾';
-        font-size: 0.7rem;
-        opacity: 0.8;
-      }
-      .cat-filter-menu {
-        position: absolute;
-        top: calc(100% + 6px);
-        left: 0;
-        z-index: 40;
-        min-width: 220px;
-        max-height: 360px;
-        overflow-y: auto;
-        overscroll-behavior: contain;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        box-shadow: 0 18px 38px rgba(15, 23, 42, 0.18);
-        padding: 6px;
-        display: none;
-      }
-      .cat-filter-menu.open { display: block; }
-      .cat-filter-menu::-webkit-scrollbar { width: 8px; }
-      .cat-filter-menu::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
-      .cat-filter-option {
-        width: 100%;
-        text-align: left;
-        padding: 8px 10px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        border: 0;
-        background: transparent;
-        border-radius: 8px;
-        cursor: pointer;
-        color: #1e293b;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-family: inherit;
-      }
-      .cat-filter-option:hover { background: #f1f5f9; }
-      .cat-filter-option.selected { background: #eff6ff; color: #2563eb; }
-      .cat-filter-option .swatch {
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        flex: 0 0 10px;
-      }
-      .swatch.todas { background: #94a3b8; }
-
-      .filter-btn {
-        border: 1px solid #dbe4f0;
-        background: #ffffff;
-        color: #64748b;
-        border-radius: 999px;
-        padding: 9px 14px;
-        font-size: 0.88rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s;
-        appearance: none;
-        -webkit-appearance: none;
-        text-decoration: none;
-        font-family: inherit;
-      }
-      .filter-btn:hover { background: #f8fafc; }
-      .filter-btn.active {
-        background: #2563eb;
-        color: #ffffff;
-        border-color: #2563eb;
-      }
-
-      .board-toolbar {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 14px;
-        flex-wrap: wrap;
-      }
-      .sync-indicator {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.82rem;
-        color: #64748b;
-      }
-      .sync-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.18);
-      }
-      .sync-dot.syncing { background: #f59e0b; box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2); }
-      .sync-dot.error   { background: #ef4444; box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2); }
-
-      .task-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 20px;
-      }
-
-      .task-card {
-        display: flex;
-        flex-direction: column;
-        min-height: 280px;
-        background: #ffffff;
-        border: 1px solid #dce5f1;
-        border-radius: 20px;
-        padding: 18px;
-        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
-        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-      }
-      .task-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
-      }
-      .task-card.realizado {
-        background: #f0fdf4;
-        border-color: #86efac;
-      }
-      .task-card.atrasada {
-        border-color: #fca5a5;
-        box-shadow: 0 10px 24px rgba(239, 68, 68, 0.12);
-      }
-
-      .card-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 14px;
-      }
-
-      .card-meta {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-
-      .tag {
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        padding: 5px 9px;
-        border-radius: 999px;
-        background: #eff6ff;
-        color: #2563eb;
-      }
-      .tag.empresarial { background: #eef2ff; color: #4f46e5; }
-      .tag.fiscal      { background: #ecfeff; color: #0f766e; }
-      .tag.juridico    { background: #f5f3ff; color: #7c3aed; }
-      .tag.consultoria { background: #fff7ed; color: #c2410c; }
-      .tag.fazenda     { background: #f0fdf4; color: #15803d; }
-
-      /* Categoria editável */
-      .category-wrap {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-      }
-      .tag.tag-editable {
-        cursor: pointer;
-        border: 1px solid transparent;
-        transition: filter 0.15s ease, border-color 0.15s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-      }
-      .tag.tag-editable::after {
-        content: '▾';
-        font-size: 0.65rem;
-        opacity: 0.7;
-      }
-      .tag.tag-editable:hover {
-        filter: brightness(0.95);
-        border-color: rgba(15, 23, 42, 0.12);
-      }
-      .category-menu {
-        position: absolute;
-        top: calc(100% + 6px);
-        left: 0;
-        z-index: 50;
-        min-width: 190px;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        box-shadow: 0 18px 38px rgba(15, 23, 42, 0.18);
-        padding: 6px;
-        display: none;
-        max-height: 320px;
-        overflow-y: auto;
-        overscroll-behavior: contain;
-      }
-      .category-menu.open { display: block; }
-      .category-menu::-webkit-scrollbar { width: 8px; }
-      .category-menu::-webkit-scrollbar-track { background: transparent; }
-      .category-menu::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 999px;
-      }
-      .category-menu::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-      .category-menu-title {
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: #94a3b8;
-        padding: 6px 10px 4px;
-        position: sticky;
-        top: 0;
-        background: #ffffff;
-        z-index: 1;
-      }
-      .category-option {
-        width: 100%;
-        text-align: left;
-        padding: 8px 10px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        border: 0;
-        background: transparent;
-        border-radius: 8px;
-        cursor: pointer;
-        color: #1e293b;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-family: inherit;
-      }
-      .category-option:hover { background: #f1f5f9; }
-      .category-option.selected { background: #eff6ff; color: #2563eb; }
-      .category-option .swatch {
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        flex: 0 0 10px;
-      }
-      .swatch.institucional { background: #4338ca; }
-      .swatch.financeiro    { background: #047857; }
-      .swatch.fiscal        { background: #0f766e; }
-      .swatch.juridico      { background: #7c3aed; }
-      .swatch.comercial     { background: #be123c; }
-      .swatch.operacional   { background: #334155; }
-      .swatch.estrategico   { background: #b45309; }
-      .swatch.marketing     { background: #c026d3; }
-      .swatch.ti            { background: #0369a1; }
-      .swatch.consultoria   { background: #c2410c; }
-      .swatch.outras        { background: #64748b; }
-
-      /* Modal de prazo / calendário */
-      .modal-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.55);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        z-index: 100;
-      }
-      .modal-backdrop.open { display: flex; }
-      .modal-card {
-        width: 100%;
-        max-width: 380px;
-        background: #ffffff;
-        border-radius: 18px;
-        padding: 22px 22px 18px;
-        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.32);
-      }
-      .modal-title {
-        margin: 0 0 4px;
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: #1e293b;
-      }
-      .modal-subtitle {
-        margin: 0 0 16px;
-        font-size: 0.88rem;
-        color: #64748b;
-      }
-      .modal-task-name {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #2563eb;
-        background: #eff6ff;
-        padding: 8px 10px;
-        border-radius: 10px;
-        margin-bottom: 14px;
-        line-height: 1.35;
-      }
-      .modal-label {
-        display: block;
-        font-size: 0.78rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: #475569;
-        margin-bottom: 6px;
-      }
-      .modal-date-input {
-        width: 100%;
-        padding: 12px 14px;
-        font-size: 1rem;
-        border-radius: 12px;
-        border: 1px solid #cbd5e1;
-        background: #f8fafc;
-        color: #1e293b;
-        font-family: inherit;
-        outline: none;
-        cursor: pointer;
-      }
-      .modal-date-input:focus {
-        border-color: #2563eb;
-        background: #ffffff;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-      }
-      .modal-quick-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 10px;
-      }
-      .modal-quick-btn {
-        padding: 6px 10px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        border-radius: 999px;
-        border: 1px solid #dbe4f0;
-        background: #ffffff;
-        color: #475569;
-        cursor: pointer;
-        font-family: inherit;
-      }
-      .modal-quick-btn:hover { background: #f1f5f9; }
-      .modal-actions {
-        margin-top: 18px;
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-      .modal-btn {
-        flex: 1;
-        min-width: 100px;
-        padding: 11px 14px;
-        border-radius: 12px;
-        border: 0;
-        font-size: 0.92rem;
-        font-weight: 700;
-        cursor: pointer;
-        font-family: inherit;
-      }
-      .modal-btn.primary {
-        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-        color: #ffffff;
-        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
-      }
-      .modal-btn.primary:hover { filter: brightness(0.97); }
-      .modal-btn.secondary {
-        background: #f1f5f9;
-        color: #334155;
-      }
-      .modal-btn.secondary:hover { background: #e2e8f0; }
-      .modal-btn.danger {
-        background: #ffffff;
-        color: #b91c1c;
-        border: 1px solid #fecaca;
-      }
-      .modal-btn.danger:hover { background: #fef2f2; }
-
-      /* Form fields no modal */
-      .modal-field { margin-bottom: 12px; }
-      .modal-field label {
-        display: block;
-        font-size: 0.78rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: #475569;
-        margin-bottom: 6px;
-      }
-      .modal-input,
-      .modal-textarea,
-      .modal-select {
-        width: 100%;
-        padding: 10px 12px;
-        font-size: 0.95rem;
-        border-radius: 10px;
-        border: 1px solid #cbd5e1;
-        background: #f8fafc;
-        color: #1e293b;
-        font-family: inherit;
-        outline: none;
-      }
-      .modal-textarea { min-height: 80px; resize: vertical; }
-      .modal-input:focus,
-      .modal-textarea:focus,
-      .modal-select:focus {
-        border-color: #2563eb;
-        background: #ffffff;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-      }
-      .modal-card.large { max-width: 480px; }
-
-      .task-number,
-      .task-state {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 30px;
-        height: 30px;
-        padding: 0 10px;
-        border-radius: 999px;
-        background: #f8fafc;
-        color: #94a3b8;
-        font-size: 0.78rem;
-        font-weight: 700;
-      }
-      .task-state { min-width: auto; color: #64748b; }
-      .task-card.realizado .task-state {
-        background: #dcfce7;
-        color: #15803d;
-      }
-      .task-card.atrasada .task-state {
-        background: #fee2e2;
-        color: #b91c1c;
-      }
-
-      .task-content {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .task-title {
-        margin: 0 0 10px;
-        font-size: 1.08rem;
-        line-height: 1.35;
-        color: #1e293b;
-      }
-
-      .task-desc {
-        margin: 0 0 12px;
-        color: #64748b;
-        font-size: 0.95rem;
-        line-height: 1.55;
-      }
-
-      .due-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        margin-bottom: 10px;
-        padding: 8px 10px;
-        border-radius: 10px;
-        background: #f8fafc;
-        font-size: 0.82rem;
-        color: #475569;
-        flex-wrap: wrap;
-      }
-      .due-row .due-label { font-weight: 600; }
-      .due-row .due-value { color: #1e293b; font-weight: 700; }
-      .due-row.late .due-value { color: #b91c1c; }
-      .due-row.soon .due-value { color: #c2410c; }
-      .due-edit-btn {
-        background: transparent;
-        border: 1px solid #cbd5e1;
-        color: #475569;
-        padding: 4px 8px;
-        border-radius: 8px;
-        font-size: 0.75rem;
-        cursor: pointer;
-        font-weight: 600;
-      }
-      .due-edit-btn:hover { background: #ffffff; }
-
-      .completion-info {
-        display: none;
-        margin-top: 4px;
-        padding: 10px 12px;
-        border-radius: 12px;
-        background: #dcfce7;
-        color: #166534;
-        font-size: 0.85rem;
-        line-height: 1.4;
-      }
-      .task-card.realizado .completion-info { display: block; }
-      .task-card.realizado .task-title {
-        text-decoration: line-through;
-        color: #64748b;
-      }
-
-      .task-actions {
-        margin-top: auto;
-        padding-top: 16px;
-      }
-
-      .action-btn {
-        width: 100%;
-        border: none;
-        border-radius: 12px;
-        padding: 12px 16px;
-        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-        color: #ffffff;
-        font-size: 0.95rem;
-        font-weight: 700;
-        cursor: pointer;
-        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
-      }
-      .action-btn:hover { filter: brightness(0.98); }
-      .action-btn:disabled { opacity: 0.6; cursor: progress; }
-      .task-card.realizado .action-btn {
-        background: #ffffff;
-        color: #15803d;
-        border: 1px solid #86efac;
-        box-shadow: none;
-      }
-
-      .empty-state {
-        grid-column: 1 / -1;
-        padding: 32px 20px;
-        text-align: center;
-        background: #ffffff;
-        border: 1px dashed #cbd5e1;
-        border-radius: 18px;
-        color: #64748b;
-        display: none;
-      }
-
-      .loading-state {
-        grid-column: 1 / -1;
-        padding: 40px 20px;
-        text-align: center;
-        color: #64748b;
-        font-size: 0.95rem;
-      }
-
-      @media (max-width: 980px) {
-        .task-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      }
-
-      @media (max-width: 860px) {
-        .action-bar-inner {
-          padding: 10px 16px;
-          gap: 12px;
-        }
-        .progress-block { order: 3; flex-basis: 100%; }
-      }
-
-      @media (max-width: 720px) {
-        .hero, .content-inner, .action-bar-inner {
-          padding-left: 16px;
-          padding-right: 16px;
-        }
-        .hero-top {
-          flex-direction: column;
-          align-items: stretch;
-          gap: 12px;
-        }
-        .hero-actions-top { justify-content: flex-end; }
-        .stats-mini { gap: 10px; }
-        .stat-mini .stat-number { font-size: 1.1rem; }
-        .filter-bar { gap: 10px; }
-        .filter-divider { display: none; }
-      }
-
-      @media (max-width: 640px) {
-        .task-grid { grid-template-columns: 1fr; }
-        h1 { font-size: 1.4rem; }
-        .action-buttons { width: 100%; }
-        .action-btn-primary, .action-btn-ghost { flex: 1; justify-content: center; }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="page">
-      <header class="hero">
-        <div class="hero-inner">
-          <div class="hero-top">
-            <div class="brand">
-              <div class="brand-icon">☑</div>
-              <div>
-                <h1>Quadro de Tarefas</h1>
-                <h2>Versão 1.0</h2>
-              </div>
-            </div>
-
-            <div class="hero-actions-top" id="hero-actions-top">
-              <a class="nav-btn" href="atas.html" title="ATAs e criação em série">📑 ATA's</a>
-              <a class="nav-btn" href="dashboard.html" title="Painel gerencial">📊 Painel gerencial</a>
-              <button class="logout-btn" id="logout-btn" type="button">Sair</button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div class="action-bar">
-        <div class="action-bar-inner">
-          <div class="stats-mini">
-            <div class="stat-mini">
-              <span class="stat-number" id="stat-total">0</span>
-              <span class="stat-label">Total</span>
-            </div>
-            <div class="stat-divider"></div>
-            <div class="stat-mini">
-              <span class="stat-number" id="stat-completed">0</span>
-              <span class="stat-label">Concluídas</span>
-            </div>
-            <div class="stat-divider"></div>
-            <div class="stat-mini">
-              <span class="stat-number" id="stat-pending">0</span>
-              <span class="stat-label">Pendentes</span>
-            </div>
-          </div>
-
-          <div class="progress-block">
-            <span class="progress-block-label">Progresso</span>
-            <div class="progress-track">
-              <div class="progress-fill" id="progress-bar"></div>
-            </div>
-            <span class="progress-percent" id="progress-text">0%</span>
-          </div>
-
-          <div class="action-buttons">
-            <button class="action-btn-primary" id="new-task-btn" type="button">➕ Nova tarefa</button>
-            <button class="action-btn-ghost" id="invite-btn" type="button">📩 Convidar</button>
-          </div>
-        </div>
-      </div>
-
-      <main class="content-inner">
-        <section class="filter-bar" id="filter-bar">
-          <div class="filter-group">
-            <span class="filter-group-label">Status</span>
-            <button class="filter-btn active" type="button" data-filter-type="status" data-value="todas">Todas</button>
-            <button class="filter-btn" type="button" data-filter-type="status" data-value="pendentes">Pendentes</button>
-            <button class="filter-btn" type="button" data-filter-type="status" data-value="concluida">Concluídas</button>
-            <button class="filter-btn" type="button" data-filter-type="status" data-value="atrasadas">Atrasadas</button>
-            <button class="filter-btn" type="button" data-filter-type="status" data-value="proximas">Próximos 7 dias</button>
-          </div>
-
-          <div class="filter-divider"></div>
-
-          <div class="filter-group">
-            <span class="filter-group-label">Categoria</span>
-            <div class="cat-filter-wrap" id="cat-filter-wrap">
-              <button type="button" class="cat-filter-trigger" id="cat-filter-trigger" aria-haspopup="true" aria-expanded="false">
-                <span class="swatch todas" id="cat-filter-swatch"></span>
-                <span id="cat-filter-label">Todas</span>
-              </button>
-              <div class="cat-filter-menu" id="cat-filter-menu" role="menu"></div>
-            </div>
-          </div>
-        </section>
-
-        <div class="board-toolbar">
-          <div class="sync-indicator" id="sync-indicator">
-            <span class="sync-dot" id="sync-dot"></span>
-            <span id="sync-text">Sincronizado</span>
-          </div>
-        </div>
-
-        <section class="task-grid" id="task-grid">
-          <div class="loading-state" id="loading-state">Carregando tarefas da equipe…</div>
-          <div id="empty-state" class="empty-state">Nenhuma tarefa encontrada para este filtro.</div>
-        </section>
-      </main>
+  <!-- KPIs principais (mês corrente) -->
+  <section class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-name">Receita do mês</div>
+      <div class="kpi-num" id="k-rev">—</div>
+      <div class="kpi-sub" id="k-rev-sub">—</div>
     </div>
-
-    <!-- Modal de prazo (calendário) -->
-    <div class="modal-backdrop" id="due-modal" role="dialog" aria-modal="true" aria-labelledby="due-modal-title">
-      <div class="modal-card">
-        <h3 class="modal-title" id="due-modal-title">Definir prazo</h3>
-        <p class="modal-subtitle">Escolha a data limite para esta tarefa.</p>
-        <div class="modal-task-name" id="due-modal-task">—</div>
-
-        <label class="modal-label" for="due-modal-date">Data do prazo</label>
-        <input type="date" id="due-modal-date" class="modal-date-input" />
-
-        <div class="modal-quick-row" id="due-modal-quick">
-          <button type="button" class="modal-quick-btn" data-quick="today">Hoje</button>
-          <button type="button" class="modal-quick-btn" data-quick="tomorrow">Amanhã</button>
-          <button type="button" class="modal-quick-btn" data-quick="3d">Em 3 dias</button>
-          <button type="button" class="modal-quick-btn" data-quick="7d">Em 7 dias</button>
-          <button type="button" class="modal-quick-btn" data-quick="15d">Em 15 dias</button>
-          <button type="button" class="modal-quick-btn" data-quick="30d">Em 30 dias</button>
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="modal-btn danger" id="due-modal-clear">Remover prazo</button>
-          <button type="button" class="modal-btn secondary" id="due-modal-cancel">Cancelar</button>
-          <button type="button" class="modal-btn primary" id="due-modal-save">Salvar</button>
-        </div>
-      </div>
+    <div class="kpi">
+      <div class="kpi-name">Ticket médio</div>
+      <div class="kpi-num" id="k-tk">—</div>
+      <div class="kpi-sub" id="k-tk-sub">por venda registrada</div>
     </div>
-
-    <!-- Modal de Nova Tarefa -->
-    <div class="modal-backdrop" id="new-task-modal" role="dialog" aria-modal="true" aria-labelledby="new-task-modal-title">
-      <div class="modal-card large">
-        <h3 class="modal-title" id="new-task-modal-title">➕ Nova tarefa</h3>
-        <p class="modal-subtitle">Crie um novo card no quadro da equipe.</p>
-
-        <div class="modal-field">
-          <label for="new-task-title">Título *</label>
-          <input type="text" id="new-task-title" class="modal-input" placeholder="Ex.: Enviar contrato à diretoria" maxlength="200" />
-        </div>
-
-        <div class="modal-field">
-          <label for="new-task-desc">Descrição</label>
-          <textarea id="new-task-desc" class="modal-textarea" placeholder="Detalhes, contexto e observações" maxlength="800"></textarea>
-        </div>
-
-        <div class="modal-field">
-          <label for="new-task-category">Categoria</label>
-          <select id="new-task-category" class="modal-select">
-            <option value="institucional">Institucional</option>
-            <option value="financeiro">Financeiro</option>
-            <option value="fiscal">Fiscal</option>
-            <option value="juridico">Jurídico</option>
-            <option value="comercial">Comercial</option>
-            <option value="operacional">Operacional</option>
-            <option value="estrategico">Estratégico</option>
-            <option value="marketing">Marketing</option>
-            <option value="ti">TI</option>
-            <option value="consultoria">Consultoria</option>
-            <option value="outras">Outras</option>
-          </select>
-        </div>
-
-        <div class="modal-field">
-          <label for="new-task-due">Prazo (opcional)</label>
-          <input type="date" id="new-task-due" class="modal-input" />
-        </div>
-
-        <div class="modal-field">
-          <label for="new-task-author">Quem está criando? (opcional)</label>
-          <input type="text" id="new-task-author" class="modal-input" placeholder="Seu nome" maxlength="80" />
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="modal-btn secondary" id="new-task-cancel">Cancelar</button>
-          <button type="button" class="modal-btn primary" id="new-task-save">Criar tarefa</button>
-        </div>
-      </div>
+    <div class="kpi">
+      <div class="kpi-name">Preço médio /kg</div>
+      <div class="kpi-num" id="k-avg">—</div>
+      <div class="kpi-sub" id="k-avg-sub">geral, todos os SKUs</div>
     </div>
+    <div class="kpi">
+      <div class="kpi-name">Resultado</div>
+      <div class="kpi-num" id="k-res">—</div>
+      <div class="kpi-sub" id="k-res-sub">receita − despesas</div>
+    </div>
+  </section>
 
-    <script>
-      (function () {
-        // ---------- Auth gate ----------
-        const SESSION_KEY = 'taoca-auth-ok';
-        try {
-          if (sessionStorage.getItem(SESSION_KEY) !== '1') {
-            window.location.replace('login.html');
-            return;
-          }
-        } catch (e) {
-          window.location.replace('login.html');
-          return;
-        }
+  <!-- Mix por segmento + Top SKUs -->
+  <div class="grid-2">
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Mix por segmento</h2>
+        <a class="panel-link" href="vendas.html">Ver vendas</a>
+      </div>
+      <div class="h-bar" id="seg-bar"></div>
+      <div id="seg-list"></div>
+    </section>
 
-        // ---------- Constantes ----------
-        const TABLE = 'tasks';
-        const POLL_MS = 8000;
-        const CATEGORY_LABEL = {
-          institucional: 'Institucional',
-          financeiro: 'Financeiro',
-          fiscal: 'Fiscal',
-          juridico: 'Jurídico',
-          comercial: 'Comercial',
-          operacional: 'Operacional',
-          estrategico: 'Estratégico',
-          marketing: 'Marketing',
-          ti: 'TI',
-          consultoria: 'Consultoria',
-          outras: 'Outras',
-        };
-        // Mapa de migração de categorias antigas → novas
-        const LEGACY_CATEGORY_MAP = {
-          empresarial: 'institucional',
-          fazenda: 'outras',
-        };
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Top produtos do mês</h2>
+        <a class="panel-link" href="vendas.html">Detalhar</a>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr><th>SKU</th><th>Produto</th><th class="num">Qtd</th><th class="num">Receita</th></tr>
+        </thead>
+        <tbody id="sku-body"></tbody>
+      </table>
+    </section>
+  </div>
 
-        let currentStatus = 'todas';
-        let currentCategory = 'todas';
-        let tasks = [];
+  <!-- Vendas dos últimos 14 dias -->
+  <section class="panel" style="margin-bottom: 22px;">
+    <div class="panel-head">
+      <h2 class="panel-title">Vendas — últimos 14 dias</h2>
+      <span class="panel-sub" id="spark-summary"></span>
+    </div>
+    <div class="spark-wrap">
+      <svg class="spark-svg" id="spark" viewBox="0 0 600 60" preserveAspectRatio="none"></svg>
+    </div>
+  </section>
 
-        // ---------- Refs ----------
-        const grid = document.getElementById('task-grid');
-        const emptyState = document.getElementById('empty-state');
-        const loadingState = document.getElementById('loading-state');
-        const filterBar = document.getElementById('filter-bar');
-        const inviteBtn = document.getElementById('invite-btn');
-        const logoutBtn = document.getElementById('logout-btn');
+  <!-- Atividade recente + Custo por kg -->
+  <div class="grid-2">
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Últimas vendas</h2>
+        <a class="panel-link" href="vendas.html">Ver todas</a>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr><th>Data</th><th>Cliente</th><th>Produto</th><th class="num">Total</th></tr>
+        </thead>
+        <tbody id="recent-body"></tbody>
+      </table>
+    </section>
 
-        const statTotal = document.getElementById('stat-total');
-        const statCompleted = document.getElementById('stat-completed');
-        const statPending = document.getElementById('stat-pending');
-        const progressText = document.getElementById('progress-text');
-        const progressBar = document.getElementById('progress-bar');
-        const syncDot = document.getElementById('sync-dot');
-        const syncText = document.getElementById('sync-text');
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Indicadores operacionais</h2>
+        <a class="panel-link" href="financeiro.html">Financeiro</a>
+      </div>
+      <table class="tbl">
+        <tbody>
+          <tr><td>Custo total do mês</td><td class="num" id="o-cost">—</td></tr>
+          <tr><td>Despesas fixas</td><td class="num" id="o-fix">—</td></tr>
+          <tr><td>Despesas variáveis</td><td class="num" id="o-var">—</td></tr>
+          <tr><td>Volume vendido</td><td class="num" id="o-vol">—</td></tr>
+          <tr><td>Custo médio por kg produzido</td><td class="num" id="o-kg">—</td></tr>
+          <tr><td>Margem líquida</td><td class="num" id="o-mg">—</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
 
-        // ---------- Helpers ----------
-        function escapeHtml(text) {
-          return String(text == null ? '' : text).replace(/[&<>"']/g, (m) => (
-            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]
-          ));
-        }
-        function formatNowBR() {
-          return new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-        }
-        function nowIso() { return new Date().toISOString(); }
-        function startOfDay(d) {
-          const x = new Date(d);
-          x.setHours(0, 0, 0, 0);
-          return x;
-        }
-        function diffDays(a, b) {
-          return Math.round((startOfDay(a) - startOfDay(b)) / 86400000);
-        }
-        function parseDueDate(t) {
-          if (!t.due_date) return null;
-          const m = String(t.due_date).match(/^(\d{4})-(\d{2})-(\d{2})/);
-          if (!m) return null;
-          return new Date(+m[1], +m[2] - 1, +m[3]);
-        }
-        function formatDateBR(d) {
-          if (!d) return '';
-          return d.toLocaleDateString('pt-BR');
-        }
-        function setSync(state, message) {
-          syncDot.classList.remove('syncing', 'error');
-          if (state === 'syncing') syncDot.classList.add('syncing');
-          if (state === 'error') syncDot.classList.add('error');
-          syncText.textContent = message || (state === 'syncing' ? 'Sincronizando…' : state === 'error' ? 'Falha de sincronização' : 'Sincronizado');
-        }
+  <!-- Acessos rápidos -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">Módulos</h2>
+    </div>
+    <div class="quick">
+      <a href="vendas.html"><div class="q-name">Vendas</div><div class="q-desc">Lançamento e relatórios</div></a>
+      <a href="financeiro.html"><div class="q-name">Financeiro</div><div class="q-desc">DRE e margens</div></a>
+      <a href="cadastros.html"><div class="q-name">Cadastros</div><div class="q-desc">Produtos e clientes</div></a>
+      <a href="dashboard.html"><div class="q-name">Painel</div><div class="q-desc">Métricas e gráficos</div></a>
+      <a href="producao.html"><div class="q-name">Produção</div><div class="q-desc">Cultivo e lotes</div></a>
+      <a href="clientes.html"><div class="q-name">Clientes</div><div class="q-desc">Relacionamento</div></a>
+      <a href="tarefas.html"><div class="q-name">Tarefas</div><div class="q-desc">Quadro operacional</div></a>
+      <a href="atas.html"><div class="q-name">ATAs</div><div class="q-desc">Reuniões e decisões</div></a>
+    </div>
+  </section>
 
-        // ---------- API ----------
-        async function fetchTasks() {
-          const res = await fetch(`tables/${TABLE}?limit=200&sort=task_number`);
-          if (!res.ok) throw new Error('Falha ao carregar tarefas');
-          const json = await res.json();
-          let data = (json.data || []).filter((row) => !row.deleted);
-          data.sort((a, b) => (a.task_number || 0) - (b.task_number || 0));
-          return data;
-        }
-        async function patchTask(id, payload) {
-          const res = await fetch(`tables/${TABLE}/${id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          if (!res.ok) throw new Error('Falha ao atualizar tarefa');
-          return await res.json();
-        }
-        async function createTask(payload) {
-          const res = await fetch(`tables/${TABLE}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          if (!res.ok) throw new Error('Falha ao criar tarefa');
-          return await res.json();
-        }
-        function nextTaskNumber() {
-          if (!tasks.length) return 1;
-          return Math.max(...tasks.map((t) => Number(t.task_number) || 0)) + 1;
-        }
+  <!-- Scripts -->
+  <script src="js/taoca-data.js"></script>
+  <script src="js/taoca-shell.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/taoca-ai.js"></script>
+  <script>
+  (function () {
+    const D = window.TaocaData;
+    const user = (window.TaocaShell && TaocaShell.getCurrentUser()) || 'Equipe';
+    const hour = new Date().getHours();
+    const period = hour < 5 ? 'Boa noite' : hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
 
-        // ---------- Render ----------
-        function buildCard(task) {
-          const article = document.createElement('article');
-          const isDone = task.status === 'concluida';
-          const due = parseDueDate(task);
-          const today = startOfDay(new Date());
-          const isLate = !isDone && due && due < today;
-          const isSoon = !isDone && due && diffDays(due, today) >= 0 && diffDays(due, today) <= 7;
+    TaocaShell.mount({
+      active: 'home',
+      title: `${period}, ${user}`,
+      subtitle: new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }),
+    });
 
-          article.className = 'task-card' + (isDone ? ' realizado' : '') + (isLate ? ' atrasada' : '');
-          article.dataset.id = task.id;
-          article.dataset.category = task.category;
-          article.dataset.status = task.status;
+    const $ = (id) => document.getElementById(id);
+    const escape = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const SEG_COLORS = { Hoteis:'#2F5D3A', Supermercados:'#C77B5C', Restaurantes:'#B8935A', Distribuidoras:'#3b4a6a' };
 
-          const tagClass = task.category || '';
-          const tagLabel = CATEGORY_LABEL[task.category] || task.category || '—';
-          const stateLabel = isDone ? 'Concluída' : (isLate ? 'Atrasada' : 'Pendente');
-          const btnLabel = isDone ? 'Reabrir tarefa' : 'Concluir';
-          const completionHtml = isDone
-            ? `✓ Concluído por <strong>${escapeHtml(task.completed_by || 'Equipe')}</strong> · ${escapeHtml(task.completed_at || '')}`
-            : '';
+    function currentMonth() { return new Date().toISOString().slice(0,7); }
+    function prevMonthKey() {
+      const d = new Date();
+      d.setDate(1); d.setMonth(d.getMonth() - 1);
+      return d.toISOString().slice(0,7);
+    }
+    function fmtDate(s) {
+      if (!s) return '—';
+      const [y,m,d] = s.split('-');
+      return `${d}/${m}`;
+    }
 
-          let dueHtml = '';
-          if (!isDone) {
-            const dueClass = isLate ? 'late' : (isSoon ? 'soon' : '');
-            const dueText = due
-              ? `${formatDateBR(due)}${isLate ? ' (atrasada)' : (isSoon ? ` (em ${diffDays(due, today)}d)` : '')}`
-              : 'Sem prazo';
-            dueHtml = `
-              <div class="due-row ${dueClass}">
-                <span class="due-label">📌 Prazo:</span>
-                <span class="due-value">${escapeHtml(dueText)}</span>
-                <button class="due-edit-btn" type="button" data-action="edit-due">${due ? 'Alterar' : 'Definir'}</button>
-              </div>
-            `;
-          }
-
-          const categoryOptionsHtml = Object.keys(CATEGORY_LABEL).map((key) => `
-            <button type="button" class="category-option ${key === task.category ? 'selected' : ''}" data-category-value="${escapeHtml(key)}">
-              <span class="swatch ${escapeHtml(key)}"></span>
-              <span>${escapeHtml(CATEGORY_LABEL[key])}</span>
-            </button>
-          `).join('');
-
-          article.innerHTML = `
-            <div class="card-header">
-              <div class="card-meta">
-                <span class="category-wrap">
-                  <button type="button" class="tag tag-editable ${escapeHtml(tagClass)}" data-action="open-category-menu" title="Clique para alterar a categoria">
-                    ${escapeHtml(tagLabel)}
-                  </button>
-                  <div class="category-menu" data-role="category-menu">
-                    <div class="category-menu-title">Alterar categoria</div>
-                    ${categoryOptionsHtml}
-                  </div>
-                </span>
-                <span class="task-number">${escapeHtml(task.task_number)}</span>
-              </div>
-              <span class="task-state">${escapeHtml(stateLabel)}</span>
-            </div>
-            <div class="task-content">
-              <h3 class="task-title">${escapeHtml(task.title)}</h3>
-              <p class="task-desc">${escapeHtml(task.description)}</p>
-              ${dueHtml}
-              <div class="completion-info">${completionHtml}</div>
-            </div>
-            <div class="task-actions">
-              <button class="action-btn toggle-btn" type="button">${escapeHtml(btnLabel)}</button>
-            </div>
-          `;
-
-          const toggleBtn = article.querySelector('.toggle-btn');
-          toggleBtn.addEventListener('click', () => onToggle(task, toggleBtn));
-
-          const dueEditBtn = article.querySelector('[data-action="edit-due"]');
-          if (dueEditBtn) dueEditBtn.addEventListener('click', () => onEditDue(task));
-
-          const catTrigger = article.querySelector('[data-action="open-category-menu"]');
-          const catMenu = article.querySelector('[data-role="category-menu"]');
-          if (catTrigger && catMenu) {
-            catTrigger.addEventListener('click', (ev) => {
-              ev.stopPropagation();
-              closeAllCategoryMenus(catMenu);
-              catMenu.classList.toggle('open');
-            });
-            Array.from(catMenu.querySelectorAll('.category-option')).forEach((opt) => {
-              opt.addEventListener('click', (ev) => {
-                ev.stopPropagation();
-                const value = opt.getAttribute('data-category-value');
-                catMenu.classList.remove('open');
-                if (value && value !== task.category) {
-                  onEditCategory(task, value);
-                }
-              });
-            });
-          }
-
-          return article;
-        }
-
-        function closeAllCategoryMenus(except) {
-          document.querySelectorAll('.category-menu.open').forEach((el) => {
-            if (el !== except) el.classList.remove('open');
-          });
-        }
-        document.addEventListener('click', () => closeAllCategoryMenus(null));
-
-        function renderGrid() {
-          Array.from(grid.querySelectorAll('.task-card')).forEach((el) => el.remove());
-
-          const today = startOfDay(new Date());
-          let visibleCount = 0;
-          tasks.forEach((task) => {
-            const card = buildCard(task);
-            const isDone = task.status === 'concluida';
-            const due = parseDueDate(task);
-            const isLate = !isDone && due && due < today;
-            const isSoon = !isDone && due && diffDays(due, today) >= 0 && diffDays(due, today) <= 7;
-
-            const matchStatus =
-              currentStatus === 'todas' ||
-              (currentStatus === 'pendentes' && task.status === 'pendente') ||
-              (currentStatus === 'concluida' && task.status === 'concluida') ||
-              (currentStatus === 'atrasadas' && isLate) ||
-              (currentStatus === 'proximas' && isSoon);
-
-            const matchCategory = currentCategory === 'todas' || currentCategory === task.category;
-            const shouldShow = matchStatus && matchCategory;
-
-            card.style.display = shouldShow ? 'flex' : 'none';
-            if (shouldShow) visibleCount += 1;
-            grid.insertBefore(card, emptyState);
-          });
-
-          loadingState.style.display = 'none';
-          emptyState.style.display = tasks.length > 0 && visibleCount === 0 ? 'block' : 'none';
-        }
-
-        function updateMetrics() {
-          const total = tasks.length;
-          const completed = tasks.filter((t) => t.status === 'concluida').length;
-          const pending = total - completed;
-          const percent = total ? Math.round((completed / total) * 100) : 0;
-
-          statTotal.textContent = String(total);
-          statCompleted.textContent = String(completed);
-          statPending.textContent = String(pending);
-          progressText.textContent = `${percent}%`;
-          progressBar.style.width = `${percent}%`;
-        }
-
-        function updateAll() {
-          updateMetrics();
-          renderGrid();
-        }
-
-        // ---------- Filtros ----------
-        const catFilterTrigger = document.getElementById('cat-filter-trigger');
-        const catFilterMenu = document.getElementById('cat-filter-menu');
-        const catFilterLabel = document.getElementById('cat-filter-label');
-        const catFilterSwatch = document.getElementById('cat-filter-swatch');
-
-        function buildCatFilterMenu() {
-          const opts = [['todas', 'Todas']].concat(
-            Object.keys(CATEGORY_LABEL).map((k) => [k, CATEGORY_LABEL[k]])
-          );
-          catFilterMenu.innerHTML = opts.map(([key, label]) => `
-            <button type="button" class="cat-filter-option${key === currentCategory ? ' selected' : ''}" data-value="${key}" role="menuitem">
-              <span class="swatch ${key}"></span>
-              <span>${label}</span>
-            </button>
-          `).join('');
-        }
-        function updateCatFilterTrigger() {
-          const label = currentCategory === 'todas' ? 'Todas' : (CATEGORY_LABEL[currentCategory] || 'Todas');
-          catFilterLabel.textContent = label;
-          catFilterSwatch.className = `swatch ${currentCategory}`;
-          catFilterTrigger.classList.toggle('active', currentCategory !== 'todas');
-        }
-        function updateFilterButtons() {
-          const buttons = Array.from(filterBar.querySelectorAll('.filter-btn'));
-          buttons.forEach((button) => {
-            const type = button.dataset.filterType;
-            const value = button.dataset.value;
-            if (type === 'status') button.classList.toggle('active', value === currentStatus);
-          });
-          updateCatFilterTrigger();
-        }
-        function handleFilterClick(button) {
-          if (!button) return;
-          const type = button.getAttribute('data-filter-type');
-          const value = button.getAttribute('data-value');
-          if (!type || !value) return;
-          if (type === 'status') {
-            currentStatus = value;
-          }
-          updateFilterButtons();
-          renderGrid();
-        }
-        filterBar.addEventListener('click', (event) => {
-          const button = event.target.closest('.filter-btn');
-          if (!button) return;
-          event.preventDefault();
-          event.stopPropagation();
-          handleFilterClick(button);
+    function enrichedSales(month) {
+      const customers = D.list('customers');
+      const products = D.list('products');
+      const cmap = Object.fromEntries(customers.map(c => [c.id, c]));
+      const pmap = Object.fromEntries(products.map(p => [p.id, p]));
+      return D.list('sales')
+        .filter(s => !month || (s.date || '').startsWith(month))
+        .map(s => {
+          const c = cmap[s.customer_id] || {};
+          const p = pmap[s.product_id] || {};
+          const total = (+s.qty || 0) * (+s.unit_price || 0) - (+s.discount || 0);
+          const weight = ((p.weight_g || 0) * (+s.qty || 0)) / 1000;
+          return { ...s, total, weight_kg: weight, segment: c.segment, customer_name: c.name, product_sku: p.sku, product_name: p.name };
         });
+    }
 
-        // Dropdown de categoria
-        catFilterTrigger.addEventListener('click', (event) => {
-          event.stopPropagation();
-          const open = catFilterMenu.classList.toggle('open');
-          catFilterTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
-          if (open) buildCatFilterMenu();
-        });
-        catFilterMenu.addEventListener('click', (event) => {
-          const opt = event.target.closest('.cat-filter-option');
-          if (!opt) return;
-          event.stopPropagation();
-          currentCategory = opt.getAttribute('data-value') || 'todas';
-          catFilterMenu.classList.remove('open');
-          catFilterTrigger.setAttribute('aria-expanded', 'false');
-          updateFilterButtons();
-          renderGrid();
-        });
-        document.addEventListener('click', (event) => {
-          if (!catFilterMenu.classList.contains('open')) return;
-          if (event.target.closest('#cat-filter-wrap')) return;
-          catFilterMenu.classList.remove('open');
-          catFilterTrigger.setAttribute('aria-expanded', 'false');
-        });
+    function expensesOfMonth(month) {
+      const cc = D.list('cost_centers');
+      const ccmap = Object.fromEntries(cc.map(c => [c.id, c]));
+      return D.list('expenses')
+        .filter(e => (e.date || '').startsWith(month))
+        .map(e => Object.assign({}, e, { cc_type: (ccmap[e.cost_center_id] || {}).type || 'variavel' }));
+    }
 
-        // ---------- Ações ----------
-        async function onToggle(task, btn) {
-          const isCompleted = task.status === 'concluida';
-          let payload;
-          let actor = '';
-          if (!isCompleted) {
-            let person = prompt('Quem concluiu esta tarefa?');
-            if (person === null) return;
-            person = (person || '').trim() || 'Equipe';
-            actor = person;
-            payload = {
-              status: 'concluida',
-              completed_by: person,
-              completed_at: formatNowBR(),
-              completed_at_iso: nowIso(),
-            };
-          } else {
-            payload = { status: 'pendente', completed_by: '', completed_at: '', completed_at_iso: '' };
-          }
+    function productionOfMonth(month) {
+      const arr = D.list('production').filter(p => p.month === month);
+      return arr.length ? arr[0] : { kg_cogumelo: 0, kg_cbs: 0 };
+    }
 
-          btn.disabled = true;
-          setSync('syncing', 'Salvando…');
-          try {
-            const updated = await patchTask(task.id, payload);
-            const idx = tasks.findIndex((t) => t.id === task.id);
-            if (idx >= 0) tasks[idx] = { ...tasks[idx], ...updated };
-            updateAll();
-            setSync('ok', 'Sincronizado');
-            // Registrar notificação
-            if (window.TaocaNotif) {
-              if (!isCompleted) {
-                window.TaocaNotif.log({
-                  event_type: 'task_completed',
-                  icon: '✅',
-                  actor: actor,
-                  title: `${actor} concluiu #${task.task_number || ''} — ${task.title || ''}`,
-                  details: `Categoria: ${CATEGORY_LABEL[task.category] || task.category || '—'}`,
-                  task_id: task.id,
-                  task_number: task.task_number || 0,
-                });
-              } else {
-                window.TaocaNotif.log({
-                  event_type: 'task_reopened',
-                  icon: '🔄',
-                  actor: 'Equipe',
-                  title: `Tarefa #${task.task_number || ''} foi reaberta`,
-                  details: task.title || '',
-                  task_id: task.id,
-                  task_number: task.task_number || 0,
-                });
-              }
-            }
-          } catch (err) {
-            console.error(err);
-            setSync('error', 'Erro ao salvar');
-            alert('Não foi possível salvar a alteração. Tente novamente.');
-          } finally {
-            btn.disabled = false;
-          }
+    function render() {
+      const month = currentMonth();
+      const prev = prevMonthKey();
+
+      const sales = enrichedSales(month);
+      const salesPrev = enrichedSales(prev);
+      const exp = expensesOfMonth(month);
+      const prod = productionOfMonth(month);
+
+      const totalRev = sales.reduce((a,s) => a + s.total, 0);
+      const totalRevPrev = salesPrev.reduce((a,s) => a + s.total, 0);
+      const totalKg  = sales.reduce((a,s) => a + s.weight_kg, 0);
+      const count    = sales.length;
+      const ticket   = count > 0 ? totalRev / count : 0;
+      const avgKg    = totalKg > 0 ? totalRev / totalKg : 0;
+
+      const fixos    = exp.filter(e => e.cc_type === 'fixo').reduce((a,e) => a + (+e.value||0), 0);
+      const variaveis= exp.filter(e => e.cc_type !== 'fixo').reduce((a,e) => a + (+e.value||0), 0);
+      const totalCost = fixos + variaveis;
+      const result   = totalRev - totalCost;
+      const margem   = totalRev > 0 ? result / totalRev : 0;
+
+      // ---- CTA empty ----
+      const cta = $('cta-empty');
+      if (count === 0) {
+        cta.style.display = 'block';
+        cta.className = 'cta-empty';
+        cta.innerHTML = `
+          <div><strong>Ainda não há vendas registradas neste mês.</strong></div>
+          <div style="margin-top:6px;font-size:.92rem;">Lance a primeira venda para os números aparecerem em todo o sistema.</div>
+          <div class="actions">
+            <a class="btn btn-primary" href="vendas.html">Lançar venda</a>
+            <a class="btn btn-ghost" href="cadastros.html">Cadastrar clientes</a>
+          </div>`;
+      } else {
+        cta.style.display = 'none';
+      }
+
+      // ---- KPIs ----
+      $('k-rev').textContent = D.fmtBRL(totalRev);
+      const subRev = $('k-rev-sub');
+      if (totalRevPrev > 0) {
+        const diff = (totalRev - totalRevPrev) / totalRevPrev;
+        subRev.textContent = `${diff >= 0 ? '+' : ''}${(diff*100).toFixed(0)}% vs. mês anterior · ${count} vendas`;
+      } else {
+        subRev.textContent = `${count} ${count === 1 ? 'venda registrada' : 'vendas registradas'}`;
+      }
+
+      $('k-tk').textContent = count ? D.fmtBRL(ticket) : '—';
+      $('k-avg').textContent = totalKg ? D.fmtBRL(avgKg) : '—';
+      $('k-avg-sub').textContent = totalKg ? `${D.fmtKg(totalKg)} comercializados` : 'geral, todos os SKUs';
+
+      const kRes = $('k-res');
+      if (count === 0 && exp.length === 0) {
+        kRes.textContent = '—';
+        kRes.className = 'kpi-num';
+        $('k-res-sub').textContent = 'aguardando lançamentos';
+      } else {
+        kRes.textContent = D.fmtBRL(result);
+        kRes.className = 'kpi-num ' + (result >= 0 ? 'pos' : 'neg');
+        $('k-res-sub').textContent = totalRev > 0 ? `margem ${D.fmtPct(margem)}` : `apenas despesas no mês`;
+      }
+
+      // ---- Mix por segmento ----
+      const bySeg = {};
+      D.SEGMENTS.forEach(s => bySeg[s] = { rev: 0, kg: 0 });
+      sales.forEach(s => {
+        if (bySeg[s.segment]) {
+          bySeg[s.segment].rev += s.total;
+          bySeg[s.segment].kg  += s.weight_kg;
         }
+      });
+      const segBar = $('seg-bar');
+      const segList = $('seg-list');
+      if (totalRev <= 0) {
+        segBar.innerHTML = '';
+        segList.innerHTML = '<div class="empty-state">Sem vendas no mês.</div>';
+      } else {
+        segBar.innerHTML = D.SEGMENTS.map(s => {
+          const pct = totalRev ? (bySeg[s].rev / totalRev) * 100 : 0;
+          return `<span style="width:${pct}%;background:${SEG_COLORS[s]}"></span>`;
+        }).join('');
+        segList.innerHTML = D.SEGMENTS.map(s => {
+          const r = bySeg[s];
+          const pct = totalRev ? (r.rev / totalRev * 100) : 0;
+          const avg = r.kg > 0 ? r.rev / r.kg : 0;
+          return `
+            <div class="seg-row">
+              <span class="seg-color" style="background:${SEG_COLORS[s]}"></span>
+              <span class="seg-name">${D.SEGMENT_LABEL[s]} <span class="text-muted text-xs">· ${pct.toFixed(1)}%</span></span>
+              <span class="seg-val">${D.fmtBRL(r.rev)} <span class="text-muted text-xs">· ${avg ? D.fmtBRL(avg) + '/kg' : '—'}</span></span>
+            </div>`;
+        }).join('');
+      }
 
-        // ===== Modal de prazo (calendário) =====
-        const dueModal = document.getElementById('due-modal');
-        const dueModalTask = document.getElementById('due-modal-task');
-        const dueModalDate = document.getElementById('due-modal-date');
-        const dueModalSave = document.getElementById('due-modal-save');
-        const dueModalCancel = document.getElementById('due-modal-cancel');
-        const dueModalClear = document.getElementById('due-modal-clear');
-        const dueModalQuick = document.getElementById('due-modal-quick');
-        let dueModalTaskRef = null;
+      // ---- Top SKUs ----
+      const bySku = {};
+      sales.forEach(s => {
+        const k = s.product_id;
+        if (!bySku[k]) bySku[k] = { sku: s.product_sku, name: s.product_name, qty: 0, rev: 0 };
+        bySku[k].qty += +s.qty || 0;
+        bySku[k].rev += s.total;
+      });
+      const skuArr = Object.values(bySku).sort((a,b) => b.rev - a.rev).slice(0, 5);
+      const skuBody = $('sku-body');
+      if (!skuArr.length) {
+        skuBody.innerHTML = '<tr><td colspan="4" class="empty-state">Sem dados.</td></tr>';
+      } else {
+        skuBody.innerHTML = skuArr.map(r => `
+          <tr>
+            <td><strong>${escape(r.sku)}</strong></td>
+            <td>${escape((r.name || '').replace(/Cogumelo Paris Fresco — /,''))}</td>
+            <td class="num">${D.fmtNum(r.qty)}</td>
+            <td class="num">${D.fmtBRL(r.rev)}</td>
+          </tr>`).join('');
+      }
 
-        function toIsoDate(d) {
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, '0');
-          const day = String(d.getDate()).padStart(2, '0');
-          return `${y}-${m}-${day}`;
-        }
-        function openDueModal(task) {
-          dueModalTaskRef = task;
-          dueModalTask.textContent = task.title || 'Tarefa';
-          dueModalDate.value = task.due_date && /^\d{4}-\d{2}-\d{2}/.test(task.due_date)
-            ? task.due_date.slice(0, 10)
-            : toIsoDate(new Date());
-          // min = hoje (apenas como sugestão; usuário ainda pode digitar manualmente datas passadas)
-          dueModalDate.removeAttribute('min');
-          dueModal.classList.add('open');
-          // Tenta abrir o calendário automaticamente (suportado em navegadores modernos)
-          setTimeout(() => {
-            try {
-              if (typeof dueModalDate.showPicker === 'function') {
-                dueModalDate.showPicker();
-              } else {
-                dueModalDate.focus();
-              }
-            } catch (e) {
-              dueModalDate.focus();
-            }
-          }, 60);
-        }
-        function closeDueModal() {
-          dueModal.classList.remove('open');
-          dueModalTaskRef = null;
-        }
-        async function saveDueModal(value) {
-          const task = dueModalTaskRef;
-          if (!task) return;
-          if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-            alert('Data inválida. Tente novamente.');
-            return;
-          }
-          const oldDue = task.due_date || '';
-          closeDueModal();
-          setSync('syncing', 'Salvando prazo…');
-          try {
-            const updated = await patchTask(task.id, { due_date: value });
-            const idx = tasks.findIndex((t) => t.id === task.id);
-            if (idx >= 0) tasks[idx] = { ...tasks[idx], ...updated };
-            updateAll();
-            setSync('ok', 'Sincronizado');
-            // Registrar notificação
-            if (window.TaocaNotif && oldDue !== value) {
-              const fmt = (s) => {
-                if (!s) return 'sem prazo';
-                const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
-                return m ? `${m[3]}/${m[2]}/${m[1]}` : s;
-              };
-              window.TaocaNotif.log({
-                event_type: 'task_due_changed',
-                icon: '📅',
-                actor: 'Equipe',
-                title: `Prazo de #${task.task_number || ''} — ${task.title || ''}`,
-                details: `${fmt(oldDue)} → ${fmt(value)}`,
-                task_id: task.id,
-                task_number: task.task_number || 0,
-              });
-            }
-          } catch (err) {
-            console.error(err);
-            setSync('error', 'Erro ao salvar prazo');
-            alert('Não foi possível salvar o prazo. Tente novamente.');
-          }
-        }
+      // ---- Vendas recentes (todas, top 6) ----
+      const recent = enrichedSales(null)
+        .sort((a,b) => (b.date || '').localeCompare(a.date || ''))
+        .slice(0, 6);
+      const recBody = $('recent-body');
+      if (!recent.length) {
+        recBody.innerHTML = '<tr><td colspan="4" class="empty-state">Nenhuma venda registrada ainda.</td></tr>';
+      } else {
+        recBody.innerHTML = recent.map(s => `
+          <tr>
+            <td>${fmtDate(s.date)}</td>
+            <td>${escape(s.customer_name || '—')}</td>
+            <td><strong>${escape(s.product_sku || '—')}</strong></td>
+            <td class="num">${D.fmtBRL(s.total)}</td>
+          </tr>`).join('');
+      }
 
-        dueModalSave.addEventListener('click', () => {
-          saveDueModal((dueModalDate.value || '').trim());
-        });
-        dueModalClear.addEventListener('click', () => saveDueModal(''));
-        dueModalCancel.addEventListener('click', () => closeDueModal());
-        dueModal.addEventListener('click', (e) => {
-          if (e.target === dueModal) closeDueModal();
-        });
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' && dueModal.classList.contains('open')) closeDueModal();
-        });
-        dueModalQuick.addEventListener('click', (e) => {
-          const btn = e.target.closest('[data-quick]');
-          if (!btn) return;
-          const quick = btn.getAttribute('data-quick');
-          const d = new Date();
-          d.setHours(0, 0, 0, 0);
-          if (quick === 'today') { /* hoje */ }
-          else if (quick === 'tomorrow') d.setDate(d.getDate() + 1);
-          else if (quick === '3d') d.setDate(d.getDate() + 3);
-          else if (quick === '7d') d.setDate(d.getDate() + 7);
-          else if (quick === '15d') d.setDate(d.getDate() + 15);
-          else if (quick === '30d') d.setDate(d.getDate() + 30);
-          dueModalDate.value = toIsoDate(d);
-        });
+      // ---- Indicadores operacionais ----
+      $('o-cost').textContent = D.fmtBRL(totalCost);
+      $('o-fix').textContent  = D.fmtBRL(fixos);
+      $('o-var').textContent  = D.fmtBRL(variaveis);
+      $('o-vol').textContent  = totalKg ? D.fmtKg(totalKg) : '—';
+      const kgProd = +prod.kg_cogumelo || 0;
+      $('o-kg').textContent   = kgProd > 0 ? D.fmtBRL(totalCost / kgProd) + '/kg' : '—';
+      $('o-mg').innerHTML     = totalRev > 0 ? `<strong style="color:${margem >= 0 ? 'var(--success)' : 'var(--danger)'}">${D.fmtPct(margem)}</strong>` : '—';
 
-        function onEditDue(task) {
-          openDueModal(task);
-        }
+      // ---- Sparkline 14 dias ----
+      const byDay = {};
+      const today = new Date();
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(today); d.setDate(d.getDate() - i);
+        byDay[d.toISOString().slice(0,10)] = 0;
+      }
+      enrichedSales(null).forEach(s => {
+        if (s.date in byDay) byDay[s.date] += s.total;
+      });
+      drawSpark(byDay);
+    }
 
-        async function onEditCategory(task, newCategory) {
-          if (!CATEGORY_LABEL[newCategory]) {
-            alert('Categoria inválida.');
-            return;
-          }
-          if (newCategory === task.category) return;
-          const oldCategory = task.category;
+    function drawSpark(byDay) {
+      const keys = Object.keys(byDay).sort();
+      const values = keys.map(k => byDay[k]);
+      const max = Math.max(1, ...values);
+      const sum = values.reduce((a,b) => a+b, 0);
+      const w = 600, h = 60, pad = 4;
+      const step = (w - pad*2) / Math.max(1, values.length - 1);
+      const points = values.map((v, i) => {
+        const x = pad + i * step;
+        const y = h - pad - (v / max) * (h - pad*2);
+        return [x, y];
+      });
+      const path = points.map((p, i) => (i === 0 ? `M${p[0]},${p[1]}` : `L${p[0]},${p[1]}`)).join(' ');
+      const area = path + ` L${points[points.length-1][0]},${h} L${points[0][0]},${h} Z`;
+      $('spark').innerHTML = `
+        <defs>
+          <linearGradient id="sf" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#4A7856" stop-opacity="0.22"/>
+            <stop offset="100%" stop-color="#4A7856" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="${area}" fill="url(#sf)" />
+        <path d="${path}" fill="none" stroke="#2F5D3A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        ${points.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="1.6" fill="#2F5D3A"/>`).join('')}
+      `;
+      $('spark-summary').textContent = sum === 0
+        ? 'sem vendas no período'
+        : `${D.fmtBRL(sum)} no período · média ${D.fmtBRL(sum/14)}/dia`;
+    }
 
-          setSync('syncing', 'Salvando categoria…');
-          try {
-            const updated = await patchTask(task.id, { category: newCategory });
-            const idx = tasks.findIndex((t) => t.id === task.id);
-            if (idx >= 0) tasks[idx] = { ...tasks[idx], ...updated };
-            // Se o filtro ativo era a categoria antiga, volta para "todas" para que o card continue visível
-            if (currentCategory !== 'todas' && currentCategory !== newCategory) {
-              currentCategory = 'todas';
-              updateFilterButtons();
-            }
-            updateAll();
-            setSync('ok', 'Sincronizado');
-            // Registrar notificação
-            if (window.TaocaNotif) {
-              const oldLabel = CATEGORY_LABEL[oldCategory] || oldCategory || '—';
-              const newLabel = CATEGORY_LABEL[newCategory] || newCategory;
-              window.TaocaNotif.log({
-                event_type: 'task_category_changed',
-                icon: '🏷️',
-                actor: 'Equipe',
-                title: `Categoria de #${task.task_number || ''} alterada`,
-                details: `${oldLabel} → ${newLabel}`,
-                task_id: task.id,
-                task_number: task.task_number || 0,
-              });
-            }
-          } catch (err) {
-            console.error(err);
-            setSync('error', 'Erro ao salvar categoria');
-            alert('Não foi possível alterar a categoria. Tente novamente.');
-          }
-        }
-
-        // ===== Modal de Nova Tarefa =====
-        const newTaskModal = document.getElementById('new-task-modal');
-        const newTaskBtn = document.getElementById('new-task-btn');
-        const newTaskTitle = document.getElementById('new-task-title');
-        const newTaskDesc = document.getElementById('new-task-desc');
-        const newTaskCategory = document.getElementById('new-task-category');
-        const newTaskDue = document.getElementById('new-task-due');
-        const newTaskAuthor = document.getElementById('new-task-author');
-        const newTaskSave = document.getElementById('new-task-save');
-        const newTaskCancel = document.getElementById('new-task-cancel');
-
-        function openNewTaskModal() {
-          newTaskTitle.value = '';
-          newTaskDesc.value = '';
-          newTaskCategory.value = 'institucional';
-          newTaskDue.value = '';
-          // Lembra o autor da última criação local
-          try {
-            const savedAuthor = sessionStorage.getItem('taoca-last-author') || '';
-            newTaskAuthor.value = savedAuthor;
-          } catch (e) { newTaskAuthor.value = ''; }
-          newTaskModal.classList.add('open');
-          setTimeout(() => newTaskTitle.focus(), 60);
-        }
-        function closeNewTaskModal() {
-          newTaskModal.classList.remove('open');
-        }
-
-        newTaskBtn.addEventListener('click', openNewTaskModal);
-        newTaskCancel.addEventListener('click', closeNewTaskModal);
-        newTaskModal.addEventListener('click', (e) => {
-          if (e.target === newTaskModal) closeNewTaskModal();
-        });
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' && newTaskModal.classList.contains('open')) closeNewTaskModal();
-        });
-
-        newTaskSave.addEventListener('click', async () => {
-          const title = (newTaskTitle.value || '').trim();
-          const description = (newTaskDesc.value || '').trim();
-          const category = newTaskCategory.value;
-          const due = (newTaskDue.value || '').trim();
-          const author = (newTaskAuthor.value || '').trim();
-
-          if (!title) {
-            alert('O título da tarefa é obrigatório.');
-            newTaskTitle.focus();
-            return;
-          }
-          if (!CATEGORY_LABEL[category]) {
-            alert('Selecione uma categoria válida.');
-            return;
-          }
-          if (due && !/^\d{4}-\d{2}-\d{2}$/.test(due)) {
-            alert('Data de prazo inválida.');
-            return;
-          }
-
-          newTaskSave.disabled = true;
-          setSync('syncing', 'Criando tarefa…');
-          try {
-            try { sessionStorage.setItem('taoca-last-author', author); } catch (e) {}
-            const payload = {
-              task_number: nextTaskNumber(),
-              category,
-              title,
-              description,
-              status: 'pendente',
-              completed_by: '',
-              completed_at: '',
-              completed_at_iso: '',
-              due_date: due,
-              created_by: author,
-            };
-            const created = await createTask(payload);
-            tasks.push(created);
-            tasks.sort((a, b) => (a.task_number || 0) - (b.task_number || 0));
-            updateAll();
-            setSync('ok', 'Sincronizado');
-            closeNewTaskModal();
-            // Registrar notificação
-            if (window.TaocaNotif) {
-              const actor = author || 'Equipe';
-              window.TaocaNotif.log({
-                event_type: 'task_created',
-                icon: '➕',
-                actor: actor,
-                title: `${actor} criou #${created.task_number || ''} — ${title}`,
-                details: `Categoria: ${CATEGORY_LABEL[category] || category}${due ? ' · Prazo: ' + due.split('-').reverse().join('/') : ''}`,
-                task_id: created.id,
-                task_number: created.task_number || 0,
-              });
-            }
-          } catch (err) {
-            console.error(err);
-            setSync('error', 'Erro ao criar tarefa');
-            alert('Não foi possível criar a tarefa. Tente novamente.');
-          } finally {
-            newTaskSave.disabled = false;
-          }
-        });
-
-        // ---------- Convidar / Sair ----------
-        inviteBtn.addEventListener('click', async () => {
-          const inviteText =
-            'Olá! Vamos acompanhar juntos este quadro de tarefas de Nílzon Spínola e Marco Monteiro.\n\nAcesse o link, use a senha da equipe e atualize as etapas concluídas.';
-          const fullMessage = `${inviteText}\n\nLink: ${window.location.href}\nSenha da equipe: TAOCA2026`;
-
-          if (navigator.share) {
-            try {
-              await navigator.share({
-                title: 'Gestão de Tarefas',
-                text: `${inviteText}\n\nSenha da equipe: TAOCA2026`,
-                url: window.location.href,
-              });
-              return;
-            } catch (error) { /* cancelado */ }
-          }
-          try {
-            await navigator.clipboard.writeText(fullMessage);
-            alert('Convite copiado com sucesso. Agora é só colar e enviar.');
-          } catch (error) {
-            alert(fullMessage);
-          }
-        });
-
-        logoutBtn.addEventListener('click', () => {
-          try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
-          window.location.replace('login.html');
-        });
-
-        // ---------- Migração automática de categorias antigas ----------
-        const MIGRATION_KEY = 'taoca-cat-migrated-v1';
-        async function migrateLegacyCategories() {
-          try {
-            if (localStorage.getItem(MIGRATION_KEY) === '1') return;
-          } catch (e) {}
-          try {
-            const all = await fetchTasks();
-            const toMigrate = all.filter((t) => LEGACY_CATEGORY_MAP[t.category]);
-            if (toMigrate.length === 0) {
-              try { localStorage.setItem(MIGRATION_KEY, '1'); } catch (e) {}
-              return;
-            }
-            setSync('syncing', `Atualizando categorias (${toMigrate.length})…`);
-            for (const t of toMigrate) {
-              try {
-                await patchTask(t.id, { category: LEGACY_CATEGORY_MAP[t.category] });
-              } catch (e) { console.error('Falha ao migrar tarefa', t.id, e); }
-            }
-            try { localStorage.setItem(MIGRATION_KEY, '1'); } catch (e) {}
-          } catch (e) {
-            console.error('Migração de categorias falhou', e);
-          }
-        }
-
-        // ---------- Bootstrap & polling ----------
-        async function refresh(initial) {
-          if (!initial) setSync('syncing', 'Sincronizando…');
-          try {
-            tasks = await fetchTasks();
-            // Normaliza categorias antigas em memória (caso ainda não tenha migrado no banco)
-            tasks.forEach((t) => {
-              if (LEGACY_CATEGORY_MAP[t.category]) t.category = LEGACY_CATEGORY_MAP[t.category];
-            });
-            updateAll();
-            setSync('ok', 'Sincronizado');
-          } catch (err) {
-            console.error(err);
-            setSync('error', 'Falha de sincronização');
-            if (initial) loadingState.textContent = 'Não foi possível carregar as tarefas. Recarregue a página.';
-          }
-        }
-
-        updateFilterButtons();
-        (async () => {
-          await migrateLegacyCategories();
-          refresh(true);
-          setInterval(() => refresh(false), POLL_MS);
-        })();
-      })();
-    </script>
-
-    <!-- Módulo de notificações compartilhadas -->
-    <script src="js/notifications.js"></script>
-    <script>
-      (function () {
-        if (!window.TaocaNotif) return;
-        const host = document.getElementById('hero-actions-top');
-        if (!host) return;
-        const logoutBtn = document.getElementById('logout-btn');
-        // Container temporário para o sino, posicionado antes do botão Sair
-        const slot = document.createElement('div');
-        slot.style.display = 'inline-flex';
-        if (logoutBtn) host.insertBefore(slot, logoutBtn);
-        else host.appendChild(slot);
-        window.TaocaNotif.mount(slot);
-      })();
-    </script>
-  </body>
+    render();
+    // Atualiza ao voltar de outra aba (caso tenha lançado venda em outra janela)
+    window.addEventListener('focus', render);
+  })();
+  </script>
+</body>
 </html>

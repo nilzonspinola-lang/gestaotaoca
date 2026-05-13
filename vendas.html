@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taoca — Vendas</title>
+  <link rel="stylesheet" href="css/taoca-design-system.css" />
+  <link rel="stylesheet" href="css/notifications.css" />
+  <link rel="icon" href="assets/taoca-logo.png" />
+  <style>
+    /* ===== KPIs ===== */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    @media (max-width: 980px) { .kpi-row { grid-template-columns: repeat(2,1fr); } }
+    .kpi {
+      background: #FFF;
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      padding: 18px 20px;
+    }
+    .kpi-name { font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+    .kpi-num { font-family: var(--font-serif); font-size: 1.8rem; font-weight: 600; color: var(--text-primary); margin-top: 6px; line-height: 1.05; letter-spacing: -0.02em; }
+    .kpi-sub { font-size: 0.82rem; color: var(--text-secondary); margin-top: 6px; }
+
+    /* ===== Filtros ===== */
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+      background: #FFF;
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+    }
+    .toolbar select, .toolbar input[type=date] {
+      padding: 7px 10px;
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      font: inherit;
+      background: #FFF;
+      color: var(--text-primary);
+      font-size: 0.88rem;
+    }
+    .toolbar label { font-size: 0.8rem; color: var(--text-muted); margin-right: 4px; font-weight: 600; }
+    .toolbar .spacer { flex: 1; }
+
+    /* ===== Painéis ===== */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 22px; }
+    @media (max-width: 980px) { .grid-2 { grid-template-columns: 1fr; } }
+    .panel {
+      background: #FFF;
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      padding: 22px;
+    }
+    .panel-head {
+      display: flex; justify-content: space-between; align-items: baseline;
+      gap: 10px; margin-bottom: 14px;
+    }
+    .panel-title { font-family: var(--font-serif); font-size: 1.05rem; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+    .panel-sub { font-size: 0.82rem; color: var(--text-muted); }
+
+    /* ===== Tabelas ===== */
+    table.tbl { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    table.tbl th, table.tbl td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+    table.tbl th { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+    table.tbl tbody tr:hover { background: var(--taoca-cream-50); }
+    table.tbl td.num, table.tbl th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    table.tbl td.actions { text-align: right; white-space: nowrap; }
+
+    .pill-seg {
+      display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 600;
+    }
+    .pill-seg.Hoteis        { background:#E8F0EE; color:#2F5D3A; }
+    .pill-seg.Supermercados { background:#FBE8DD; color:#8a4a31; }
+    .pill-seg.Restaurantes  { background:#F5EBD7; color:#7a5a2a; }
+    .pill-seg.Distribuidoras{ background:#E5EAF2; color:#3b4a6a; }
+
+    /* Barra horizontal proporcional */
+    .h-bar { display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: var(--taoca-coal-100); }
+    .h-bar > span { display: block; height: 100%; }
+    .seg-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border-soft); font-size: 0.9rem; }
+    .seg-row:first-child { border-top: 0; }
+    .seg-color { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .seg-name { flex: 1; color: var(--text-secondary); }
+    .seg-val { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+    /* ===== Modal ===== */
+    .icon-btn-mini {
+      background: transparent; border: 1px solid var(--border-soft); color: var(--text-secondary);
+      width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+      display: inline-grid; place-items: center; margin-left: 4px;
+    }
+    .icon-btn-mini:hover { background: var(--taoca-cream-100); color: var(--brand); }
+    .icon-btn-mini.danger:hover { background: #FEF2F2; color: var(--danger); border-color: #FCA5A5; }
+    .icon-btn-mini svg { width: 14px; height: 14px; }
+
+    .modal { position: fixed; inset: 0; background: rgba(31,41,55,.45); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+    .modal.show { display: flex; }
+    .modal-card { background: #FFF; border-radius: 16px; width: 100%; max-width: 560px; max-height: 92vh; overflow: auto; box-shadow: var(--shadow-xl); }
+    .modal-head { padding: 20px 24px 14px; border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center; }
+    .modal-head h3 { font-family: var(--font-serif); font-size: 1.1rem; margin: 0; font-weight: 600; }
+    .modal-body { padding: 22px 24px; }
+    .modal-foot { padding: 14px 24px 20px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border-soft); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-grid .span-2 { grid-column: span 2; }
+    @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } .form-grid .span-2 { grid-column: span 1; } }
+    .field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+    .field input, .field select, .field textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border-default); border-radius: 8px; font: inherit; background: #FFF; color: var(--text-primary); }
+    .field input:focus, .field select:focus { outline: 2px solid rgba(74,120,86,.25); border-color: var(--brand); }
+    .close-x { background: transparent; border: 0; cursor: pointer; width: 30px; height: 30px; color: var(--text-muted); font-size: 1.4rem; }
+    .close-x:hover { color: var(--text-primary); }
+
+    .calc-line {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 10px 12px; background: var(--taoca-cream-50);
+      border: 1px solid var(--border-soft); border-radius: 8px; margin-top: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+    .calc-line strong { font-family: var(--font-serif); font-size: 1.1rem; color: var(--brand-strong); }
+
+    .empty-row td { text-align: center; padding: 28px; color: var(--text-muted); font-size: .9rem; }
+  </style>
+</head>
+<body>
+
+  <!-- KPIs -->
+  <section class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-name">Receita</div>
+      <div class="kpi-num" id="k-rev">—</div>
+      <div class="kpi-sub" id="k-rev-sub">no período filtrado</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-name">Volume</div>
+      <div class="kpi-num" id="k-vol">—</div>
+      <div class="kpi-sub" id="k-vol-sub">peso total vendido</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-name">Preço médio /kg</div>
+      <div class="kpi-num" id="k-avg">—</div>
+      <div class="kpi-sub">considerando todos os SKUs</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-name">Ticket médio</div>
+      <div class="kpi-num" id="k-tk">—</div>
+      <div class="kpi-sub" id="k-tk-sub">por venda registrada</div>
+    </div>
+  </section>
+
+  <!-- Toolbar / filtros -->
+  <div class="toolbar">
+    <label>De</label><input type="date" id="f-from" />
+    <label>Até</label><input type="date" id="f-to" />
+    <label>Segmento</label>
+    <select id="f-seg"><option value="">Todos</option></select>
+    <label>Cliente</label>
+    <select id="f-cli"><option value="">Todos</option></select>
+    <label>Produto</label>
+    <select id="f-prod"><option value="">Todos</option></select>
+    <button class="btn btn-ghost btn-sm" id="f-clear">Limpar</button>
+    <span class="spacer"></span>
+    <button class="btn btn-primary" id="btn-new">+ Nova venda</button>
+  </div>
+
+  <!-- Painéis lado a lado -->
+  <div class="grid-2">
+    <!-- Por segmento -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Por segmento</h2>
+        <span class="panel-sub">receita e preço médio /kg</span>
+      </div>
+      <div class="h-bar" id="seg-bar" style="margin-bottom: 14px;"></div>
+      <div id="seg-list"></div>
+    </section>
+
+    <!-- Top SKUs -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Por produto / SKU</h2>
+        <span class="panel-sub">ranking por receita</span>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr><th>SKU</th><th>Produto</th><th class="num">Qtd</th><th class="num">Receita</th><th class="num">% rec.</th></tr>
+        </thead>
+        <tbody id="sku-body"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- Lista de vendas -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">Vendas registradas</h2>
+      <span class="panel-sub" id="sales-count"></span>
+    </div>
+    <table class="tbl" id="tbl-sales">
+      <thead>
+        <tr>
+          <th>Data</th><th>Cliente</th><th>Segmento</th><th>Produto</th>
+          <th class="num">Qtd</th><th class="num">Preço un.</th><th class="num">Total</th><th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="modal-title">Nova venda</h3>
+        <button class="close-x" id="modal-close">×</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" id="modal-cancel">Cancelar</button>
+        <button class="btn btn-primary" id="modal-save">Salvar venda</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/taoca-data.js"></script>
+  <script src="js/taoca-shell.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/taoca-ai.js"></script>
+  <script>
+  (function () {
+    TaocaShell.mount({ active: 'vendas', title: 'Vendas', subtitle: 'Lançamento e análise comercial' });
+
+    const D = window.TaocaData;
+    const $ = (s, c) => (c || document).querySelector(s);
+    const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
+    const escape = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    const SEG_COLORS = { Hoteis:'#2F5D3A', Supermercados:'#C77B5C', Restaurantes:'#B8935A', Distribuidoras:'#3b4a6a' };
+
+    // ---------- preencher selects de filtro ----------
+    function fillSelects() {
+      const segSel = $('#f-seg');
+      segSel.innerHTML = '<option value="">Todos</option>' + D.SEGMENTS.map(s => `<option value="${s}">${D.SEGMENT_LABEL[s]}</option>`).join('');
+      const cliSel = $('#f-cli');
+      const customers = D.list('customers').sort((a,b)=>a.name.localeCompare(b.name));
+      cliSel.innerHTML = '<option value="">Todos</option>' + customers.map(c => `<option value="${c.id}">${escape(c.name)}</option>`).join('');
+      const prSel = $('#f-prod');
+      const prods = D.list('products').sort((a,b)=> (a.sku||'').localeCompare(b.sku||''));
+      prSel.innerHTML = '<option value="">Todos</option>' + prods.map(p => `<option value="${p.id}">${escape(p.sku)} — ${escape(p.name)}</option>`).join('');
+    }
+
+    function defaultDates() {
+      const today = new Date();
+      const first = new Date(today.getFullYear(), today.getMonth(), 1);
+      $('#f-from').value = first.toISOString().slice(0,10);
+      $('#f-to').value = today.toISOString().slice(0,10);
+    }
+
+    // ---------- enriquecimento ----------
+    function enrichedSales() {
+      const sales = D.list('sales');
+      const customers = D.list('customers');
+      const products = D.list('products');
+      const cmap = Object.fromEntries(customers.map(c => [c.id, c]));
+      const pmap = Object.fromEntries(products.map(p => [p.id, p]));
+      return sales.map(s => {
+        const c = cmap[s.customer_id] || {};
+        const p = pmap[s.product_id] || {};
+        const qty = +s.qty || 0;
+        const unitPrice = +s.unit_price || 0;
+        const discount = +s.discount || 0;
+        const total = qty * unitPrice - discount;
+        const weightKg = ((p.weight_g || 0) * qty) / 1000;
+        return Object.assign({}, s, {
+          customer_name: c.name || '—',
+          segment: c.segment || '—',
+          product_sku: p.sku || '—',
+          product_name: p.name || '—',
+          product_unit: p.unit || '',
+          weight_kg: weightKg,
+          total,
+        });
+      });
+    }
+
+    function applyFilters(arr) {
+      const from = $('#f-from').value, to = $('#f-to').value;
+      const seg = $('#f-seg').value, cli = $('#f-cli').value, prod = $('#f-prod').value;
+      return arr.filter(s => {
+        if (from && s.date < from) return false;
+        if (to && s.date > to) return false;
+        if (seg && s.segment !== seg) return false;
+        if (cli && s.customer_id !== cli) return false;
+        if (prod && s.product_id !== prod) return false;
+        return true;
+      });
+    }
+
+    // ---------- render ----------
+    function render() {
+      const all = enrichedSales();
+      const filtered = applyFilters(all).sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+
+      const totalRev = filtered.reduce((a,s) => a + s.total, 0);
+      const totalKg  = filtered.reduce((a,s) => a + s.weight_kg, 0);
+      const count = filtered.length;
+      const avgKg = totalKg > 0 ? totalRev / totalKg : 0;
+      const ticket = count > 0 ? totalRev / count : 0;
+
+      $('#k-rev').textContent = D.fmtBRL(totalRev);
+      $('#k-rev-sub').textContent = `${count} ${count === 1 ? 'venda registrada' : 'vendas registradas'}`;
+      $('#k-vol').textContent = totalKg ? D.fmtKg(totalKg) : '—';
+      $('#k-vol-sub').textContent = totalKg ? `equivalente em peso bruto` : 'sem volume registrado';
+      $('#k-avg').textContent = totalKg ? D.fmtBRL(avgKg) : '—';
+      $('#k-tk').textContent = count ? D.fmtBRL(ticket) : '—';
+      $('#k-tk-sub').textContent = count ? `por nota / pedido` : 'sem vendas no filtro';
+
+      // ----- Por segmento -----
+      const bySeg = {};
+      D.SEGMENTS.forEach(s => bySeg[s] = { rev:0, kg:0, count:0 });
+      filtered.forEach(s => {
+        if (bySeg[s.segment]) {
+          bySeg[s.segment].rev += s.total;
+          bySeg[s.segment].kg  += s.weight_kg;
+          bySeg[s.segment].count++;
+        }
+      });
+      const segBar = $('#seg-bar');
+      const segList = $('#seg-list');
+      if (totalRev <= 0) {
+        segBar.innerHTML = '';
+        segList.innerHTML = '<div class="text-muted text-sm" style="padding:18px 0;text-align:center;">Sem dados — registre vendas para ver a distribuição.</div>';
+      } else {
+        segBar.innerHTML = D.SEGMENTS.map(s => {
+          const pct = (bySeg[s].rev / totalRev) * 100;
+          return `<span style="width:${pct}%;background:${SEG_COLORS[s]}" title="${D.SEGMENT_LABEL[s]}: ${pct.toFixed(1)}%"></span>`;
+        }).join('');
+        segList.innerHTML = D.SEGMENTS.map(s => {
+          const r = bySeg[s];
+          const pct = totalRev ? (r.rev/totalRev*100) : 0;
+          const avg = r.kg > 0 ? r.rev / r.kg : 0;
+          return `
+            <div class="seg-row">
+              <span class="seg-color" style="background:${SEG_COLORS[s]}"></span>
+              <span class="seg-name">${D.SEGMENT_LABEL[s]} <span class="text-muted text-xs">· ${pct.toFixed(1)}%</span></span>
+              <span class="seg-val">${D.fmtBRL(r.rev)} <span class="text-muted text-xs">· ${avg ? D.fmtBRL(avg) + '/kg' : '—'}</span></span>
+            </div>`;
+        }).join('');
+      }
+
+      // ----- Por SKU -----
+      const bySku = {};
+      filtered.forEach(s => {
+        if (!bySku[s.product_id]) bySku[s.product_id] = { sku:s.product_sku, name:s.product_name, qty:0, rev:0 };
+        bySku[s.product_id].qty += +s.qty || 0;
+        bySku[s.product_id].rev += s.total;
+      });
+      const skuArr = Object.values(bySku).sort((a,b) => b.rev - a.rev);
+      const skuBody = $('#sku-body');
+      if (!skuArr.length) {
+        skuBody.innerHTML = '<tr class="empty-row"><td colspan="5">Sem vendas no filtro.</td></tr>';
+      } else {
+        skuBody.innerHTML = skuArr.map(r => {
+          const pct = totalRev ? (r.rev/totalRev*100) : 0;
+          return `<tr>
+            <td><strong>${escape(r.sku)}</strong></td>
+            <td>${escape(r.name)}</td>
+            <td class="num">${D.fmtNum(r.qty)}</td>
+            <td class="num">${D.fmtBRL(r.rev)}</td>
+            <td class="num">${pct.toFixed(1)}%</td>
+          </tr>`;
+        }).join('');
+      }
+
+      // ----- Lista -----
+      const tbody = $('#tbl-sales tbody');
+      $('#sales-count').textContent = `${count} ${count === 1 ? 'registro' : 'registros'}`;
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="8">Nenhuma venda. Clique em <strong>+ Nova venda</strong> para começar.</td></tr>';
+      } else {
+        tbody.innerHTML = filtered.map(s => `
+          <tr data-id="${s.id}">
+            <td>${(s.date || '').split('-').reverse().join('/')}</td>
+            <td>${escape(s.customer_name)}</td>
+            <td><span class="pill-seg ${escape(s.segment)}">${escape(D.SEGMENT_LABEL[s.segment] || s.segment)}</span></td>
+            <td><strong>${escape(s.product_sku)}</strong> <span class="text-muted text-xs">${escape(s.product_name)}</span></td>
+            <td class="num">${D.fmtNum(s.qty)}</td>
+            <td class="num">${D.fmtBRL(s.unit_price)}</td>
+            <td class="num"><strong>${D.fmtBRL(s.total)}</strong></td>
+            <td class="actions">
+              <button class="icon-btn-mini" data-act="edit" title="Editar">${ICON_EDIT}</button>
+              <button class="icon-btn-mini danger" data-act="del" title="Excluir">${ICON_DEL}</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg>';
+    const ICON_DEL  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>';
+
+    // ---------- Modal de venda ----------
+    const modal = $('#modal');
+    let editingId = null;
+
+    function openModal(sale) {
+      editingId = sale ? sale.id : null;
+      $('#modal-title').textContent = sale ? 'Editar venda' : 'Nova venda';
+      const customers = D.list('customers').sort((a,b) => a.name.localeCompare(b.name));
+      const products = D.list('products').filter(p => p.active !== false).sort((a,b) => (a.sku||'').localeCompare(b.sku||''));
+      const today = new Date().toISOString().slice(0,10);
+      const s = sale || {};
+
+      $('#modal-body').innerHTML = `
+        <div class="form-grid">
+          <div class="field"><label>Data *</label><input id="s-date" type="date" value="${s.date || today}"/></div>
+          <div class="field"><label>Cliente *</label>
+            <select id="s-cli">
+              <option value="">— escolha —</option>
+              ${customers.map(c => `<option value="${c.id}" ${s.customer_id===c.id?'selected':''}>${escape(c.name)} · ${escape(D.SEGMENT_LABEL[c.segment] || '')}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field span-2"><label>Produto / SKU *</label>
+            <select id="s-prod">
+              <option value="">— escolha —</option>
+              ${products.map(p => `<option value="${p.id}" data-price="${p.price}" ${s.product_id===p.id?'selected':''}>${escape(p.sku)} — ${escape(p.name)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>Quantidade *</label><input id="s-qty" type="number" step="0.01" min="0" value="${s.qty ?? ''}" placeholder="1" /></div>
+          <div class="field"><label>Preço unitário (R$) *</label><input id="s-price" type="number" step="0.01" min="0" value="${s.unit_price ?? ''}" /></div>
+          <div class="field"><label>Desconto (R$)</label><input id="s-disc" type="number" step="0.01" min="0" value="${s.discount ?? 0}" /></div>
+          <div class="field"><label>Pagamento</label>
+            <select id="s-pay">
+              ${['À vista','7 dias','14 dias','21 dias','30 dias','45 dias'].map(o => `<option ${s.payment===o?'selected':''}>${o}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field span-2"><label>Observações</label><input id="s-note" value="${escape(s.note)}" placeholder="opcional"/></div>
+          <div class="field span-2"><div class="calc-line"><span>Total da venda</span><strong id="s-total">R$ 0,00</strong></div></div>
+        </div>
+      `;
+
+      const prSel = $('#s-prod'), priceInp = $('#s-price'), qtyInp = $('#s-qty'), discInp = $('#s-disc'), totalEl = $('#s-total');
+
+      // auto-preenche preço ao escolher produto
+      prSel.addEventListener('change', () => {
+        const opt = prSel.options[prSel.selectedIndex];
+        const px = opt && opt.dataset.price ? parseFloat(opt.dataset.price) : NaN;
+        if (!isNaN(px) && (priceInp.value === '' || +priceInp.value === 0)) priceInp.value = px.toFixed(2);
+        recalc();
+      });
+      [qtyInp, priceInp, discInp].forEach(i => i.addEventListener('input', recalc));
+      function recalc() {
+        const q = parseFloat(qtyInp.value) || 0;
+        const p = parseFloat(priceInp.value) || 0;
+        const d = parseFloat(discInp.value) || 0;
+        totalEl.textContent = D.fmtBRL(q*p - d);
+      }
+      recalc();
+
+      modal.classList.add('show');
+      setTimeout(() => $('#s-cli').focus(), 50);
+    }
+    function closeModal() { modal.classList.remove('show'); editingId = null; }
+    $('#modal-close').addEventListener('click', closeModal);
+    $('#modal-cancel').addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+    $('#modal-save').addEventListener('click', () => {
+      const obj = {
+        date: $('#s-date').value,
+        customer_id: $('#s-cli').value,
+        product_id: $('#s-prod').value,
+        qty: parseFloat($('#s-qty').value) || 0,
+        unit_price: parseFloat($('#s-price').value) || 0,
+        discount: parseFloat($('#s-disc').value) || 0,
+        payment: $('#s-pay').value,
+        note: $('#s-note').value.trim(),
+      };
+      if (!obj.date || !obj.customer_id || !obj.product_id || !obj.qty || obj.unit_price <= 0) {
+        alert('Preencha data, cliente, produto, quantidade e preço unitário.');
+        return;
+      }
+      if (editingId) D.update('sales', editingId, obj);
+      else D.create('sales', obj);
+      closeModal(); render();
+      if (window.TaocaNotify) TaocaNotify.success(editingId ? 'Venda atualizada' : 'Venda registrada');
+    });
+
+    // ---------- eventos ----------
+    $('#btn-new').addEventListener('click', () => openModal(null));
+    $('#f-clear').addEventListener('click', () => {
+      defaultDates();
+      $('#f-seg').value = ''; $('#f-cli').value = ''; $('#f-prod').value = '';
+      render();
+    });
+    ['f-from','f-to','f-seg','f-cli','f-prod'].forEach(id => $('#'+id).addEventListener('change', render));
+
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-act]');
+      if (!btn) return;
+      const tr = btn.closest('tr');
+      const id = tr ? tr.dataset.id : null;
+      if (!id) return;
+      if (btn.dataset.act === 'edit') {
+        openModal(D.get('sales', id));
+      } else if (btn.dataset.act === 'del') {
+        if (confirm('Excluir esta venda?')) { D.remove('sales', id); render(); }
+      }
+    });
+
+    // ---------- init ----------
+    fillSelects();
+    defaultDates();
+    render();
+  })();
+  </script>
+</body>
+</html>

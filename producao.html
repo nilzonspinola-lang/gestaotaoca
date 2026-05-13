@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Produção — Taoca</title>
+  <link rel="stylesheet" href="css/taoca-design-system.css" />
+  <link rel="stylesheet" href="css/notifications.css" />
+  <link rel="icon" href="assets/taoca-logo.png" />
+  <style>
+    /* KPIs */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-bottom: 22px; }
+    @media (max-width: 1000px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 540px)  { .kpi-grid { grid-template-columns: 1fr; } }
+    .kpi {
+      background: #FFF; border: 1px solid var(--border-soft);
+      border-radius: 14px; padding: 16px 18px;
+    }
+    .kpi .lbl { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+    .kpi .val { font-family: var(--font-serif); font-size: 1.6rem; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px; line-height: 1.1; }
+    .kpi .sub { font-size: 0.82rem; color: var(--text-secondary); }
+    .kpi .val.muted { color: var(--text-muted); font-weight: 500; }
+
+    /* Salas */
+    .rooms-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; margin-bottom: 22px; }
+    @media (max-width: 1100px) { .rooms-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 700px)  { .rooms-grid { grid-template-columns: 1fr; } }
+    .room-card {
+      background: #FFF; border: 1px solid var(--border-soft);
+      border-radius: 16px; padding: 18px;
+      display: flex; flex-direction: column; gap: 10px;
+      transition: box-shadow var(--t-base), transform var(--t-base);
+    }
+    .room-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .room-head { display: flex; justify-content: space-between; align-items: flex-start; }
+    .room-name { font-family: var(--font-serif); font-size: 1.15rem; font-weight: 600; color: var(--brand-strong); margin: 0; }
+    .room-meta { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+    .room-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; padding: 10px 0; border-top: 1px dashed var(--border-soft); border-bottom: 1px dashed var(--border-soft); }
+    .room-stat .l { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 700; }
+    .room-stat .v { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+    .room-stat .v.small { font-size: 0.85rem; font-weight: 600; }
+    .room-capacity-bar { height: 6px; background: var(--taoca-cream-100); border-radius: 999px; overflow: hidden; }
+    .room-capacity-bar .fill { height: 100%; background: linear-gradient(90deg, var(--taoca-green-600), var(--taoca-green-700)); border-radius: 999px; }
+    .room-actions { display: flex; gap: 8px; }
+    .room-actions button { flex: 1; }
+
+    /* Panel */
+    .panel {
+      background: #FFF; border: 1px solid var(--border-soft);
+      border-radius: 14px; padding: 20px;
+      margin-bottom: 18px;
+    }
+    .panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+    .panel-head h2 { font-family: var(--font-serif); font-size: 1.1rem; font-weight: 600; margin: 0; }
+    .panel-head .hint { font-size: 0.82rem; color: var(--text-muted); }
+
+    /* Tabela ciclos */
+    table.tbl { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    table.tbl th, table.tbl td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+    table.tbl th { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); background: var(--taoca-cream-50); }
+    table.tbl tbody tr:hover { background: var(--taoca-cream-50); }
+    table.tbl td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    table.tbl td.actions { text-align: right; white-space: nowrap; }
+
+    .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+    .badge.plan { background: #FDF0DE; color: #8a6a2a; }
+    .badge.done { background: #E8F0EE; color: #2F5D3A; }
+    .badge.late { background: #FEE2E2; color: #991B1B; }
+    .badge.disc { background: #F0F2F6; color: #475569; }
+
+    .icon-btn-mini {
+      background: transparent; border: 1px solid var(--border-soft);
+      color: var(--text-secondary);
+      width: 30px; height: 30px; border-radius: 8px;
+      cursor: pointer; display: inline-grid; place-items: center;
+      margin-left: 4px; transition: all var(--t-fast);
+    }
+    .icon-btn-mini:hover { background: var(--taoca-cream-100); color: var(--brand); }
+    .icon-btn-mini.danger:hover { background: #FEF2F2; color: var(--danger); border-color: #FCA5A5; }
+    .icon-btn-mini svg { width: 14px; height: 14px; }
+
+    /* Modal */
+    .modal { position: fixed; inset: 0; background: rgba(31,41,55,0.45); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+    .modal.show { display: flex; }
+    .modal-card { background: #FFF; border-radius: 16px; width: 100%; max-width: 560px; max-height: 90vh; overflow: auto; box-shadow: var(--shadow-xl); }
+    .modal-head { padding: 18px 22px 12px; border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center; }
+    .modal-head h3 { font-family: var(--font-serif); font-size: 1.1rem; margin: 0; font-weight: 600; }
+    .modal-body { padding: 20px 22px; }
+    .modal-foot { padding: 14px 22px 18px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border-soft); }
+    .close-x { background: transparent; border: 0; cursor: pointer; width: 30px; height: 30px; color: var(--text-muted); font-size: 1.4rem; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-grid .span-2 { grid-column: span 2; }
+    @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } .form-grid .span-2 { grid-column: span 1; } }
+    .field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+    .field input, .field select, .field textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border-default); border-radius: 8px; font: inherit; background: #FFF; }
+    .field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid rgba(74,120,86,0.25); border-color: var(--brand); }
+    .empty-row td { text-align: center; padding: 28px; color: var(--text-muted); font-size: 0.9rem; }
+
+    .info-callout {
+      background: var(--taoca-cream-50);
+      border-left: 3px solid var(--accent);
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin-bottom: 18px;
+    }
+    .info-callout strong { color: var(--text-primary); }
+  </style>
+</head>
+<body>
+
+  <!-- KPIs gerais -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="lbl">Colheita do mês</div>
+      <div class="val" id="kpi-harvest">—</div>
+      <div class="sub" id="kpi-harvest-sub">aguardando lançamentos</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">CBS gerado no mês</div>
+      <div class="val" id="kpi-cbs">—</div>
+      <div class="sub">proporção 1 kg cogumelo : 4 kg CBS</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">Previsão próximos 30 dias</div>
+      <div class="val" id="kpi-forecast-kg">—</div>
+      <div class="sub" id="kpi-forecast-value">—</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">Capacidade total / mês</div>
+      <div class="val" id="kpi-capacity">—</div>
+      <div class="sub" id="kpi-capacity-sub">3 salas</div>
+    </div>
+  </div>
+
+  <div class="info-callout">
+    <strong>Como funciona:</strong> cada sala produz independentemente. Você lança um <strong>ciclo</strong> ao inocular (data + composto usado + kg previstos). Na colheita, registra os kg reais — o sistema calcula automaticamente o CBS gerado (4× o cogumelo) e atualiza as previsões.
+  </div>
+
+  <!-- Cards das 3 salas -->
+  <div class="rooms-grid" id="rooms-grid"></div>
+
+  <!-- Tabela de ciclos -->
+  <div class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Ciclos de produção</h2>
+        <div class="hint">Todo lote de inoculação até a colheita. Ciclo médio: 30 dias.</div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <select id="filter-room" class="input" style="padding: 8px 12px; border: 1px solid var(--border-default); border-radius: 8px; font: inherit; background: #FFF;">
+          <option value="">Todas as salas</option>
+        </select>
+        <select id="filter-status" class="input" style="padding: 8px 12px; border: 1px solid var(--border-default); border-radius: 8px; font: inherit; background: #FFF;">
+          <option value="">Todos os status</option>
+          <option value="planejado">Em produção</option>
+          <option value="colhido">Colhido</option>
+          <option value="descartado">Descartado</option>
+        </select>
+        <button class="btn btn-primary" id="btn-new-cycle">+ Novo ciclo</button>
+      </div>
+    </div>
+    <table class="tbl" id="tbl-cycles">
+      <thead>
+        <tr>
+          <th>Sala</th>
+          <th>Tipo</th>
+          <th>Inoculação</th>
+          <th>Colheita prev.</th>
+          <th class="num">Previsto (kg)</th>
+          <th class="num">Colhido (kg)</th>
+          <th class="num">CBS (kg)</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <h3 id="modal-title">Novo</h3>
+        <button class="close-x" id="modal-close" aria-label="Fechar">×</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" id="modal-cancel">Cancelar</button>
+        <button class="btn btn-primary" id="modal-save">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/taoca-data.js"></script>
+  <script src="js/taoca-shell.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/taoca-ai.js"></script>
+  <script>
+  (function () {
+    TaocaShell.mount({
+      active: 'producao',
+      title: 'Produção',
+      subtitle: 'Salas, ciclos, colheita e CBS',
+    });
+
+    const $ = (s, ctx) => (ctx || document).querySelector(s);
+    const $$ = (s, ctx) => Array.from((ctx || document).querySelectorAll(s));
+    const D = window.TaocaData;
+    const escape = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const IS_ADMIN = TaocaShell.isAdmin && TaocaShell.isAdmin();
+
+    const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg>';
+    const ICON_DEL  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>';
+    const ICON_HARV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h6v6"/></svg>';
+
+    // Status helpers
+    function statusBadge(c) {
+      const s = c.status || 'planejado';
+      if (s === 'colhido')    return '<span class="badge done">Colhido</span>';
+      if (s === 'descartado') return '<span class="badge disc">Descartado</span>';
+      // planejado: ver se já passou da data
+      const exp = c.expected_harvest_date ? D.parseISO(c.expected_harvest_date) : D.expectedHarvestDate(c.inoculated_at, c.cycle_days);
+      if (exp && exp < new Date()) return '<span class="badge late">Atrasado</span>';
+      return '<span class="badge plan">Em produção</span>';
+    }
+    function fmtDateBR(iso) {
+      const d = D.parseISO(iso);
+      return d ? d.toLocaleDateString('pt-BR') : '—';
+    }
+
+    // ============ KPIs ============
+    function renderKPIs() {
+      const harv = D.harvestedThisMonth();
+      const forecast = D.forecastNext30Days();
+      const rooms = D.list('rooms').filter(r => r.active !== false);
+      const totalCap = rooms.reduce((acc, r) => acc + (Number(r.capacity_kg_month) || 0), 0);
+
+      $('#kpi-harvest').textContent = harv.kg > 0 ? D.fmtKg(harv.kg) : '—';
+      $('#kpi-harvest-sub').textContent = harv.kg > 0
+        ? `colheita registrada em ${D.monthKey(new Date())}`
+        : 'nenhuma colheita registrada neste mês';
+
+      $('#kpi-cbs').textContent = harv.cbs > 0 ? D.fmtKg(harv.cbs) : '—';
+
+      if (forecast.kg > 0) {
+        $('#kpi-forecast-kg').textContent = D.fmtKg(forecast.kg);
+        $('#kpi-forecast-value').textContent = '≈ ' + D.fmtBRL(forecast.value) + ' (preço médio)';
+      } else {
+        $('#kpi-forecast-kg').textContent = '—';
+        $('#kpi-forecast-value').textContent = 'sem ciclos em produção';
+      }
+
+      $('#kpi-capacity').textContent = totalCap > 0 ? D.fmtKg(totalCap) : '—';
+      $('#kpi-capacity-sub').textContent = `${rooms.length} sala${rooms.length !== 1 ? 's' : ''} ativa${rooms.length !== 1 ? 's' : ''} · ${D.fmtKg(rooms.length ? totalCap/rooms.length : 0)} por sala`;
+    }
+
+    // ============ Cards das salas ============
+    function renderRooms() {
+      const rooms = D.list('rooms').sort((a,b) => (a.name||'').localeCompare(b.name||''));
+      const month = D.monthKey(new Date());
+      const grid = $('#rooms-grid');
+      if (!rooms.length) {
+        grid.innerHTML = '<div class="info-callout">Nenhuma sala cadastrada.</div>';
+        return;
+      }
+      grid.innerHTML = rooms.map(r => {
+        const stats = D.harvestedByRoom(r.id, month);
+        const cap = Number(r.capacity_kg_month) || 0;
+        const pct = cap > 0 ? Math.min(100, (stats.kg / cap) * 100) : 0;
+        const cycles = D.list('production_cycles').filter(c => c.room_id === r.id && c.status === 'planejado');
+        const planned = cycles.reduce((a,c) => a + (Number(c.kg_expected)||0), 0);
+        return `
+          <div class="room-card" data-id="${r.id}">
+            <div class="room-head">
+              <div>
+                <h3 class="room-name">${escape(r.name)}</h3>
+                <div class="room-meta">${escape(r.mushroom_type || '—')} · capacidade ${D.fmtKg(cap)}/mês</div>
+              </div>
+              <button class="icon-btn-mini" data-act="edit-room" title="Editar sala">${ICON_EDIT}</button>
+            </div>
+            <div class="room-stats">
+              <div class="room-stat"><div class="l">Colhido no mês</div><div class="v">${D.fmtKg(stats.kg)}</div></div>
+              <div class="room-stat"><div class="l">CBS gerado</div><div class="v">${D.fmtKg(stats.cbs)}</div></div>
+              <div class="room-stat"><div class="l">Em produção</div><div class="v small">${cycles.length} ciclo${cycles.length!==1?'s':''} · ${D.fmtKg(planned)}</div></div>
+              <div class="room-stat"><div class="l">Uso da capacidade</div><div class="v small">${pct.toFixed(0)}%</div></div>
+            </div>
+            <div class="room-capacity-bar"><div class="fill" style="width:${pct}%"></div></div>
+            <div class="room-actions">
+              <button class="btn btn-ghost" data-act="quick-cycle" data-room="${r.id}" style="padding:7px 12px; font-size:0.85rem;">+ Inocular ciclo</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ============ Tabela de ciclos ============
+    let filterRoom = '';
+    let filterStatus = '';
+    function renderCycles() {
+      const cycles = D.list('production_cycles').slice().sort((a,b) => {
+        const da = a.inoculated_at || '';
+        const db = b.inoculated_at || '';
+        return db.localeCompare(da);
+      }).filter(c => {
+        if (filterRoom && c.room_id !== filterRoom) return false;
+        if (filterStatus && (c.status || 'planejado') !== filterStatus) return false;
+        return true;
+      });
+      const tbody = $('#tbl-cycles tbody');
+      if (!cycles.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Nenhum ciclo registrado. Clique em "+ Inocular ciclo" em uma sala para começar.</td></tr>';
+        return;
+      }
+      const roomMap = {};
+      D.list('rooms').forEach(r => { roomMap[r.id] = r; });
+      tbody.innerHTML = cycles.map(c => {
+        const r = roomMap[c.room_id];
+        const exp = c.expected_harvest_date || (c.inoculated_at ? D.expectedHarvestDate(c.inoculated_at, c.cycle_days)?.toISOString().slice(0,10) : '');
+        const cbs = c.status === 'colhido' ? D.cycleCBS(c) : (Number(c.kg_expected)||0) * D.CBS_RATIO;
+        const isPlanned = (c.status || 'planejado') === 'planejado';
+        return `
+          <tr data-id="${c.id}">
+            <td><strong>${escape(r ? r.name : '—')}</strong></td>
+            <td>${escape(c.mushroom_type || (r ? r.mushroom_type : '—'))}</td>
+            <td>${fmtDateBR(c.inoculated_at)}</td>
+            <td>${fmtDateBR(exp)}</td>
+            <td class="num">${c.kg_expected ? D.fmtKg(c.kg_expected) : '—'}</td>
+            <td class="num">${c.kg_harvested ? D.fmtKg(c.kg_harvested) : '—'}</td>
+            <td class="num">${cbs ? D.fmtKg(cbs) : '—'}${isPlanned ? ' <span class="text-xs text-muted">prev.</span>' : ''}</td>
+            <td>${statusBadge(c)}</td>
+            <td class="actions">
+              ${isPlanned ? `<button class="icon-btn-mini" data-act="harvest" title="Registrar colheita" style="color:#2F5D3A;border-color:#A8D5B9;">${ICON_HARV}</button>` : ''}
+              <button class="icon-btn-mini" data-act="edit-cycle" title="Editar">${ICON_EDIT}</button>
+              <button class="icon-btn-mini danger" data-act="del-cycle" title="Excluir">${ICON_DEL}</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ============ Modal helper ============
+    const modal = $('#modal');
+    let currentSave = null;
+    function openModal(title, html, onSave) {
+      $('#modal-title').textContent = title;
+      $('#modal-body').innerHTML = html;
+      currentSave = onSave;
+      modal.classList.add('show');
+      const first = $('#modal-body input, #modal-body select, #modal-body textarea');
+      if (first) setTimeout(() => first.focus(), 50);
+    }
+    function closeModal() { modal.classList.remove('show'); currentSave = null; }
+    $('#modal-close').addEventListener('click', closeModal);
+    $('#modal-cancel').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    $('#modal-save').addEventListener('click', () => { if (currentSave) currentSave(); });
+
+    // ============ Form: Sala ============
+    function formRoom(r) {
+      r = r || {};
+      const products = D.list('products').filter(p => p.category === 'Fresco' || p.category === 'Processado');
+      return `
+        <div class="form-grid">
+          <div class="field span-2"><label>Nome da sala *</label><input id="f-name" value="${escape(r.name)}" placeholder="Sala 1" /></div>
+          <div class="field"><label>Tipo de cogumelo *</label>
+            <input id="f-type" value="${escape(r.mushroom_type || 'Cogumelo Paris')}" placeholder="Cogumelo Paris" />
+          </div>
+          <div class="field"><label>Produto principal (SKU)</label>
+            <select id="f-product">
+              <option value="">—</option>
+              ${products.map(p => `<option value="${p.id}" ${r.product_id===p.id?'selected':''}>${escape(p.sku)} · ${escape(p.name)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field span-2"><label>Capacidade (kg/mês) *</label><input id="f-cap" type="number" step="0.01" value="${r.capacity_kg_month ?? ''}" /></div>
+          <div class="field span-2"><label>Observações</label><textarea id="f-notes" rows="2">${escape(r.notes)}</textarea></div>
+        </div>
+      `;
+    }
+    function saveRoom(id) {
+      const obj = {
+        name: $('#f-name').value.trim(),
+        mushroom_type: $('#f-type').value.trim(),
+        product_id: $('#f-product').value || null,
+        capacity_kg_month: parseFloat($('#f-cap').value) || 0,
+        notes: $('#f-notes').value.trim(),
+        active: true,
+      };
+      if (!obj.name || !obj.mushroom_type) { alert('Nome e tipo de cogumelo são obrigatórios.'); return; }
+      if (id) D.update('rooms', id, obj); else D.create('rooms', obj);
+      closeModal(); refreshAll();
+      if (window.TaocaNotify) TaocaNotify.success(id ? 'Sala atualizada' : 'Sala criada');
+    }
+
+    // ============ Form: Ciclo ============
+    function formCycle(c, lockRoom) {
+      c = c || {};
+      const rooms = D.list('rooms');
+      const today = new Date().toISOString().slice(0, 10);
+      const inoc = c.inoculated_at || today;
+      const days = c.cycle_days || D.CYCLE_DAYS;
+      const expDefault = D.expectedHarvestDate(inoc, days);
+      const exp = c.expected_harvest_date || (expDefault ? expDefault.toISOString().slice(0,10) : '');
+      return `
+        <div class="form-grid">
+          <div class="field"><label>Sala *</label>
+            <select id="f-room" ${lockRoom ? 'disabled' : ''}>
+              ${rooms.map(r => `<option value="${r.id}" ${c.room_id===r.id || lockRoom===r.id?'selected':''}>${escape(r.name)} · ${escape(r.mushroom_type)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>Tipo de cogumelo</label><input id="f-type" value="${escape(c.mushroom_type || '')}" placeholder="Herda da sala" /></div>
+          <div class="field"><label>Data de inoculação *</label><input id="f-inoc" type="date" value="${escape(inoc)}" /></div>
+          <div class="field"><label>Duração do ciclo (dias)</label><input id="f-days" type="number" step="1" value="${days}" /></div>
+          <div class="field"><label>Composto usado (kg)</label><input id="f-comp" type="number" step="0.1" value="${c.kg_compost ?? ''}" placeholder="Ex: 250" /></div>
+          <div class="field"><label>Cogumelo previsto (kg) *</label><input id="f-exp" type="number" step="0.1" value="${c.kg_expected ?? ''}" placeholder="Ex: 75" /></div>
+          <div class="field span-2"><label>Colheita prevista (calculada)</label><input id="f-exp-date" type="date" value="${escape(exp)}" /></div>
+          <div class="field span-2"><label>Observações</label><textarea id="f-notes" rows="2">${escape(c.notes)}</textarea></div>
+        </div>
+      `;
+    }
+    // Recalcula colheita prevista ao mudar inoculação ou dias
+    function bindCycleAutoCalc() {
+      const inoc = $('#f-inoc'), days = $('#f-days'), expDate = $('#f-exp-date');
+      function recalc() {
+        const d = D.expectedHarvestDate(inoc.value, days.value);
+        if (d) expDate.value = d.toISOString().slice(0, 10);
+      }
+      if (inoc) inoc.addEventListener('change', recalc);
+      if (days) days.addEventListener('change', recalc);
+    }
+    function saveCycle(id) {
+      const roomId = $('#f-room').value;
+      const room = D.get('rooms', roomId);
+      const obj = {
+        room_id: roomId,
+        mushroom_type: ($('#f-type').value.trim()) || (room ? room.mushroom_type : ''),
+        inoculated_at: $('#f-inoc').value,
+        cycle_days: parseInt($('#f-days').value, 10) || D.CYCLE_DAYS,
+        expected_harvest_date: $('#f-exp-date').value,
+        kg_compost: parseFloat($('#f-comp').value) || null,
+        kg_expected: parseFloat($('#f-exp').value) || 0,
+        notes: $('#f-notes').value.trim(),
+      };
+      if (!obj.room_id || !obj.inoculated_at) { alert('Sala e data de inoculação são obrigatórias.'); return; }
+      if (!obj.kg_expected || obj.kg_expected <= 0) { alert('Informe os kg previstos de colheita.'); return; }
+      if (id) {
+        D.update('production_cycles', id, obj);
+      } else {
+        obj.status = 'planejado';
+        D.create('production_cycles', obj);
+      }
+      closeModal(); refreshAll();
+      if (window.TaocaNotify) TaocaNotify.success(id ? 'Ciclo atualizado' : 'Ciclo registrado');
+    }
+
+    // ============ Form: Colheita ============
+    function formHarvest(c) {
+      const r = D.get('rooms', c.room_id);
+      const today = new Date().toISOString().slice(0, 10);
+      const previewCBS = (Number(c.kg_expected)||0) * D.CBS_RATIO;
+      return `
+        <p class="text-sm text-muted" style="margin-bottom:14px">Sala <strong>${escape(r ? r.name : '—')}</strong> · ciclo iniciado em ${fmtDateBR(c.inoculated_at)} · previsto: <strong>${D.fmtKg(c.kg_expected||0)}</strong></p>
+        <div class="form-grid">
+          <div class="field"><label>Data da colheita *</label><input id="h-date" type="date" value="${today}" /></div>
+          <div class="field"><label>Cogumelo colhido (kg) *</label><input id="h-kg" type="number" step="0.01" placeholder="Ex: 72.5" /></div>
+          <div class="field span-2"><label>CBS gerado (kg) <span class="text-muted text-xs">automático — 4× cogumelo, pode ajustar</span></label><input id="h-cbs" type="number" step="0.01" /></div>
+          <div class="field span-2"><label>Observações</label><textarea id="h-notes" rows="2"></textarea></div>
+        </div>
+        <p class="text-xs text-muted" style="margin-top:10px">💡 Se você previu ${D.fmtKg(c.kg_expected||0)} de cogumelo, o sistema espera ~${D.fmtKg(previewCBS)} de CBS.</p>
+      `;
+    }
+    function bindHarvestAutoCalc() {
+      const kgEl = $('#h-kg'), cbsEl = $('#h-cbs');
+      if (!kgEl) return;
+      const auto = () => {
+        const v = parseFloat(kgEl.value) || 0;
+        if (cbsEl && (!cbsEl.dataset.touched)) cbsEl.value = (v * D.CBS_RATIO).toFixed(2);
+      };
+      kgEl.addEventListener('input', auto);
+      if (cbsEl) cbsEl.addEventListener('input', () => { cbsEl.dataset.touched = '1'; });
+    }
+    function saveHarvest(id) {
+      const kg = parseFloat($('#h-kg').value);
+      const date = $('#h-date').value;
+      if (!kg || kg <= 0) { alert('Informe os kg colhidos.'); return; }
+      if (!date) { alert('Informe a data da colheita.'); return; }
+      const cbs = parseFloat($('#h-cbs').value);
+      const patch = {
+        status: 'colhido',
+        harvested_at: date,
+        kg_harvested: kg,
+        kg_cbs: (isNaN(cbs) ? kg * D.CBS_RATIO : cbs),
+        harvest_notes: $('#h-notes').value.trim(),
+      };
+      D.update('production_cycles', id, patch);
+      closeModal(); refreshAll();
+      if (window.TaocaNotify) TaocaNotify.success(`Colheita registrada: ${D.fmtKg(kg)} cogumelo + ${D.fmtKg(patch.kg_cbs)} CBS`);
+    }
+
+    // ============ Filtros ============
+    function rebuildFilters() {
+      const sel = $('#filter-room');
+      const rooms = D.list('rooms');
+      sel.innerHTML = '<option value="">Todas as salas</option>' + rooms.map(r => `<option value="${r.id}">${escape(r.name)}</option>`).join('');
+    }
+    $('#filter-room').addEventListener('change', (e) => { filterRoom = e.target.value; renderCycles(); });
+    $('#filter-status').addEventListener('change', (e) => { filterStatus = e.target.value; renderCycles(); });
+
+    // ============ Botões "Novo" ============
+    $('#btn-new-cycle').addEventListener('click', () => {
+      openModal('Inocular ciclo', formCycle(), () => saveCycle());
+      bindCycleAutoCalc();
+    });
+
+    // ============ Delegação ============
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-act]');
+      if (!btn) return;
+      const act = btn.dataset.act;
+
+      if (act === 'edit-room') {
+        const card = btn.closest('[data-id]');
+        const id = card.dataset.id;
+        const r = D.get('rooms', id);
+        openModal('Editar sala', formRoom(r), () => saveRoom(id));
+      } else if (act === 'quick-cycle') {
+        const roomId = btn.dataset.room;
+        openModal('Inocular ciclo · ' + (D.get('rooms', roomId)?.name || ''), formCycle({}, roomId), () => saveCycle());
+        bindCycleAutoCalc();
+      } else if (act === 'edit-cycle') {
+        const tr = btn.closest('tr'); const id = tr.dataset.id;
+        const c = D.get('production_cycles', id);
+        openModal('Editar ciclo', formCycle(c), () => saveCycle(id));
+        bindCycleAutoCalc();
+      } else if (act === 'del-cycle') {
+        const tr = btn.closest('tr'); const id = tr.dataset.id;
+        if (confirm('Excluir este ciclo? Os números de colheita/CBS serão removidos.')) {
+          D.remove('production_cycles', id); refreshAll();
+        }
+      } else if (act === 'harvest') {
+        const tr = btn.closest('tr'); const id = tr.dataset.id;
+        const c = D.get('production_cycles', id);
+        openModal('Registrar colheita', formHarvest(c), () => saveHarvest(id));
+        bindHarvestAutoCalc();
+      }
+    });
+
+    // ============ Refresh ============
+    function refreshAll() {
+      rebuildFilters();
+      renderKPIs();
+      renderRooms();
+      renderCycles();
+    }
+
+    refreshAll();
+  })();
+  </script>
+</body>
+</html>

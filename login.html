@@ -1,462 +1,276 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Entrar — Gestão TAOCA</title>
-    <style>
-      * { box-sizing: border-box; }
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entrar — Taoca OS</title>
+  <link rel="stylesheet" href="css/taoca-design-system.css" />
+  <link rel="icon" href="assets/taoca-logo.png" />
+  <style>
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--taoca-cream-50) 0%, #FFF 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
 
-      body {
-        margin: 0;
-        min-height: 100vh;
-        background: linear-gradient(135deg, #1a3fa8 0%, #2563eb 50%, #3b82f6 100%);
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px 16px;
-      }
+    .auth-wrapper {
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      z-index: 2;
+    }
 
-      /* Fundo animado com círculos */
-      body::before,
-      body::after {
-        content: '';
-        position: fixed;
-        border-radius: 50%;
-        opacity: 0.08;
-        pointer-events: none;
-      }
-      body::before {
-        width: 600px;
-        height: 600px;
-        background: #ffffff;
-        top: -200px;
-        right: -150px;
-      }
-      body::after {
-        width: 400px;
-        height: 400px;
-        background: #ffffff;
-        bottom: -150px;
-        left: -100px;
-      }
+    .auth-brand {
+      text-align: center;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .auth-brand img {
+      width: 160px;
+      max-width: 60%;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
 
-      .login-wrapper {
-        width: 100%;
-        max-width: 420px;
-        position: relative;
-        z-index: 1;
-      }
+    .auth-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-2xl);
+      padding: 32px 30px 28px;
+      box-shadow: var(--shadow-lg);
+    }
+    .auth-card h2 {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--brand-strong);
+      margin-bottom: 6px;
+    }
+    .auth-card .desc {
+      color: var(--text-secondary);
+      margin-bottom: 22px;
+      font-size: 0.9rem;
+    }
 
-      /* Cabeçalho da marca */
-      .brand-header {
-        text-align: center;
-        margin-bottom: 28px;
-        color: #ffffff;
-      }
-      .brand-logo {
-        width: 68px;
-        height: 68px;
-        background: rgba(255, 255, 255, 0.15);
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-radius: 20px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 30px;
-        margin-bottom: 16px;
-        backdrop-filter: blur(8px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-      }
-      .brand-title {
-        margin: 0 0 6px;
-        font-size: 1.75rem;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-      }
-      .brand-subtitle {
-        margin: 0;
-        font-size: 0.95rem;
-        color: rgba(255, 255, 255, 0.78);
-        font-weight: 400;
-      }
+    .field-input-wrap { position: relative; }
+    .toggle-pwd {
+      position: absolute;
+      right: 10px; top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 6px;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      transition: color var(--t-fast), background var(--t-fast);
+    }
+    .toggle-pwd:hover { color: var(--brand); background: var(--bg-soft); }
+    .toggle-pwd svg { display: block; }
 
-      /* Card do formulário */
-      .login-card {
-        background: #ffffff;
-        border-radius: 24px;
-        padding: 36px 32px 28px;
-        box-shadow:
-          0 24px 60px rgba(15, 23, 42, 0.25),
-          0 8px 20px rgba(15, 23, 42, 0.12);
-      }
+    .err-box {
+      display: none;
+      background: var(--danger-bg);
+      border: 1px solid #FCA5A5;
+      color: var(--danger);
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-weight: 500;
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+    }
+    .err-box.visible { display: block; }
 
-      .card-title {
-        margin: 0 0 6px;
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1e293b;
-      }
-      .card-desc {
-        margin: 0 0 28px;
-        font-size: 0.92rem;
-        color: #64748b;
-        line-height: 1.5;
-      }
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--taoca-green-800);
+      color: #FFF;
+      border: 0;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background var(--t-fast), transform var(--t-fast);
+    }
+    .submit-btn:hover:not(:disabled) {
+      background: var(--taoca-green-900);
+    }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-      /* Campos */
-      .field {
-        margin-bottom: 18px;
-      }
-      .field label {
-        display: block;
-        font-size: 0.8rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: #475569;
-        margin-bottom: 7px;
-      }
-      .field-input-wrap {
-        position: relative;
-      }
-      .field-icon {
-        position: absolute;
-        left: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 1rem;
-        pointer-events: none;
-        opacity: 0.5;
-      }
-      .field input {
-        width: 100%;
-        padding: 13px 14px 13px 40px;
-        font-size: 1rem;
-        border-radius: 12px;
-        border: 1.5px solid #e2e8f0;
-        background: #f8fafc;
-        color: #1e293b;
-        font-family: inherit;
-        outline: none;
-        transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-      }
-      .field input:focus {
-        border-color: #2563eb;
-        background: #ffffff;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-      }
-      .field input::placeholder {
-        color: #94a3b8;
-      }
+    .spinner {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.4);
+      border-top-color: #FFF;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .submit-btn.loading .spinner { display: block; }
+    .submit-btn.loading .btn-text { opacity: 0.75; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-      /* Toggle senha */
-      .toggle-pwd {
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        font-size: 1rem;
-        opacity: 0.5;
-        padding: 4px;
-        line-height: 1;
-        transition: opacity 0.15s;
-      }
-      .toggle-pwd:hover { opacity: 0.9; }
+    .footer-note {
+      margin-top: 22px;
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    .footer-note strong { color: var(--brand); }
+  </style>
+</head>
+<body>
 
-      /* Erro */
-      .error-msg {
-        display: none;
-        align-items: center;
-        gap: 8px;
-        background: #fef2f2;
-        border: 1px solid #fecaca;
-        border-radius: 10px;
-        padding: 10px 14px;
-        font-size: 0.88rem;
-        color: #b91c1c;
-        font-weight: 600;
-        margin-bottom: 18px;
-      }
-      .error-msg.visible { display: flex; }
-
-      /* Botão principal */
-      .btn-login {
-        width: 100%;
-        padding: 14px;
-        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-        color: #ffffff;
-        border: none;
-        border-radius: 12px;
-        font-size: 1rem;
-        font-weight: 700;
-        cursor: pointer;
-        font-family: inherit;
-        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
-        transition: filter 0.15s, transform 0.1s, box-shadow 0.15s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        letter-spacing: 0.01em;
-      }
-      .btn-login:hover {
-        filter: brightness(0.96);
-        transform: translateY(-1px);
-        box-shadow: 0 12px 24px rgba(37, 99, 235, 0.35);
-      }
-      .btn-login:active {
-        transform: translateY(0);
-        filter: brightness(0.94);
-      }
-      .btn-login:disabled {
-        opacity: 0.65;
-        cursor: not-allowed;
-        transform: none;
-      }
-
-      /* Spinner */
-      .spinner {
-        display: none;
-        width: 18px;
-        height: 18px;
-        border: 2.5px solid rgba(255,255,255,0.4);
-        border-top-color: #fff;
-        border-radius: 50%;
-        animation: spin 0.7s linear infinite;
-      }
-      .btn-login.loading .spinner { display: block; }
-      .btn-login.loading .btn-text { opacity: 0.75; }
-      @keyframes spin { to { transform: rotate(360deg); } }
-
-      /* Rodapé */
-      .login-footer {
-        margin-top: 22px;
-        text-align: center;
-        font-size: 0.8rem;
-        color: rgba(255, 255, 255, 0.6);
-      }
-      .login-footer strong { color: rgba(255, 255, 255, 0.85); }
-
-      /* Separador */
-      .divider {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 20px 0;
-        color: #94a3b8;
-        font-size: 0.78rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-      }
-      .divider::before,
-      .divider::after {
-        content: '';
-        flex: 1;
-        height: 1px;
-        background: #e2e8f0;
-      }
-
-      /* Links rápidos abaixo do card */
-      .quick-links {
-        display: flex;
-        justify-content: center;
-        gap: 16px;
-        margin-top: 18px;
-        flex-wrap: wrap;
-      }
-      .quick-link {
-        color: rgba(255, 255, 255, 0.75);
-        font-size: 0.82rem;
-        font-weight: 600;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        padding: 6px 12px;
-        border-radius: 999px;
-        background: rgba(255,255,255,0.1);
-        border: 1px solid rgba(255,255,255,0.18);
-        transition: background 0.15s;
-      }
-      .quick-link:hover { background: rgba(255,255,255,0.2); color: #fff; }
-
-      @media (max-width: 480px) {
-        .login-card { padding: 28px 20px 22px; }
-        .brand-logo { width: 56px; height: 56px; font-size: 24px; }
-        .brand-title { font-size: 1.5rem; }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="login-wrapper">
-
-      <!-- Marca -->
-      <div class="brand-header">
-        <div class="brand-logo">☑</div>
-        <h1 class="brand-title">Gestão TAOCA</h1>
-        <p class="brand-subtitle">Nílzon Spínola &amp; Marco Monteiro</p>
-      </div>
-
-      <!-- Card de login -->
-      <div class="login-card">
-        <h2 class="card-title">Bem-vindo de volta 👋</h2>
-        <p class="card-desc">Informe suas credenciais para acessar o sistema.</p>
-
-        <!-- Mensagem de erro -->
-        <div class="error-msg" id="error-msg" role="alert">
-          <span>⚠️</span>
-          <span id="error-text">Usuário ou senha incorretos.</span>
-        </div>
-
-        <form id="login-form" autocomplete="on" novalidate>
-
-          <div class="field">
-            <label for="username">Usuário</label>
-            <div class="field-input-wrap">
-              <span class="field-icon">👤</span>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                placeholder="Digite seu usuário"
-                autocomplete="username"
-                spellcheck="false"
-                required
-              />
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="password">Senha</label>
-            <div class="field-input-wrap">
-              <span class="field-icon">🔒</span>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                placeholder="Digite sua senha"
-                autocomplete="current-password"
-                required
-              />
-              <button type="button" class="toggle-pwd" id="toggle-pwd" aria-label="Mostrar/ocultar senha">👁️</button>
-            </div>
-          </div>
-
-          <button type="submit" class="btn-login" id="btn-login">
-            <div class="spinner" id="spinner"></div>
-            <span class="btn-text">Entrar</span>
-          </button>
-
-        </form>
-      </div>
-
-      <!-- Links de navegação rápida -->
-      <div class="quick-links">
-        <a class="quick-link" href="index.html">📋 Quadro de Tarefas</a>
-        <a class="quick-link" href="dashboard.html">📊 Painel Gerencial</a>
-        <a class="quick-link" href="atas.html">📑 ATAs</a>
-      </div>
-
-      <!-- Rodapé -->
-      <p class="login-footer">
-        <strong>Gestão TAOCA</strong> · Sistema de Gestão de Tarefas e Atas
-      </p>
+  <div class="auth-wrapper">
+    <div class="auth-brand">
+      <img src="assets/taoca-logo.png" alt="Taoca — Natureza, qualidade e afeto" />
     </div>
 
-    <script>
-      (function () {
-        const SESSION_KEY = 'taoca-auth-ok';
+    <div class="auth-card">
+      <h2>Bem-vindo de volta</h2>
+      <p class="desc">Acesse o sistema de gestão da Taoca.</p>
 
-        // Se já autenticado, redireciona direto
-        try {
-          if (sessionStorage.getItem(SESSION_KEY) === '1') {
+      <div class="err-box" id="err-box" role="alert">
+        <span id="err-text">Usuário ou senha incorretos.</span>
+      </div>
+
+      <form id="login-form" autocomplete="on" novalidate>
+        <div class="field">
+          <label for="username">Usuário</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="input"
+            placeholder="Seu usuário"
+            autocomplete="username"
+            spellcheck="false"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="password">Senha</label>
+          <div class="field-input-wrap">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="input"
+              placeholder="Sua senha"
+              autocomplete="current-password"
+              required
+            />
+            <button type="button" class="toggle-pwd" id="toggle-pwd" aria-label="Mostrar/ocultar senha">
+              <svg id="pwd-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="btn-login">
+          <div class="spinner" id="spinner"></div>
+          <span class="btn-text">Entrar</span>
+        </button>
+      </form>
+    </div>
+
+    <p class="footer-note">
+      <strong>Taoca</strong> · Cultivo de cogumelos com gestão inteligente
+    </p>
+  </div>
+
+  <script src="js/taoca-data.js"></script>
+  <script>
+    (function () {
+      const SESSION_KEY = 'taoca-auth-ok';
+      const USER_KEY = 'taoca-user';
+      const USER_ID_KEY = 'taoca-user-id';
+      const USER_ROLE_KEY = 'taoca-user-role';
+
+      try {
+        if (sessionStorage.getItem(SESSION_KEY) === '1') {
+          window.location.replace('index.html');
+          return;
+        }
+      } catch (e) {}
+
+      const form = document.getElementById('login-form');
+      const userInput = document.getElementById('username');
+      const passInput = document.getElementById('password');
+      const btn = document.getElementById('btn-login');
+      const errBox = document.getElementById('err-box');
+      const errText = document.getElementById('err-text');
+      const togglePwd = document.getElementById('toggle-pwd');
+
+      const EYE_OPEN = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+      const EYE_OFF = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+      togglePwd.addEventListener('click', () => {
+        const isPwd = passInput.type === 'password';
+        passInput.type = isPwd ? 'text' : 'password';
+        togglePwd.innerHTML = isPwd ? EYE_OFF : EYE_OPEN;
+      });
+
+      [userInput, passInput].forEach(i => i.addEventListener('input', () => errBox.classList.remove('visible')));
+
+      function showError(msg) {
+        errText.textContent = msg || 'Usuário ou senha incorretos.';
+        errBox.classList.add('visible');
+      }
+      function setLoading(on) {
+        btn.disabled = on;
+        btn.classList.toggle('loading', on);
+      }
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const user = userInput.value.trim().toLowerCase();
+        const pass = passInput.value;
+        if (!user || !pass) return showError('Preencha usuário e senha.');
+
+        setLoading(true);
+        setTimeout(() => {
+          if (!window.TaocaData || typeof TaocaData.authenticate !== 'function') {
+            setLoading(false);
+            return showError('Sistema indisponível. Recarregue a página.');
+          }
+          const result = TaocaData.authenticate(user, pass);
+          if (result.ok) {
+            try {
+              sessionStorage.setItem(SESSION_KEY, '1');
+              sessionStorage.setItem(USER_KEY, result.user.name);
+              sessionStorage.setItem(USER_ID_KEY, result.user.id);
+              sessionStorage.setItem(USER_ROLE_KEY, result.user.role);
+            } catch (err) {}
             window.location.replace('index.html');
-            return;
-          }
-        } catch (e) {}
-
-        // ---------- Credenciais válidas ----------
-        // Adicione ou altere os usuários aqui
-        const USERS = {
-          'nilzon':  'taoca@2025',
-          'marco':   'taoca@2025',
-          'admin':   'taoca@2025',
-        };
-
-        // ---------- Refs ----------
-        const form       = document.getElementById('login-form');
-        const userInput  = document.getElementById('username');
-        const passInput  = document.getElementById('password');
-        const btnLogin   = document.getElementById('btn-login');
-        const errorMsg   = document.getElementById('error-msg');
-        const errorText  = document.getElementById('error-text');
-        const togglePwd  = document.getElementById('toggle-pwd');
-
-        // ---------- Toggle senha ----------
-        togglePwd.addEventListener('click', () => {
-          const isPassword = passInput.type === 'password';
-          passInput.type = isPassword ? 'text' : 'password';
-          togglePwd.textContent = isPassword ? '🙈' : '👁️';
-        });
-
-        // ---------- Esconde erro ao digitar ----------
-        userInput.addEventListener('input', hideError);
-        passInput.addEventListener('input', hideError);
-
-        function showError(msg) {
-          errorText.textContent = msg || 'Usuário ou senha incorretos.';
-          errorMsg.classList.add('visible');
-        }
-        function hideError() {
-          errorMsg.classList.remove('visible');
-        }
-
-        function setLoading(on) {
-          btnLogin.disabled = on;
-          btnLogin.classList.toggle('loading', on);
-        }
-
-        // ---------- Submit ----------
-        form.addEventListener('submit', function (e) {
-          e.preventDefault();
-          hideError();
-
-          const user = userInput.value.trim().toLowerCase();
-          const pass = passInput.value;
-
-          if (!user || !pass) {
-            showError('Preencha usuário e senha para continuar.');
-            return;
-          }
-
-          setLoading(true);
-
-          // Pequeno delay para feedback visual
-          setTimeout(() => {
-            const expectedPass = USERS[user];
-
-            if (expectedPass && expectedPass === pass) {
-              try { sessionStorage.setItem(SESSION_KEY, '1'); } catch (err) {}
-              window.location.replace('index.html');
+          } else {
+            setLoading(false);
+            if (result.error === 'inactive') {
+              showError('Usuário desativado. Fale com um administrador.');
             } else {
-              setLoading(false);
-              showError('Usuário ou senha incorretos. Tente novamente.');
-              passInput.value = '';
-              passInput.focus();
+              showError('Usuário ou senha incorretos.');
             }
-          }, 600);
-        });
+            passInput.value = '';
+            passInput.focus();
+          }
+        }, 400);
+      });
 
-        // Foco automático no campo usuário
-        userInput.focus();
-      })();
-    </script>
-  <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+      userInput.focus();
+    })();
+  </script>
 </body>
 </html>
