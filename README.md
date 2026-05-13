@@ -1,51 +1,96 @@
-# Quadro de Tarefas - Nílzon e Marco
+# 🍄 Taoca OS
 
-Aplicação web para gestão de tarefas, atas de reunião e dashboard de acompanhamento.
+> Sistema de gestão (ERP enxuto) da **Taoca Cogumelos** — cultivo, beneficiamento e venda.
 
-## 📋 Estrutura do Projeto
+[![Status](https://img.shields.io/badge/Status-MVP%20Pronto-green)]()
+[![Versão](https://img.shields.io/badge/Versão-0.6.0-blue)]()
+[![Deploy](https://img.shields.io/badge/Deploy-HostGator-orange)]()
 
-```
-quadro-tarefas/
-├── index.html              # Quadro de Tarefas (página principal)
-├── atas.html               # Página de Atas de Reunião
-├── dashboard.html          # Dashboard de acompanhamento
-├── css/
-│   └── notifications.css   # Estilos do sistema de notificações
-└── js/
-    └── notifications.js    # Lógica do sistema de notificações
-```
+---
 
-## 🚀 Como usar
+## 📦 Módulos
 
-### Opção 1: Abrir diretamente no navegador
-Basta abrir o arquivo `index.html` em qualquer navegador moderno (Chrome, Firefox, Edge, Safari).
+| Módulo | Descrição |
+|---|---|
+| 🏠 Dashboard | KPIs executivos do dia/mês |
+| ✅ Tarefas | Kanban com 4 colunas, prazos e categorias |
+| 💰 Vendas | Lançamento e histórico de vendas |
+| 🧪 Produção | 3 salas, ciclos e geração automática de CBS (1:4) |
+| 📊 Financeiro | DRE, custos fixos/variáveis, fluxo |
+| 👥 Clientes | CRM básico com segmentação |
+| 📋 Cadastros | Produtos, Categorias, Centros, Fornecedores |
+| 📑 ATAs | Reuniões com decisões rastreáveis |
+| 📈 Estratégico | 8 KPIs gerais, CAC, quadrante F×M, insights |
 
-### Opção 2: Servidor local
+---
+
+## 🚀 Quick Start
+
+### Rodar localmente
 ```bash
-# Com Python
-python3 -m http.server 8000
+# Clone o repositório
+git clone https://github.com/nilzonspinola-lang/gestaotaoca.git
+cd gestaotaoca
 
-# Com Node.js
-npx serve .
+# Inicie um servidor estático
+python3 -m http.server 3000
+
+# Abra no navegador
+# http://localhost:3000/login.html
 ```
-Depois acesse: `http://localhost:8000`
 
-## 🌐 Hospedagem no GitHub Pages
+### Acesso em produção (após deploy)
+- **URL:** `https://gestao.taoca.com.br`
+- **Usuários iniciais:** `nilzon`, `marco`, `operador`
 
-1. Faça o push deste repositório no GitHub
-2. Vá em **Settings → Pages**
-3. Em **Source**, selecione a branch `main` e a pasta `/ (root)`
-4. Salve. Em alguns minutos seu site estará disponível em
-   `https://<seu-usuario>.github.io/<nome-do-repositorio>/`
+---
 
-## 🛠️ Tecnologias
+## 🏗️ Stack
 
-- HTML5
-- CSS3
-- JavaScript (vanilla)
+- **Frontend:** HTML5 + CSS3 + JavaScript vanilla (sem build step)
+- **Persistência:** `localStorage` (MVP) → Supabase (Etapa 3)
+- **Hosting:** HostGator (hospedagem compartilhada)
+- **Domínio:** Registro.br → HostGator
 
-## 📝 Páginas
+---
 
-- **index.html** — Quadro principal de tarefas
-- **dashboard.html** — Visão geral e métricas
-- **atas.html** — Registro de atas de reuniões
+## 📚 Documentação
+
+Toda a documentação técnica e funcional vive em [`/docs`](docs/README.md):
+
+- [01 — Visão Geral](docs/01-visao-geral.md)
+- [02 — Arquitetura](docs/02-arquitetura.md)
+- [03 — Módulos](docs/03-modulos.md)
+- [04 — Usuários e Papéis](docs/04-usuarios-e-papeis.md)
+- [05 — Modelo de Dados](docs/05-modelo-de-dados.md)
+- [06 — Regras de Negócio](docs/06-regras-de-negocio.md)
+- [07 — Design System](docs/07-design-system.md)
+- [08 — Roadmap](docs/08-roadmap.md)
+- **[09 — Deploy](docs/09-deploy.md)** ⭐
+- [10 — Changelog](docs/10-changelog.md)
+
+---
+
+## 🎨 Identidade
+
+- **Paleta:** verdes Taoca (#1F3A28 → #6B9B6F), creme (#FAF7F2), terracota (#C77B5C)
+- **Tipografia:** serif para títulos, sans-serif para corpo
+- **Ícones:** SVG monocromáticos
+
+---
+
+## 🌱 Roadmap rápido
+
+- ✅ **Etapa 0:** MVP funcional (13 páginas, 9 módulos)
+- 🟡 **Etapa 1:** Deploy em `gestao.taoca.com.br` (HostGator)
+- 🔜 **Etapa 2:** E-mail profissional `@taoca.com.br`
+- 🔜 **Etapa 3:** Migração para Supabase (backend real, multi-dispositivo)
+- 🔜 **Etapa 4:** Exportação PDF, PWA mobile, BI avançado
+
+Detalhes em [docs/08-roadmap.md](docs/08-roadmap.md).
+
+---
+
+## 📜 Licença
+
+Software proprietário © Taoca Cogumelos. Todos os direitos reservados.
