@@ -591,14 +591,25 @@ a:hover { color: var(--brand-strong); }
   color: #FFF;
   border: 0;
   box-shadow: 0 14px 30px rgba(31,58,40,0.32), inset 0 0 0 2px rgba(255,255,255,0.08);
-  cursor: pointer;
+  cursor: grab;
   z-index: 80;
   display: grid;
   place-items: center;
   font-size: 1.6rem;
-  transition: transform var(--t-base);
+  transition: transform var(--t-base), box-shadow var(--t-base);
+  touch-action: none;       /* permite arrastar em mobile sem scroll */
+  user-select: none;
+  -webkit-user-select: none;
 }
 .tai-fab:hover { transform: translateY(-3px) scale(1.05); }
+.tai-fab:active { cursor: grabbing; }
+.tai-fab.dragging {
+  cursor: grabbing;
+  transform: scale(1.08);
+  box-shadow: 0 20px 40px rgba(31,58,40,0.45), inset 0 0 0 2px rgba(255,255,255,0.15);
+  transition: none;
+}
+.tai-fab.dragging .pulse { display: none; }
 .tai-fab .pulse {
   position: absolute;
   inset: -4px;
