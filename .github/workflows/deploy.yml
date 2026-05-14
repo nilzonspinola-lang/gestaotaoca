@@ -7,6 +7,10 @@ on:
       - main           # toda vez que houver push na main
   workflow_dispatch:   # permite rodar manualmente pelo botão do GitHub
 
+# Forcar Node.js 24 nas actions (fix do warning de deprecation do Node 20)
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  
 jobs:
   deploy:
     name: Deploy via FTP
